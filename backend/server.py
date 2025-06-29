@@ -726,10 +726,22 @@ async def update_facture(facture_id: str, facture: Facture):
     if "_id" in facture_dict:
         del facture_dict["_id"]
     
+    # Utiliser la même logique de recherche que les autres fonctions
     result = await db.factures.update_one(
-        {"id": facture_id},
+        {"$or": [{"id": facture_id}, {"_id": facture_id}]},
         {"$set": facture_dict}
     )
+    
+    if result.matched_count == 0:
+        # Si pas trouvé, essayer de convertir l'ID MongoDB
+        try:
+            from bson import ObjectId
+            result = await db.factures.update_one(
+                {"_id": ObjectId(facture_id)},
+                {"$set": facture_dict}
+            )
+        except:
+            pass
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Facture non trouvée")
