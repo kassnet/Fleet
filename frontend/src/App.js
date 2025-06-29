@@ -428,16 +428,10 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   // Gestion des stocks
   const updateStock = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/produits/${stockForm.produit_id}/stock`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nouvelle_quantite: parseInt(stockForm.nouvelle_quantite),
-          motif: stockForm.motif
-        })
+      await axios.put(`${API_URL}/api/produits/${stockForm.produit_id}/stock`, {
+        nouvelle_quantite: parseInt(stockForm.nouvelle_quantite),
+        motif: stockForm.motif
       });
-
-      if (!response.ok) throw new Error('Erreur lors de la mise à jour du stock');
 
       loadData();
       setShowStockModal(false);
