@@ -204,11 +204,11 @@ frontend:
 
   - task: "Boutons simulation paiement et marquage"
     implemented: true
-    working: "unknown"
+    working: true
     file: "/app/frontend/src/App.js"  
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
@@ -216,6 +216,9 @@ frontend:
       - working: "unknown"
         agent: "main"
         comment: "Fonctions simulerPaiement et marquerCommePayee présentes. Je remarque des alertes natives et plusieurs boutons 'Marquer payée' - problème potentiel de doublons. À tester."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Les corrections backend ont résolu les problèmes de simulation/marquage de paiement. L'interface affiche correctement les statuts et les fonctionnalités marchent."
 
   - task: "Notifications et confirmations UX"
     implemented: true
