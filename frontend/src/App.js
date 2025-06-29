@@ -356,7 +356,7 @@ function App() {
       setShowMouvementsModal(true);
     } catch (error) {
       console.error('Erreur récupération mouvements:', error);
-      alert('Erreur lors de la récupération des mouvements de stock');
+      showNotification('Erreur lors de la récupération des mouvements de stock', 'error');
     }
   };
 
