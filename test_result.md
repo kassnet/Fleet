@@ -241,9 +241,7 @@ test_plan:
     - "Simulation de paiements"
     - "Marquage factures comme payées"
     - "Boutons simulation paiement et marquage"
-  stuck_tasks:
-    - "Marquage factures comme payées"
-    - "Boutons simulation paiement et marquage"
+  stuck_tasks: []
   test_all: false
   test_priority: "stuck_first"
 
