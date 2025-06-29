@@ -1240,6 +1240,463 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           </div>
         </div>
       )}
+
+      {/* Modal Produit */}
+      {showProduitModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-lg font-medium mb-4">
+              {editingProduit ? 'Modifier le produit' : 'Nouveau produit'}
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
+                <input
+                  type="text"
+                  required
+                  value={produitForm.nom}
+                  onChange={(e) => setProduitForm(prev => ({...prev, nom: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={produitForm.description}
+                  onChange={(e) => setProduitForm(prev => ({...prev, description: e.target.value}))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix USD *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={produitForm.prix_usd}
+                    onChange={(e) => setProduitForm(prev => ({...prev, prix_usd: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix FC *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={produitForm.prix_fc}
+                    onChange={(e) => setProduitForm(prev => ({...prev, prix_fc: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={produitForm.gestion_stock}
+                    onChange={(e) => setProduitForm(prev => ({...prev, gestion_stock: e.target.checked}))}
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Gestion de stock</span>
+                </label>
+              </div>
+
+              {produitForm.gestion_stock && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock actuel</label>
+                    <input
+                      type="number"
+                      value={produitForm.stock_actuel}
+                      onChange={(e) => setProduitForm(prev => ({...prev, stock_actuel: e.target.value}))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock minimum</label>
+                    <input
+                      type="number"
+                      value={produitForm.stock_minimum}
+                      onChange={(e) => setProduitForm(prev => ({...prev, stock_minimum: e.target.value}))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowProduitModal(false);
+                  setProduitForm({ nom: '', description: '', prix_usd: '', prix_fc: '', stock_actuel: '', stock_minimum: '', gestion_stock: true });
+                  setEditingProduit(null);
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveProduit}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+              >
+                {editingProduit ? 'Modifier' : 'Créer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Facture */}
+      {showFactureModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
+            <h3 className="text-lg font-medium mb-4">Nouvelle facture</h3>
+            
+            <div className="space-y-6">
+              {/* Client et devise */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Client *</label>
+                  <select
+                    value={factureForm.client_id}
+                    onChange={(e) => setFactureForm(prev => ({...prev, client_id: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    required
+                  >
+                    <option value="">Sélectionner un client</option>
+                    {(clients || []).map(client => (
+                      <option key={client.id} value={client.id}>{client.nom}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Devise *</label>
+                  <select
+                    value={factureForm.devise}
+                    onChange={(e) => setFactureForm(prev => ({...prev, devise: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    {devises.map(devise => (
+                      <option key={devise.code} value={devise.code}>{devise.nom} ({devise.symbole})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Numéro de facture */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Numéro de facture</label>
+                <input
+                  type="text"
+                  value={factureForm.numero}
+                  onChange={(e) => setFactureForm(prev => ({...prev, numero: e.target.value}))}
+                  placeholder="Laissez vide pour génération automatique"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              {/* Produits */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-sm font-medium text-gray-700">Produits/Services *</label>
+                  <button
+                    type="button"
+                    onClick={addItemToFacture}
+                    className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                  >
+                    + Ajouter
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  {factureForm.items.map((item, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded">
+                      <div className="col-span-4">
+                        <select
+                          value={item.produit_id}
+                          onChange={(e) => updateItemFacture(index, 'produit_id', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          required
+                        >
+                          <option value="">Sélectionner un produit</option>
+                          {(produits || []).map(produit => (
+                            <option key={produit.id} value={produit.id}>{produit.nom}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-2">
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantite}
+                          onChange={(e) => updateItemFacture(index, 'quantite', parseInt(e.target.value))}
+                          placeholder="Qté"
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          required
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={factureForm.devise === 'USD' ? item.prix_unitaire_usd : item.prix_unitaire_fc}
+                          onChange={(e) => updateItemFacture(index, factureForm.devise === 'USD' ? 'prix_unitaire_usd' : 'prix_unitaire_fc', parseFloat(e.target.value))}
+                          placeholder="Prix"
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          required
+                        />
+                      </div>
+                      <div className="col-span-3 text-sm text-gray-600">
+                        Total: {formatMontant((factureForm.devise === 'USD' ? item.prix_unitaire_usd : item.prix_unitaire_fc) * item.quantite, factureForm.devise)}
+                      </div>
+                      <div className="col-span-1">
+                        <button
+                          type="button"
+                          onClick={() => removeItemFromFacture(index)}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Totaux */}
+              {factureForm.items.length > 0 && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Sous-total:</span>
+                      <span>{formatMontant(calculateFactureTotals().sousTotal, factureForm.devise)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>TVA (16%):</span>
+                      <span>{formatMontant(calculateFactureTotals().tva, factureForm.devise)}</span>
+                    </div>
+                    <div className="flex justify-between font-medium text-lg border-t pt-2">
+                      <span>Total TTC:</span>
+                      <span>{formatMontant(calculateFactureTotals().total, factureForm.devise)}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 text-center mt-2">
+                      USD: {formatMontant(calculateFactureTotals().totalUSD, 'USD')} | 
+                      FC: {formatMontant(calculateFactureTotals().totalFC, 'FC')}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea
+                  value={factureForm.notes}
+                  onChange={(e) => setFactureForm(prev => ({...prev, notes: e.target.value}))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Notes additionnelles..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowFactureModal(false);
+                  setFactureForm({ client_id: '', items: [], devise: 'USD', notes: '', numero: '' });
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveFacture}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+              >
+                Créer la facture
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Stock */}
+      {showStockModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium mb-4">Gestion du stock</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Produit *</label>
+                <select
+                  value={stockForm.produit_id}
+                  onChange={(e) => setStockForm(prev => ({...prev, produit_id: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                >
+                  <option value="">Sélectionner un produit</option>
+                  {(produits || []).filter(p => p.gestion_stock).map(produit => (
+                    <option key={produit.id} value={produit.id}>
+                      {produit.nom} (Stock actuel: {produit.stock_actuel})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nouvelle quantité *</label>
+                <input
+                  type="number"
+                  required
+                  value={stockForm.nouvelle_quantite}
+                  onChange={(e) => setStockForm(prev => ({...prev, nouvelle_quantite: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Motif *</label>
+                <select
+                  value={stockForm.motif}
+                  onChange={(e) => setStockForm(prev => ({...prev, motif: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                >
+                  <option value="">Sélectionner un motif</option>
+                  <option value="achat">Achat / Réapprovisionnement</option>
+                  <option value="vente">Vente</option>
+                  <option value="ajustement">Ajustement d'inventaire</option>
+                  <option value="perte">Perte / Casse</option>
+                  <option value="retour">Retour client</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowStockModal(false);
+                  setStockForm({ produit_id: '', nouvelle_quantite: '', motif: '' });
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={updateStock}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+              >
+                Mettre à jour
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Taux de change */}
+      {showTauxModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium mb-4">Modifier le taux de change</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nouveau taux (1 USD = ? FC)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={nouveauTaux}
+                  onChange={(e) => setNouveauTaux(parseFloat(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              
+              <div className="text-sm text-gray-600">
+                <p>Taux actuel: 1 USD = {tauxChange.taux_change_actuel?.toLocaleString()} FC</p>
+                <p>Nouveau taux: 1 USD = {nouveauTaux?.toLocaleString()} FC</p>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowTauxModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={updateTauxChange}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Mettre à jour
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Mouvements Stock */}
+      {showMouvementsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
+            <h3 className="text-lg font-medium mb-4">Mouvements de stock</h3>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantité</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock après</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {(mouvementsStock || []).map((mouvement, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-2 text-sm text-gray-600">
+                        {new Date(mouvement.date).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td className="px-4 py-2 text-sm">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          mouvement.type === 'entree' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {mouvement.type === 'entree' ? '+' : '-'} {mouvement.quantite}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600">{mouvement.quantite}</td>
+                      <td className="px-4 py-2 text-sm text-gray-600">{mouvement.stock_apres}</td>
+                      <td className="px-4 py-2 text-sm text-gray-600">{mouvement.motif}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setShowMouvementsModal(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
