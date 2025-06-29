@@ -384,22 +384,13 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       confirmMessage,
       async () => {
         try {
-          const response = await fetch(`${API_URL}/api/factures/${facture.id}/payer`, { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erreur ${response.status}: ${errorText}`);
-          }
+          await axios.post(`${API_URL}/api/factures/${facture.id}/payer`, {});
 
           showNotification(`✅ Facture ${facture.numero} marquée comme payée !`, 'success');
           loadData();
         } catch (error) {
           console.error('Erreur marquage facture:', error);
-          showNotification(`❌ Erreur lors du marquage de la facture: ${error.message}`, 'error');
+          showNotification(`❌ Erreur lors du marquage de la facture: ${error.response?.data?.detail || error.message}`, 'error');
         }
       }
     );
