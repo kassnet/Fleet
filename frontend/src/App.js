@@ -348,33 +348,57 @@ const AppContent = () => {
       }
 
       console.log('🧾 Début création facture...');
-      console.log('📋 Données form:', factureForm);
-      console.log('💱 Taux de change:', tauxChange);
-
+      
       const totals = calculateFactureTotals();
-      console.log('💰 Totaux calculés:', totals);
-
       const client = clients.find(c => c.id === factureForm.client_id);
-      console.log('👤 Client trouvé:', client);
+      
+      // Transformer les items en lignes selon le format attendu par le backend
+      const lignes = factureForm.items.map(item => {
+        const produit = produits.find(p => p.id === item.produit_id);
+        const quantite = parseFloat(item.quantite);
+        const prixUnitaireUSD = parseFloat(item.prix_unitaire_usd);
+        const prixUnitaireFC = parseFloat(item.prix_unitaire_fc);
+        
+        // Calculs pour cette ligne
+        const totalHtUSD = quantite * prixUnitaireUSD;
+        const totalHtFC = quantite * prixUnitaireFC;
+        const tva = 0.16; // 16% TVA
+        const totalTtcUSD = totalHtUSD * (1 + tva);
+        const totalTtcFC = totalHtFC * (1 + tva);
+        
+        return {
+          produit_id: item.produit_id,
+          nom_produit: produit?.nom || 'Produit inconnu',
+          quantite: quantite,
+          prix_unitaire_usd: prixUnitaireUSD,
+          prix_unitaire_fc: prixUnitaireFC,
+          devise: factureForm.devise,
+          tva: tva,
+          total_ht_usd: totalHtUSD,
+          total_ht_fc: totalHtFC,
+          total_ttc_usd: totalTtcUSD,
+          total_ttc_fc: totalTtcFC
+        };
+      });
       
       const factureData = {
         numero: factureForm.numero || generateNumeroFacture(),
         client_id: factureForm.client_id,
         client_nom: client?.nom,
         client_email: client?.email,
-        items: factureForm.items,
+        client_adresse: client?.adresse || '',
         devise: factureForm.devise,
-        sous_total_usd: factureForm.devise === 'USD' ? totals.sousTotal : convertirMontant(totals.sousTotal, 'FC', 'USD'),
-        sous_total_fc: factureForm.devise === 'FC' ? totals.sousTotal : convertirMontant(totals.sousTotal, 'USD', 'FC'),
-        tva_usd: factureForm.devise === 'USD' ? totals.tva : convertirMontant(totals.tva, 'FC', 'USD'),
-        tva_fc: factureForm.devise === 'FC' ? totals.tva : convertirMontant(totals.tva, 'USD', 'FC'),
+        lignes: lignes,
+        total_ht_usd: totals.sousTotal,
+        total_ht_fc: factureForm.devise === 'FC' ? totals.sousTotal : convertirMontant(totals.sousTotal, 'USD', 'FC'),
+        total_tva_usd: factureForm.devise === 'USD' ? totals.tva : convertirMontant(totals.tva, 'FC', 'USD'),
+        total_tva_fc: factureForm.devise === 'FC' ? totals.tva : convertirMontant(totals.tva, 'USD', 'FC'),
         total_ttc_usd: totals.totalUSD,
         total_ttc_fc: totals.totalFC,
-        notes: factureForm.notes,
-        taux_change_utilise: tauxChange?.taux_change_actuel || 2800
+        notes: factureForm.notes || ''
       };
 
-      console.log('📤 Données à envoyer au backend:', factureData);
+      console.log('📤 Données formatées pour backend:', factureData);
 
       const response = await apiCall('POST', '/api/factures', factureData);
       console.log('✅ Facture sauvegardée:', response.data);
@@ -386,7 +410,6 @@ const AppContent = () => {
     } catch (error) {
       console.error('❌ Erreur détaillée sauvegarde facture:', error);
       console.error('❌ Response data:', error.response?.data);
-      console.error('❌ Response status:', error.response?.status);
       showNotification(`Erreur lors de la création de la facture: ${error.response?.data?.detail || error.message}`, 'error');
     }
   };
