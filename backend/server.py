@@ -1032,9 +1032,10 @@ async def get_mouvements_stock(produit_id: str):
     
     return mouvements
 
-# Routes Factures
+# Routes Factures (Comptable, Manager et Admin)
 @app.get("/api/factures", response_model=List[Facture])
-async def get_factures():
+async def get_factures(current_user: dict = Depends(comptable_manager_admin())):
+    """Récupérer toutes les factures - Comptable, Manager et Admin"""
     factures = []
     async for facture in db.factures.find().sort("date_creation", -1):
         facture["id"] = str(facture["_id"]) if "_id" in facture else facture.get("id")
