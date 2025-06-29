@@ -380,12 +380,35 @@ def main():
         print("❌ Health check failed, stopping tests")
         return 1
     
+    # Basic GET tests
     tester.test_stats()
     tester.test_clients()
     tester.test_produits()
     tester.test_factures()
     tester.test_paiements()
     tester.test_taux_change()
+    
+    # CRUD tests
+    print("\n" + "=" * 50)
+    print("🔄 TESTING CRUD OPERATIONS")
+    print("=" * 50)
+    
+    # Client CRUD
+    client_created = tester.test_create_client()
+    if client_created:
+        tester.test_update_client()
+    
+    # Product CRUD
+    product_created = tester.test_create_product()
+    if product_created:
+        tester.test_update_product_stock()
+    
+    # Invoice and Payment flow
+    if client_created and product_created:
+        invoice_created = tester.test_create_invoice()
+        if invoice_created:
+            tester.test_send_invoice()
+            tester.test_simulate_payment()
     
     # Print results
     print("\n" + "=" * 50)
