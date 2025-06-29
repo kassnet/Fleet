@@ -445,7 +445,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   // Gestion des stocks
   const updateStock = async () => {
     try {
-      await axios.put(`${API_URL}/api/produits/${stockForm.produit_id}/stock`, {
+      await apiCall('PUT', `/api/produits/${stockForm.produit_id}/stock`, {
         nouvelle_quantite: parseInt(stockForm.nouvelle_quantite),
         motif: stockForm.motif
       });
@@ -462,7 +462,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
   const voirMouvementsStock = async (produitId) => {
     try {
-      const response = await axios.get(`${API_URL}/api/produits/${produitId}/mouvements`);
+      const response = await apiCall('GET', `/api/produits/${produitId}/mouvements`);
       setMouvementsStock(response.data);
       setShowMouvementsModal(true);
     } catch (error) {
@@ -474,7 +474,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   // Gestion du taux de change
   const updateTauxChange = async () => {
     try {
-      await axios.put(`${API_URL}/api/taux-change?nouveau_taux=${nouveauTaux}`);
+      await apiCall('PUT', `/api/taux-change?nouveau_taux=${nouveauTaux}`);
       
       loadData();
       setShowTauxModal(false);
