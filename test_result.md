@@ -101,3 +101,135 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "L'utilisateur indique qu'il y a beaucoup d'erreurs dans l'application FacturePro RDC malgré les corrections précédentes. Les problèmes précédents incluaient les IDs MongoDB/UUID, la simulation de paiement, et les calculs de factures. L'application doit être 100% fonctionnelle pour les freelances en RDC."
+
+backend:
+  - task: "Création et gestion des factures"
+    implemented: true
+    working: "unknown"  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "unknown"
+        agent: "main"
+        comment: "L'endpoint /api/factures existe et semble correctement implémenté avec gestion des IDs. Correction précédente dans simulate_payment et marquer_payee pour gérer les IDs MongoDB avec requêtes $or."
+
+  - task: "Simulation de paiements"
+    implemented: true
+    working: "unknown"
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"  
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Problème identifié précédemment avec 'Facture non trouvée' lors de la simulation de paiement"
+      - working: "unknown"
+        agent: "main"
+        comment: "Fonction simulate_payment modifiée pour utiliser requête $or avec ID et _id, plus fallback vers ObjectId. Besoin de vérifier si le problème persiste."
+
+  - task: "Marquage factures comme payées"
+    implemented: true
+    working: "unknown"
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Problème précédent avec le marquage des factures comme payées"
+      - working: "unknown"
+        agent: "main"
+        comment: "Fonction marquer_payee améliorée avec requête $or et gestion ObjectId. Doit être testé."
+
+  - task: "Gestion des stocks produits"
+    implemented: true
+    working: "unknown"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "unknown"
+        agent: "main"
+        comment: "Endpoints pour gestion stock existent, besoin de tester fonctionnalité complète."
+
+  - task: "Calculs multi-devises USD/FC"
+    implemented: true
+    working: "unknown"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "unknown"
+        agent: "main"
+        comment: "Taux de change défini à 2800 FC pour 1 USD. Fonctions de conversion présentes. À tester."
+
+frontend:
+  - task: "Interface création de factures"
+    implemented: true
+    working: "unknown"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "unknown"
+        agent: "main"
+        comment: "Fonction saveFacture présente avec calculs totaux et appel API. Besoin de tester l'intégration complète."
+
+  - task: "Boutons simulation paiement et marquage"
+    implemented: true
+    working: "unknown"
+    file: "/app/frontend/src/App.js"  
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Utilisateur rapporte des erreurs dans l'application"
+      - working: "unknown"
+        agent: "main"
+        comment: "Fonctions simulerPaiement et marquerCommePayee présentes. Je remarque des alertes natives et plusieurs boutons 'Marquer payée' - problème potentiel de doublons. À tester."
+
+  - task: "Notifications et confirmations UX"
+    implemented: true
+    working: "unknown"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "unknown"
+        agent: "main"
+        comment: "Système de notifications modernes implémenté mais je vois encore des window.confirm() et alert() dans le code - incohérence UX."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Création et gestion des factures"
+    - "Simulation de paiements"
+    - "Marquage factures comme payées"
+    - "Boutons simulation paiement et marquage"
+  stuck_tasks:
+    - "Simulation de paiements"
+    - "Marquage factures comme payées"
+    - "Boutons simulation paiement et marquage"
+  test_all: false
+  test_priority: "stuck_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Analyse initiale terminée. Problèmes identifiés: (1) Incohérence UX avec alertes natives vs système moderne, (2) Boutons 'Marquer payée' dupliqués, (3) Besoin de tester les corrections IDs MongoDB précédentes. Lancement des tests backend pour vérifier les fonctionnalités critiques."
