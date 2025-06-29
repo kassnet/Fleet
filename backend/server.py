@@ -1371,7 +1371,8 @@ async def simulate_email_send(email: str, numero_facture: str):
 
 # Route Statistics
 @app.get("/api/stats", response_model=StatsResponse)
-async def get_stats():
+async def get_stats(current_user: dict = Depends(all_authenticated())):
+    """Récupérer les statistiques - Tous les utilisateurs authentifiés"""
     total_clients = await db.clients.count_documents({})
     total_produits = await db.produits.count_documents({"actif": True})
     total_factures = await db.factures.count_documents({})
