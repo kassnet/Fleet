@@ -46,6 +46,12 @@ const AppContent = () => {
 
   // Helper pour les requêtes authentifiées
   const apiCall = (method, url, data = null) => {
+    // Bloquer l'accès aux données restreintes pour les utilisateurs "utilisateur"
+    if (user?.role === 'utilisateur' && (url.includes('/factures') || url.includes('/paiements'))) {
+      console.log('🚫 Requête bloquée pour utilisateur:', method, url);
+      return Promise.reject(new Error('Accès refusé pour ce rôle'));
+    }
+
     const config = {
       method,
       url: `${API_URL}${url}`,
@@ -61,7 +67,7 @@ const AppContent = () => {
       config.headers['Content-Type'] = 'application/json';
     }
 
-    console.log('🔑 API Call:', method, url, 'Token présent:', !!accessToken);
+    console.log('🔑 API Call:', method, url, 'Token présent:', !!accessToken, 'Rôle:', user?.role);
     return axios(config);
   };
 
