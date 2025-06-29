@@ -8,16 +8,28 @@ class FactureProTester:
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
+        self.test_client = None
+        self.test_product = None
+        self.test_invoice = None
+        self.test_payment = None
 
-    def run_test(self, name, endpoint, expected_status=200):
+    def run_test(self, name, method, endpoint, expected_status=200, data=None, print_response=True):
         """Run a single API test"""
         url = f"{self.base_url}{endpoint}"
+        headers = {'Content-Type': 'application/json'}
         
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
         
         try:
-            response = requests.get(url)
+            if method == 'GET':
+                response = requests.get(url, headers=headers)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers)
             
             success = response.status_code == expected_status
             if success:
@@ -25,13 +37,15 @@ class FactureProTester:
                 print(f"✅ Passed - Status: {response.status_code}")
                 try:
                     data = response.json()
-                    print(f"📊 Response data: {json.dumps(data, indent=2)[:500]}...")
+                    if print_response:
+                        print(f"📊 Response data: {json.dumps(data, indent=2)[:500]}...")
                     return success, data
                 except:
                     print("⚠️ Response is not JSON")
                     return success, response.text
             else:
                 print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                print(f"Response: {response.text}")
                 return False, None
 
         except Exception as e:
