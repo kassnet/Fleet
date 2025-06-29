@@ -451,6 +451,27 @@ async def init_demo_data():
 @app.on_event("startup")
 async def startup_event():
     await init_demo_data()
+    await init_admin_user()
+
+async def init_admin_user():
+    """Crée un utilisateur administrateur par défaut s'il n'existe pas"""
+    admin_email = "admin@facturepro.rdc"
+    existing_admin = await db.users.find_one({"email": admin_email})
+    
+    if not existing_admin:
+        admin_user = {
+            "id": str(uuid.uuid4()),
+            "email": admin_email,
+            "nom": "Administrateur",
+            "prenom": "Système",
+            "role": "admin",
+            "is_active": True,
+            "hashed_password": hash_password("admin123"),  # Mot de passe par défaut
+            "date_creation": datetime.now(),
+            "derniere_connexion": None
+        }
+        await db.users.insert_one(admin_user)
+        print(f"✅ Utilisateur admin créé: {admin_email} / mot de passe: admin123")
 
 # Routes Taux de change
 @app.get("/api/taux-change", response_model=TauxChange)
