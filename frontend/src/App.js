@@ -347,8 +347,15 @@ const AppContent = () => {
         return;
       }
 
+      console.log('🧾 Début création facture...');
+      console.log('📋 Données form:', factureForm);
+      console.log('💱 Taux de change:', tauxChange);
+
       const totals = calculateFactureTotals();
+      console.log('💰 Totaux calculés:', totals);
+
       const client = clients.find(c => c.id === factureForm.client_id);
+      console.log('👤 Client trouvé:', client);
       
       const factureData = {
         numero: factureForm.numero || generateNumeroFacture(),
@@ -364,8 +371,10 @@ const AppContent = () => {
         total_ttc_usd: totals.totalUSD,
         total_ttc_fc: totals.totalFC,
         notes: factureForm.notes,
-        taux_change_utilise: tauxChange.taux_change_actuel
+        taux_change_utilise: tauxChange?.taux_change_actuel || 2800
       };
+
+      console.log('📤 Données à envoyer au backend:', factureData);
 
       const response = await apiCall('POST', '/api/factures', factureData);
       console.log('✅ Facture sauvegardée:', response.data);
@@ -375,8 +384,10 @@ const AppContent = () => {
       setFactureForm({ client_id: '', items: [], devise: 'USD', notes: '', numero: '' });
       showNotification('Facture créée avec succès');
     } catch (error) {
-      console.error('Erreur sauvegarde facture:', error);
-      showNotification('Erreur lors de la création de la facture', 'error');
+      console.error('❌ Erreur détaillée sauvegarde facture:', error);
+      console.error('❌ Response data:', error.response?.data);
+      console.error('❌ Response status:', error.response?.status);
+      showNotification(`Erreur lors de la création de la facture: ${error.response?.data?.detail || error.message}`, 'error');
     }
   };
 
