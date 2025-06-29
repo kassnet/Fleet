@@ -154,6 +154,47 @@ class StatsResponse(BaseModel):
     produits_stock_bas: int
     taux_change_actuel: float
 
+# Authentication Models
+class User(BaseModel):
+    id: Optional[str] = None
+    email: EmailStr
+    nom: str
+    prenom: str
+    role: str = "utilisateur"  # admin, manager, utilisateur, comptable
+    is_active: bool = True
+    hashed_password: Optional[str] = None  # Ne sera pas retourné dans les réponses
+    date_creation: Optional[datetime] = None
+    derniere_connexion: Optional[datetime] = None
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    nom: str
+    prenom: str
+    password: str
+    role: str = "utilisateur"
+
+class UserUpdate(BaseModel):
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: Dict[str, Any]
+
+class PasswordReset(BaseModel):
+    email: EmailStr
+
+class PasswordResetConfirm(BaseModel):
+    token: str
+    new_password: str
+
 # Helper functions
 def generate_invoice_number():
     return f"FACT-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
