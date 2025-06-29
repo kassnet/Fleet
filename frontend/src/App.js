@@ -341,7 +341,7 @@ function App() {
       loadData();
       setShowStockModal(false);
       setStockForm({ produit_id: '', nouvelle_quantite: '', motif: '' });
-      alert('Stock mis à jour avec succès');
+      showNotification('Stock mis à jour avec succès', 'success');
     } catch (error) {
       console.error('Erreur mise à jour stock:', error);
     }
