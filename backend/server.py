@@ -307,6 +307,23 @@ def check_permissions(required_roles: List[str]):
         return current_user
     return permission_checker
 
+# Fonctions helper pour les permissions spécifiques
+def admin_only():
+    """Seuls les admins peuvent accéder"""
+    return check_permissions(["admin"])
+
+def manager_and_admin():
+    """Managers et admins peuvent accéder"""
+    return check_permissions(["admin", "manager"])
+
+def comptable_manager_admin():
+    """Comptables, managers et admins peuvent accéder"""
+    return check_permissions(["admin", "manager", "comptable"])
+
+def all_authenticated():
+    """Tous les utilisateurs authentifiés peuvent accéder"""
+    return check_permissions(["admin", "manager", "comptable", "utilisateur"])
+
 def calculer_prix_produit(prix_base: float, devise_base: str, devise_cible: str, taux: float = None) -> float:
     """Calcule le prix d'un produit dans la devise cible"""
     return convertir_devise(prix_base, devise_base, devise_cible, taux)
