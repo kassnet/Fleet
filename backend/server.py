@@ -802,25 +802,49 @@ async def simulate_payment(request: dict):
 
 @app.post("/api/factures/{facture_id}/payer")
 async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None):
-    # Marquer la facture comme payée
-    result = await db.factures.update_one(
-        {"$or": [{"id": facture_id}, {"_id": facture_id}]},
-        {"$set": {"statut": "payee", "date_paiement": datetime.now()}}
-    )
+    print(f"🔍 MARQUAGE PAYÉE - Tentative de marquage pour ID: {facture_id}")
     
-    if result.matched_count == 0:
+    # D'abord, vérifier si la facture existe avec find_one (même logique que simulate_payment)
+    facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
+    
+    if not facture:
         # Si pas trouvé, essayer de convertir l'ID MongoDB
         try:
             from bson import ObjectId
-            result = await db.factures.update_one(
-                {"_id": ObjectId(facture_id)},
-                {"$set": {"statut": "payee", "date_paiement": datetime.now()}}
-            )
-        except:
+            facture = await db.factures.find_one({"_id": ObjectId(facture_id)})
+            print(f"✅ MARQUAGE PAYÉE - Facture trouvée avec ObjectId: {facture_id}")
+        except Exception as e:
+            print(f"❌ MARQUAGE PAYÉE - Erreur ObjectId: {e}")
             pass
+    else:
+        print(f"✅ MARQUAGE PAYÉE - Facture trouvée avec requête $or: {facture.get('numero', 'N/A')}")
+    
+    if not facture:
+        print(f"❌ MARQUAGE PAYÉE - Facture avec ID {facture_id} non trouvée")
+        raise HTTPException(status_code=404, detail="Facture non trouvée")
+    
+    # Maintenant, marquer la facture comme payée en utilisant le même ID que celui trouvé
+    # Si on a trouvé avec ObjectId, utiliser l'_id, sinon utiliser l'id
+    if "_id" in facture and not facture.get("id"):
+        # Facture trouvée avec ObjectId MongoDB
+        result = await db.factures.update_one(
+            {"_id": facture["_id"]},
+            {"$set": {"statut": "payee", "date_paiement": datetime.now()}}
+        )
+        print(f"🔄 MARQUAGE PAYÉE - Mise à jour avec _id MongoDB: {facture['_id']}")
+    else:
+        # Facture trouvée avec ID UUID
+        result = await db.factures.update_one(
+            {"id": facture["id"]},
+            {"$set": {"statut": "payee", "date_paiement": datetime.now()}}
+        )
+        print(f"🔄 MARQUAGE PAYÉE - Mise à jour avec ID UUID: {facture['id']}")
     
     if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Facture non trouvée")
+        print(f"❌ MARQUAGE PAYÉE - Aucune facture mise à jour malgré la présence")
+        raise HTTPException(status_code=404, detail="Erreur lors de la mise à jour de la facture")
+    
+    print(f"✅ MARQUAGE PAYÉE - Facture {facture.get('numero', 'N/A')} marquée comme payée")
     
     # Mettre à jour le statut du paiement
     if paiement_id:
