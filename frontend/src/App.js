@@ -617,13 +617,10 @@ Transaction ID: ${data.transaction_id}
       showNotification(`❌ Erreur lors de la simulation de paiement: ${error.message}`, 'error');
     }
   };
-        
-        alert(`✅ Paiement simulé avec succès !\n\n💳 Transaction ID: ${data.transaction_id}\n💰 Montant: ${montantFormatte}\n📦 Stocks mis à jour automatiquement\n🧾 Facture marquée comme payée`);
-        loadData(); // Recharger pour voir les changements
       }
     } catch (error) {
       console.error('Erreur simulation paiement:', error);
-      alert(`❌ Erreur lors du paiement: ${error.message}`);
+      showNotification(`❌ Erreur lors de la simulation de paiement: ${error.message}`, 'error');
     }
   };
 
