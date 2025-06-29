@@ -1067,7 +1067,8 @@ async def get_facture(facture_id: str, current_user: dict = Depends(comptable_ma
     return Facture(**facture)
 
 @app.post("/api/factures", response_model=Facture)
-async def create_facture(facture: Facture):
+async def create_facture(facture: Facture, current_user: dict = Depends(comptable_manager_admin())):
+    """Créer une facture - Comptable, Manager et Admin"""
     facture.id = str(uuid.uuid4())
     facture.numero = generate_invoice_number()
     facture.date_creation = datetime.now()
