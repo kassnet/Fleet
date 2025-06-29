@@ -244,3 +244,7 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Analyse initiale terminée. Problèmes identifiés: (1) Incohérence UX avec alertes natives vs système moderne, (2) Boutons 'Marquer payée' dupliqués, (3) Besoin de tester les corrections IDs MongoDB précédentes. Lancement des tests backend pour vérifier les fonctionnalités critiques."
+  - agent: "testing"
+    message: "Tests backend terminés. RÉSULTATS: ✅ Création factures OK, ✅ Simulation paiements OK (corrections $or efficaces), ❌ Marquage comme payée ÉCHEC (404 même si facture existe), ✅ Multi-devises OK, ✅ Stocks OK. PROBLÈME CRITIQUE: fonction marquer_payee ne trouve pas les factures."
+  - agent: "main"
+    message: "Problème identifié! La fonction marquer_payee a un problème de recherche d'ID. Je vais examiner le code et corriger ce bug critique."
