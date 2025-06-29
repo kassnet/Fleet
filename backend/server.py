@@ -1353,7 +1353,8 @@ async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None, curr
     return {"message": "Facture marquée comme payée"}
 
 @app.get("/api/paiements")
-async def get_paiements():
+async def get_paiements(current_user: dict = Depends(comptable_manager_admin())):
+    """Récupérer tous les paiements - Comptable, Manager et Admin"""
     paiements = []
     async for paiement in db.paiements.find().sort("date_paiement", -1):
         paiement["id"] = str(paiement["_id"]) if "_id" in paiement else paiement.get("id")
