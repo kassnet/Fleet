@@ -115,26 +115,53 @@ const AppContent = () => {
     
     setLoading(true);
     try {
-      console.log('🔄 Début chargement des données avec token...');
-      const [clientsRes, produitsRes, facturesRes, statsRes, paiementsRes, tauxRes] = await Promise.all([
+      console.log('🔄 Début chargement des données avec token pour rôle:', user.role);
+      
+      // Données accessibles à tous les utilisateurs authentifiés
+      const baseRequests = [
         apiCall('GET', '/api/clients'),
         apiCall('GET', '/api/produits'),
-        apiCall('GET', '/api/factures'),
         apiCall('GET', '/api/stats'),
-        apiCall('GET', '/api/paiements'),
         apiCall('GET', '/api/taux-change')
-      ]);
+      ];
 
-      console.log('💳 Paiements chargés:', paiementsRes.data.length, 'éléments');
+      // Données accessibles seulement aux comptables, managers et admins
+      const restrictedRequests = [];
+      if (canManageInvoices() || canManagePayments()) {
+        restrictedRequests.push(
+          apiCall('GET', '/api/factures'),
+          apiCall('GET', '/api/paiements')
+        );
+      }
+
+      // Combiner toutes les requêtes
+      const allRequests = [...baseRequests, ...restrictedRequests];
+      const responses = await Promise.all(allRequests);
+
+      // Traiter les réponses selon l'ordre
+      const [clientsRes, produitsRes, statsRes, tauxRes, ...restrictedRes] = responses;
+
+      console.log('📊 Données de base chargées pour rôle:', user.role);
 
       setClients(clientsRes.data || []);
       setProduits(produitsRes.data || []);
-      setFactures(facturesRes.data || []);
       setStats(statsRes.data || {});
-      setPaiements(Array.isArray(paiementsRes.data) ? paiementsRes.data : []);
       setTauxChange(tauxRes.data || { taux_change_actuel: 2800 });
+
+      // Charger les données restreintes si disponibles
+      if (restrictedRes.length >= 2) {
+        const [facturesRes, paiementsRes] = restrictedRes;
+        setFactures(facturesRes.data || []);
+        setPaiements(Array.isArray(paiementsRes.data) ? paiementsRes.data : []);
+        console.log('💳 Données restreintes chargées - Factures:', facturesRes.data.length, 'Paiements:', paiementsRes.data.length);
+      } else {
+        // Utilisateur simple - pas d'accès aux factures et paiements
+        setFactures([]);
+        setPaiements([]);
+        console.log('👤 Utilisateur simple - accès limité aux clients, produits et stats');
+      }
       
-      console.log('✅ Toutes les données chargées avec succès');
+      console.log('✅ Toutes les données chargées avec succès pour rôle:', user.role);
     } catch (error) {
       console.error('❌ Erreur chargement données:', error.response?.status, error.response?.data || error.message);
       showNotification('Erreur lors du chargement des données', 'error');
