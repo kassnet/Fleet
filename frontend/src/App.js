@@ -339,22 +339,13 @@ const AppContent = () => {
       const montant = facture.devise === 'USD' ? facture.total_ttc_usd : facture.total_ttc_fc;
       const devise = facture.devise;
       
-      const response = await fetch(`${API_URL}/api/paiements/simulate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          facture_id: facture.id,
-          montant: montant,
-          devise: devise
-        })
+      const response = await axios.post(`${API_URL}/api/paiements/simulate`, {
+        facture_id: facture.id,
+        montant: montant,
+        devise: devise
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erreur ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       const montantFormatte = formatMontant(montant, devise);
 
       const confirmMessage = `Simuler le paiement Stripe ?
@@ -370,17 +361,9 @@ Transaction ID: ${data.transaction_id}
         confirmMessage,
         async () => {
           // Marquer comme payée en simulation
-          const payResponse = await fetch(`${API_URL}/api/factures/${facture.id}/payer`, { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paiement_id: data.paiement_id })
+          await axios.post(`${API_URL}/api/factures/${facture.id}/payer`, { 
+            paiement_id: data.paiement_id 
           });
-          
-          if (!payResponse.ok) {
-            const errorText = await payResponse.text();
-            console.error('Erreur marquage facture payée:', errorText);
-            throw new Error(`Erreur lors du marquage comme payée: ${errorText}`);
-          }
 
           showNotification(`💳 Paiement simulé avec succès ! Facture ${facture.numero} marquée comme payée`, 'success');
           loadData();
@@ -388,7 +371,7 @@ Transaction ID: ${data.transaction_id}
       );
     } catch (error) {
       console.error('Erreur simulation paiement:', error);
-      showNotification(`❌ Erreur lors de la simulation: ${error.message}`, 'error');
+      showNotification(`❌ Erreur lors de la simulation: ${error.response?.data?.detail || error.message}`, 'error');
     }
   };
 
