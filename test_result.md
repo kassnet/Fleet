@@ -258,3 +258,7 @@ agent_communication:
     message: "Tests backend terminés. RÉSULTATS: ✅ Création factures OK, ✅ Simulation paiements OK (corrections $or efficaces), ❌ Marquage comme payée ÉCHEC (404 même si facture existe), ✅ Multi-devises OK, ✅ Stocks OK. PROBLÈME CRITIQUE: fonction marquer_payee ne trouve pas les factures."
   - agent: "main"
     message: "Problème identifié! La fonction marquer_payee a un problème de recherche d'ID. Je vais examiner le code et corriger ce bug critique."
+  - agent: "main"
+    message: "✅ CORRECTIONS COMPLÉTÉES - Toutes les fonctions backend (get_facture, envoyer_facture, update_facture, marquer_payee) utilisent maintenant la même logique de recherche d'ID avec $or et ObjectId. Cohérence UUID/MongoDB assurée."
+  - agent: "testing"
+    message: "✅ TESTS COMPLETS RÉUSSIS - Toutes les corrections ID fonctionnent parfaitement! Cycle complet création->envoi->paiement testé sans erreur 404. Problèmes backend résolus. Reste: améliorer UX frontend (alertes natives)."
