@@ -170,15 +170,18 @@ backend:
 
   - task: "Calculs multi-devises USD/FC"
     implemented: true
-    working: "unknown"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Taux de change défini à 2800 FC pour 1 USD. Fonctions de conversion présentes. À tester."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Taux de change correctement configuré à 2800 FC = 1 USD. Conversions fonctionnent parfaitement dans les deux sens. Tous les calculs sont précis."
 
 frontend:
   - task: "Interface création de factures"
