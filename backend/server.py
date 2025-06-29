@@ -472,23 +472,55 @@ async def startup_event():
 
 async def init_admin_user():
     """Crée un utilisateur administrateur par défaut s'il n'existe pas"""
-    admin_email = "admin@facturepro.rdc"
-    existing_admin = await db.users.find_one({"email": admin_email})
-    
-    if not existing_admin:
-        admin_user = {
-            "id": str(uuid.uuid4()),
-            "email": admin_email,
+    # Utilisateurs de démonstration
+    demo_users = [
+        {
+            "email": "admin@facturepro.rdc",
             "nom": "Administrateur",
             "prenom": "Système",
             "role": "admin",
-            "is_active": True,
-            "hashed_password": hash_password("admin123"),  # Mot de passe par défaut
-            "date_creation": datetime.now(),
-            "derniere_connexion": None
+            "password": "admin123"
+        },
+        {
+            "email": "manager@demo.com",
+            "nom": "Manager",
+            "prenom": "Demo",
+            "role": "manager",
+            "password": "manager123"
+        },
+        {
+            "email": "comptable@demo.com",
+            "nom": "Comptable",
+            "prenom": "Demo",
+            "role": "comptable",
+            "password": "comptable123"
+        },
+        {
+            "email": "user@demo.com",
+            "nom": "Utilisateur",
+            "prenom": "Demo",
+            "role": "utilisateur",
+            "password": "user123"
         }
-        await db.users.insert_one(admin_user)
-        print(f"✅ Utilisateur admin créé: {admin_email} / mot de passe: admin123")
+    ]
+    
+    for user_data in demo_users:
+        existing_user = await db.users.find_one({"email": user_data["email"]})
+        
+        if not existing_user:
+            user = {
+                "id": str(uuid.uuid4()),
+                "email": user_data["email"],
+                "nom": user_data["nom"],
+                "prenom": user_data["prenom"],
+                "role": user_data["role"],
+                "is_active": True,
+                "hashed_password": hash_password(user_data["password"]),
+                "date_creation": datetime.now(),
+                "derniere_connexion": None
+            }
+            await db.users.insert_one(user)
+            print(f"✅ Utilisateur {user_data['role']} créé: {user_data['email']} / mot de passe: {user_data['password']}")
 
 # Routes d'authentification
 @app.post("/api/auth/login", response_model=Token)
