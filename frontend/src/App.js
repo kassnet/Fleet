@@ -188,8 +188,7 @@ const AppContent = () => {
       'Êtes-vous sûr de vouloir supprimer ce client ?',
       async () => {
         try {
-          await axios.delete(`${API_URL}/api/clients/${clientId}`);
-
+          await apiCall('DELETE', `/api/clients/${clientId}`);
           loadData();
           showNotification('Client supprimé avec succès');
         } catch (error) {
