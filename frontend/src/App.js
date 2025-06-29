@@ -184,11 +184,6 @@ const AppContent = () => {
   // Fonctions CRUD Produits
   const saveProduit = async () => {
     try {
-      const method = editingProduit ? 'PUT' : 'POST';
-      const url = editingProduit 
-        ? `${API_URL}/api/produits/${editingProduit.id}` 
-        : `${API_URL}/api/produits`;
-
       const produitData = {
         ...produitForm,
         prix_usd: parseFloat(produitForm.prix_usd),
@@ -197,13 +192,11 @@ const AppContent = () => {
         stock_minimum: parseInt(produitForm.stock_minimum) || 0
       };
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(produitData)
-      });
-
-      if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
+      if (editingProduit) {
+        await axios.put(`${API_URL}/api/produits/${editingProduit.id}`, produitData);
+      } else {
+        await axios.post(`${API_URL}/api/produits`, produitData);
+      }
 
       loadData();
       setShowProduitModal(false);
