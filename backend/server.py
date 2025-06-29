@@ -757,9 +757,10 @@ async def update_taux_change(nouveau_taux: float):
     
     return TauxChange(**taux)
 
-# Routes Clients
+# Routes Clients (Manager et Admin)
 @app.get("/api/clients", response_model=List[Client])
-async def get_clients():
+async def get_clients(current_user: dict = Depends(all_authenticated())):
+    """Récupérer tous les clients - Tous les utilisateurs authentifiés"""
     clients = []
     async for client in db.clients.find():
         client["id"] = str(client["_id"]) if "_id" in client else client.get("id")
@@ -769,7 +770,8 @@ async def get_clients():
     return clients
 
 @app.post("/api/clients", response_model=Client)
-async def create_client(client: Client):
+async def create_client(client: Client, current_user: dict = Depends(manager_and_admin())):
+    """Créer un client - Manager et Admin uniquement"""
     client.id = str(uuid.uuid4())
     client.date_creation = datetime.now()
     client_dict = client.dict()
@@ -777,7 +779,7 @@ async def create_client(client: Client):
     return client
 
 @app.put("/api/clients/{client_id}", response_model=Client)
-async def update_client(client_id: str, client: Client):
+async def update_client(client_id: str, client: Client, current_user: dict = Depends(manager_and_admin())):
     client.id = client_id
     client_dict = client.dict()
     if "_id" in client_dict:
