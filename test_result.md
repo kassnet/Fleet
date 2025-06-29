@@ -265,3 +265,7 @@ agent_communication:
     message: "✅ CORRECTIONS COMPLÉTÉES - Toutes les fonctions backend (get_facture, envoyer_facture, update_facture, marquer_payee) utilisent maintenant la même logique de recherche d'ID avec $or et ObjectId. Cohérence UUID/MongoDB assurée."
   - agent: "testing"
     message: "✅ TESTS COMPLETS RÉUSSIS - Toutes les corrections ID fonctionnent parfaitement! Cycle complet création->envoi->paiement testé sans erreur 404. Problèmes backend résolus. Reste: améliorer UX frontend (alertes natives)."
+  - agent: "user"
+    message: "🔍 VALIDATION MANUELLE - Utilisateur rapporte que les boutons 'Valider' dans l'historique des paiements ne fonctionnent pas. Problem identifié: les modals de confirmation ne sont pas rendus dans le DOM!"
+  - agent: "main"
+    message: "✅ CORRECTION CRITIQUE - Ajout des modals de confirmation et notifications dans le rendu DOM. Remplacement complet des alertes natives. Les boutons 'Valider' devraient maintenant fonctionner correctement avec confirmations modernes."
