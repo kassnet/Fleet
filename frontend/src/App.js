@@ -238,8 +238,7 @@ const AppContent = () => {
       'Êtes-vous sûr de vouloir supprimer ce produit ?',
       async () => {
         try {
-          await axios.delete(`${API_URL}/api/produits/${produitId}`);
-
+          await apiCall('DELETE', `/api/produits/${produitId}`);
           loadData();
           showNotification('Produit supprimé avec succès');
         } catch (error) {
