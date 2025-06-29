@@ -576,15 +576,26 @@ function App() {
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Erreur API simulation paiement:', errorText);
         throw new Error(`Erreur ${response.status}: ${errorText}`);
       }
       
       const data = await response.json();
+      console.log('Réponse simulation paiement:', data);
       
       const montant = devise === 'USD' ? facture.total_ttc_usd : facture.total_ttc_fc;
       const montantFormatte = formatMontant(montant, devise);
       
-      if (window.confirm(`Simuler le paiement Stripe ?\n\nFacture: ${facture.numero}\nMontant: ${montantFormatte}\nDevise: ${devise}\nTransaction ID: ${data.transaction_id}\n\n✅ Confirmer le paiement ?`)) {
+      const confirmMessage = `Simuler le paiement Stripe ?
+
+Facture: ${facture.numero}
+Montant: ${montantFormatte}
+Devise: ${devise}
+Transaction ID: ${data.transaction_id}
+
+✅ Confirmer le paiement ?`;
+
+      if (window.confirm(confirmMessage)) {
         // Marquer comme payée en simulation
         const payResponse = await fetch(`${API_URL}/api/factures/${facture.id}/payer`, { 
           method: 'POST',
@@ -594,8 +605,18 @@ function App() {
         
         if (!payResponse.ok) {
           const errorText = await payResponse.text();
+          console.error('Erreur marquage facture payée:', errorText);
           throw new Error(`Erreur lors du marquage comme payée: ${errorText}`);
         }
+
+        showNotification(`💳 Paiement simulé avec succès ! Facture ${facture.numero} marquée comme payée`, 'success');
+        loadData();
+      }
+    } catch (error) {
+      console.error('Erreur simulation paiement:', error);
+      showNotification(`❌ Erreur lors de la simulation de paiement: ${error.message}`, 'error');
+    }
+  };
         
         alert(`✅ Paiement simulé avec succès !\n\n💳 Transaction ID: ${data.transaction_id}\n💰 Montant: ${montantFormatte}\n📦 Stocks mis à jour automatiquement\n🧾 Facture marquée comme payée`);
         loadData(); // Recharger pour voir les changements
