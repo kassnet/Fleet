@@ -220,11 +220,7 @@ const AppContent = () => {
       'Êtes-vous sûr de vouloir supprimer ce produit ?',
       async () => {
         try {
-          const response = await fetch(`${API_URL}/api/produits/${produitId}`, {
-            method: 'DELETE'
-          });
-
-          if (!response.ok) throw new Error('Erreur lors de la suppression');
+          await axios.delete(`${API_URL}/api/produits/${produitId}`);
 
           loadData();
           showNotification('Produit supprimé avec succès');
