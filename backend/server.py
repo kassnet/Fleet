@@ -473,6 +473,228 @@ async def init_admin_user():
         await db.users.insert_one(admin_user)
         print(f"✅ Utilisateur admin créé: {admin_email} / mot de passe: admin123")
 
+# Routes d'authentification
+@app.post("/api/auth/login", response_model=Token)
+async def login(user_data: UserLogin):
+    """Connexion utilisateur"""
+    user = await get_user_by_email(user_data.email)
+    
+    if not user or not verify_password(user_data.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email ou mot de passe incorrect",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    if not user.get("is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Compte utilisateur désactivé"
+        )
+    
+    # Mettre à jour la dernière connexion
+    await db.users.update_one(
+        {"email": user_data.email},
+        {"$set": {"derniere_connexion": datetime.now()}}
+    )
+    
+    access_token = create_access_token(data={"sub": user["email"]})
+    
+    # Retourner le token avec les infos utilisateur (sans le mot de passe)
+    user_info = {k: v for k, v in user.items() if k != "hashed_password"}
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_info
+    }
+
+@app.get("/api/auth/me")
+async def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    """Récupère les informations de l'utilisateur connecté"""
+    user_info = {k: v for k, v in current_user.items() if k != "hashed_password"}
+    return user_info
+
+@app.post("/api/auth/logout")
+async def logout(current_user: dict = Depends(get_current_user)):
+    """Déconnexion utilisateur"""
+    return {"message": "Déconnexion réussie"}
+
+# Routes de gestion des utilisateurs (Admin seulement)
+@app.post("/api/users", response_model=User)
+async def create_user(
+    user_data: UserCreate,
+    current_user: dict = Depends(check_permissions(["admin"]))
+):
+    """Créer un nouvel utilisateur (Admin seulement)"""
+    # Vérifier si l'email existe déjà
+    existing_user = await get_user_by_email(user_data.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un utilisateur avec cet email existe déjà"
+        )
+    
+    # Créer le nouvel utilisateur
+    user_dict = user_data.dict()
+    user_dict["id"] = str(uuid.uuid4())
+    user_dict["hashed_password"] = hash_password(user_dict.pop("password"))
+    user_dict["date_creation"] = datetime.now()
+    user_dict["is_active"] = True
+    user_dict["derniere_connexion"] = None
+    
+    await db.users.insert_one(user_dict)
+    
+    # Retourner l'utilisateur sans le mot de passe
+    return User(**{k: v for k, v in user_dict.items() if k != "hashed_password"})
+
+@app.get("/api/users", response_model=List[User])
+async def get_users(current_user: dict = Depends(check_permissions(["admin"]))):
+    """Récupérer tous les utilisateurs (Admin seulement)"""
+    users = []
+    async for user in db.users.find().sort("date_creation", -1):
+        user["id"] = str(user["_id"]) if "_id" in user else user.get("id")
+        if "_id" in user:
+            del user["_id"]
+        # Retirer le mot de passe hashé
+        user_without_password = {k: v for k, v in user.items() if k != "hashed_password"}
+        users.append(User(**user_without_password))
+    return users
+
+@app.get("/api/users/{user_id}", response_model=User)
+async def get_user(
+    user_id: str,
+    current_user: dict = Depends(check_permissions(["admin"]))
+):
+    """Récupérer un utilisateur par ID (Admin seulement)"""
+    user = await db.users.find_one({"$or": [{"id": user_id}, {"_id": user_id}]})
+    
+    if not user:
+        try:
+            user = await db.users.find_one({"_id": ObjectId(user_id)})
+        except:
+            pass
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    user["id"] = str(user["_id"]) if "_id" in user else user.get("id")
+    if "_id" in user:
+        del user["_id"]
+    
+    # Retirer le mot de passe hashé
+    user_without_password = {k: v for k, v in user.items() if k != "hashed_password"}
+    return User(**user_without_password)
+
+@app.put("/api/users/{user_id}", response_model=User)
+async def update_user(
+    user_id: str,
+    user_update: UserUpdate,
+    current_user: dict = Depends(check_permissions(["admin"]))
+):
+    """Mettre à jour un utilisateur (Admin seulement)"""
+    update_data = {k: v for k, v in user_update.dict().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Aucune donnée à mettre à jour"
+        )
+    
+    result = await db.users.update_one(
+        {"$or": [{"id": user_id}, {"_id": user_id}]},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        try:
+            result = await db.users.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": update_data}
+            )
+        except:
+            pass
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Récupérer l'utilisateur mis à jour
+    return await get_user(user_id, current_user)
+
+@app.delete("/api/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: dict = Depends(check_permissions(["admin"]))
+):
+    """Supprimer un utilisateur (Admin seulement)"""
+    # Empêcher la suppression de son propre compte
+    if user_id == current_user.get("id"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Vous ne pouvez pas supprimer votre propre compte"
+        )
+    
+    result = await db.users.delete_one({"$or": [{"id": user_id}, {"_id": user_id}]})
+    
+    if result.deleted_count == 0:
+        try:
+            result = await db.users.delete_one({"_id": ObjectId(user_id)})
+        except:
+            pass
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    return {"message": "Utilisateur supprimé avec succès"}
+
+@app.post("/api/auth/reset-password")
+async def reset_password_request(reset_data: PasswordReset):
+    """Demande de réinitialisation de mot de passe"""
+    user = await get_user_by_email(reset_data.email)
+    if not user:
+        # Pour des raisons de sécurité, on ne révèle pas si l'email existe
+        return {"message": "Si l'email existe, un lien de réinitialisation a été envoyé"}
+    
+    # Créer un token de réinitialisation (valide 1 heure)
+    reset_token = create_access_token(
+        data={"sub": user["email"], "type": "password_reset"},
+        expires_delta=timedelta(hours=1)
+    )
+    
+    # En production, vous enverriez cet email. Ici on le retourne pour demo
+    print(f"🔐 Token de réinitialisation pour {reset_data.email}: {reset_token}")
+    
+    return {"message": "Si l'email existe, un lien de réinitialisation a été envoyé"}
+
+@app.post("/api/auth/reset-password/confirm")
+async def reset_password_confirm(reset_data: PasswordResetConfirm):
+    """Confirmer la réinitialisation de mot de passe"""
+    payload = decode_token(reset_data.token)
+    
+    if not payload or payload.get("type") != "password_reset":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token de réinitialisation invalide ou expiré"
+        )
+    
+    email = payload.get("sub")
+    user = await get_user_by_email(email)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token de réinitialisation invalide"
+        )
+    
+    # Mettre à jour le mot de passe
+    hashed_password = hash_password(reset_data.new_password)
+    await db.users.update_one(
+        {"email": email},
+        {"$set": {"hashed_password": hashed_password}}
+    )
+    
+    return {"message": "Mot de passe réinitialisé avec succès"}
+
 # Routes Taux de change
 @app.get("/api/taux-change", response_model=TauxChange)
 async def get_taux_change():
