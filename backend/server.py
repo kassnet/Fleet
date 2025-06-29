@@ -804,19 +804,39 @@ async def simulate_payment(request: dict):
 async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None):
     # Marquer la facture comme payée
     result = await db.factures.update_one(
-        {"id": facture_id},
+        {"$or": [{"id": facture_id}, {"_id": facture_id}]},
         {"$set": {"statut": "payee", "date_paiement": datetime.now()}}
     )
+    
+    if result.matched_count == 0:
+        # Si pas trouvé, essayer de convertir l'ID MongoDB
+        try:
+            from bson import ObjectId
+            result = await db.factures.update_one(
+                {"_id": ObjectId(facture_id)},
+                {"$set": {"statut": "payee", "date_paiement": datetime.now()}}
+            )
+        except:
+            pass
     
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Facture non trouvée")
     
     # Mettre à jour le statut du paiement
     if paiement_id:
-        await db.paiements.update_one(
-            {"id": paiement_id},
+        paiement_result = await db.paiements.update_one(
+            {"$or": [{"id": paiement_id}, {"_id": paiement_id}]},
             {"$set": {"statut": "completed", "date_paiement": datetime.now()}}
         )
+        
+        if paiement_result.matched_count == 0:
+            try:
+                await db.paiements.update_one(
+                    {"_id": ObjectId(paiement_id)},
+                    {"$set": {"statut": "completed", "date_paiement": datetime.now()}}
+                )
+            except:
+                pass
     
     return {"message": "Facture marquée comme payée"}
 
