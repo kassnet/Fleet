@@ -624,7 +624,17 @@ async def get_factures():
 
 @app.get("/api/factures/{facture_id}", response_model=Facture)
 async def get_facture(facture_id: str):
-    facture = await db.factures.find_one({"id": facture_id})
+    # Utiliser la même logique de recherche que les autres fonctions
+    facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
+    
+    if not facture:
+        # Si pas trouvé, essayer de convertir l'ID MongoDB
+        try:
+            from bson import ObjectId
+            facture = await db.factures.find_one({"_id": ObjectId(facture_id)})
+        except:
+            pass
+    
     if not facture:
         raise HTTPException(status_code=404, detail="Facture non trouvée")
     
