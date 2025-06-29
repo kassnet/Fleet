@@ -122,11 +122,11 @@ backend:
 
   - task: "Simulation de paiements"
     implemented: true
-    working: "unknown"
+    working: true
     file: "/app/backend/server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"  
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
@@ -134,6 +134,9 @@ backend:
       - working: "unknown"
         agent: "main"
         comment: "Fonction simulate_payment modifiée pour utiliser requête $or avec ID et _id, plus fallback vers ObjectId. Besoin de vérifier si le problème persiste."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Simulation de paiement fonctionne! Les corrections $or pour les IDs MongoDB sont efficaces. Retourne correctement les URLs de paiement et transaction IDs."
 
   - task: "Marquage factures comme payées"
     implemented: true
