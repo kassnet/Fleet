@@ -211,9 +211,9 @@ const AppContent = () => {
       };
 
       if (editingProduit) {
-        await axios.put(`${API_URL}/api/produits/${editingProduit.id}`, produitData);
+        await apiCall('PUT', `/api/produits/${editingProduit.id}`, produitData);
       } else {
-        await axios.post(`${API_URL}/api/produits`, produitData);
+        await apiCall('POST', '/api/produits', produitData);
       }
 
       loadData();
