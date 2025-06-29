@@ -1172,21 +1172,20 @@ def test_specific_issues():
         )
         
         if response:
-            paid_ok = True
-            
             # Verify the invoice status
-            _, updated_invoice = tester.run_test(
+            success, updated_invoice = tester.run_test(
                 "Check Invoice Status",
                 "GET",
                 f"/api/factures/{invoice_id}",
                 200
             )
             
-            if updated_invoice and updated_invoice.get('statut') == 'payee':
+            if success and updated_invoice and updated_invoice.get('statut') == 'payee':
                 print("✅ Invoice status correctly updated to 'payee'")
+                paid_ok = True
             else:
-                print(f"❌ Invoice status not updated correctly: {updated_invoice.get('statut')}")
-                paid_ok = False
+                status = updated_invoice.get('statut') if updated_invoice else "unknown"
+                print(f"❌ Invoice status not updated correctly: {status}")
     
     if not paid_ok:
         print("❌ Marking invoice as paid failed - This was a known issue with ID handling")
