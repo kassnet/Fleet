@@ -7,7 +7,7 @@ import UserManagement from './components/UserManagement';
 import axios from 'axios';
 
 const AppContent = () => {
-  const { user, logout, canManageClients, canManageProducts, canManageInvoices, canManagePayments, canManageUsers, canViewOnly } = useAuth();
+  const { user, logout, accessToken, canManageClients, canManageProducts, canManageInvoices, canManagePayments, canManageUsers, canViewOnly } = useAuth();
   
   // States existants
   const [activeTab, setActiveTab] = useState('dashboard');
