@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class FactureProTester:
-    def __init__(self, base_url="https://d0039ec8-c9dc-4dc2-9cb3-2161d015d481.preview.emergentagent.com"):
+    def __init__(self, base_url="https://3f83a5b3-5c70-4e1a-8b47-a7e6128d64d2.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
