@@ -422,6 +422,47 @@ def main():
             tester.test_send_invoice()
             tester.test_simulate_payment()
     
+    # Test specific payment endpoints with existing invoices
+    print("\n" + "=" * 50)
+    print("🔍 TESTING SPECIFIC PAYMENT ENDPOINTS")
+    print("=" * 50)
+    
+    # Get an existing invoice to test with
+    _, invoices = tester.run_test("Get Existing Invoices", "GET", "/api/factures", print_response=False)
+    if invoices and len(invoices) > 0:
+        # Find an invoice with status "envoyee"
+        sent_invoice = next((inv for inv in invoices if inv.get('statut') == 'envoyee'), None)
+        if sent_invoice:
+            invoice_id = sent_invoice.get('id')
+            print(f"🧾 Testing with existing invoice: {sent_invoice.get('numero')} (ID: {invoice_id})")
+            
+            # Test direct payment simulation
+            payment_data = {
+                "facture_id": invoice_id,
+                "devise_paiement": "USD"
+            }
+            
+            success, response = tester.run_test(
+                "Direct Payment Simulation",
+                "POST",
+                "/api/paiements/simulate",
+                200,
+                data=payment_data
+            )
+            
+            if success and response:
+                payment_id = response.get('paiement_id')
+                print(f"✅ Direct payment simulation successful - Payment ID: {payment_id}")
+                
+                # Test marking as paid
+                tester.run_test(
+                    "Mark Invoice as Paid Directly",
+                    "POST",
+                    f"/api/factures/{invoice_id}/payer",
+                    200,
+                    data={"paiement_id": payment_id}
+                )
+    
     # Print results
     print("\n" + "=" * 50)
     print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
