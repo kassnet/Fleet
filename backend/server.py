@@ -808,7 +808,8 @@ async def update_client(client_id: str, client: Client, current_user: dict = Dep
     return client
 
 @app.delete("/api/clients/{client_id}")
-async def delete_client(client_id: str):
+async def delete_client(client_id: str, current_user: dict = Depends(manager_and_admin())):
+    """Supprimer un client - Manager et Admin uniquement"""
     # Chercher par id ou _id
     result = await db.clients.delete_one({"$or": [{"id": client_id}, {"_id": client_id}]})
     
