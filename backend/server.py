@@ -855,7 +855,8 @@ async def get_produits(current_user: dict = Depends(all_authenticated())):
     return produits
 
 @app.get("/api/produits/{produit_id}", response_model=Produit)
-async def get_produit(produit_id: str):
+async def get_produit(produit_id: str, current_user: dict = Depends(all_authenticated())):
+    """Récupérer un produit - Tous les utilisateurs authentifiés"""
     produit = await db.produits.find_one({"id": produit_id})
     if not produit:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
