@@ -1451,7 +1451,8 @@ async def create_test_movement(produit_id: str):
     return {"message": "Mouvement de test créé", "mouvement": mouvement}
 
 @app.post("/api/paiements/{paiement_id}/valider")
-async def valider_paiement(paiement_id: str):
+async def valider_paiement(paiement_id: str, current_user: dict = Depends(comptable_manager_admin())):
+    """Valider un paiement - Comptable, Manager et Admin"""
     """Valide un paiement en changeant son statut vers 'completed'"""
     # Chercher le paiement
     paiement = await db.paiements.find_one({"$or": [{"id": paiement_id}, {"_id": paiement_id}]})
