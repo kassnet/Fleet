@@ -319,6 +319,8 @@ class FactureProTester:
             return False
         
         invoice_id = self.test_invoice.get('id')
+        print(f"🔍 Testing payment simulation for invoice ID: {invoice_id}")
+        
         payment_data = {
             "facture_id": invoice_id,
             "devise_paiement": "USD"
@@ -335,15 +337,22 @@ class FactureProTester:
         if success:
             self.test_payment = response
             payment_id = response.get('paiement_id')
+            print(f"✅ Payment simulation successful - Payment ID: {payment_id}")
+            print(f"💳 Transaction ID: {response.get('transaction_id')}")
             
             # Validate payment
             if payment_id:
-                self.run_test(
-                    "Validate Payment",
+                pay_success, _ = self.run_test(
+                    "Mark Invoice as Paid",
                     "POST",
-                    f"/api/paiements/{payment_id}/valider",
-                    200
+                    f"/api/factures/{invoice_id}/payer",
+                    200,
+                    data={"paiement_id": payment_id}
                 )
+                if pay_success:
+                    print("✅ Invoice marked as paid successfully")
+                else:
+                    print("❌ Failed to mark invoice as paid")
             
             # Check invoice status
             _, updated_invoice = self.run_test(
@@ -355,9 +364,12 @@ class FactureProTester:
             
             if updated_invoice:
                 self.test_invoice = updated_invoice
+                print(f"📄 Invoice status after payment: {updated_invoice.get('statut')}")
                 
             return True
-        return False
+        else:
+            print("❌ Payment simulation failed - Check if 'Facture non trouvée' error occurred")
+            return False
 
     def test_taux_change(self):
         """Test the exchange rate endpoint"""
