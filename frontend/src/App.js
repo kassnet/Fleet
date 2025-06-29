@@ -515,11 +515,21 @@ function App() {
 
   const envoyerFacture = async (id) => {
     try {
-      await fetch(`${API_URL}/api/factures/${id}/envoyer`, { method: 'POST' });
-      alert('Facture envoyée par email (simulation)');
+      const response = await fetch(`${API_URL}/api/factures/${id}/envoyer`, { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erreur ${response.status}: ${errorText}`);
+      }
+
+      showNotification('📧 Facture envoyée par email (simulation)', 'success');
       loadData();
     } catch (error) {
       console.error('Erreur envoi facture:', error);
+      showNotification(`❌ Erreur lors de l'envoi de la facture: ${error.message}`, 'error');
     }
   };
 
