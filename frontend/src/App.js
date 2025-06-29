@@ -457,12 +457,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   // Gestion du taux de change
   const updateTauxChange = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/taux-change?nouveau_taux=${nouveauTaux}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (!response.ok) throw new Error('Erreur lors de la mise à jour du taux');
+      await axios.put(`${API_URL}/api/taux-change?nouveau_taux=${nouveauTaux}`);
       
       loadData();
       setShowTauxModal(false);
