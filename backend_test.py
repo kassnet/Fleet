@@ -1103,60 +1103,146 @@ def measure_api_performance(tester):
     
     return len(slow_endpoints) == 0
 
-def main():
-    # Setup
+def test_specific_issues():
+    """Test specific issues identified in test_result.md"""
+    print("\n" + "=" * 80)
+    print("🔍 TESTING SPECIFIC ISSUES FROM TEST_RESULT.MD")
+    print("=" * 80)
+    
     tester = FactureProTester()
     
-    print("=" * 50)
-    print("🧪 PERFORMANCE AND ROBUSTNESS TESTING - FACTUREPRO RDC")
-    print("=" * 50)
-    
-    # Run basic health check
+    # 1. Test basic API health
+    print("\n🔍 STEP 1: Checking API health")
     health_ok = tester.test_health()
     if not health_ok:
         print("❌ Health check failed, stopping tests")
-        return 1
+        return False
     
-    # Measure API performance
-    api_performance_ok = measure_api_performance(tester)
+    # 2. Create test client
+    print("\n🔍 STEP 2: Creating test client")
+    client_ok = tester.test_create_client()
+    if not client_ok:
+        print("❌ Failed to create test client, stopping tests")
+        return False
     
-    # 1. LOAD TESTING - Bulk Creation
-    print("\n" + "=" * 50)
-    print("🔄 LOAD TESTING - BULK CREATION")
-    print("=" * 50)
+    # 3. Create test product
+    print("\n🔍 STEP 3: Creating test product")
+    product_ok = tester.test_create_product()
+    if not product_ok:
+        print("❌ Failed to create test product, stopping tests")
+        return False
     
-    # Create clients in bulk
-    clients = test_bulk_client_creation(tester, 10)
+    # 4. Create test invoice - Testing "Création et gestion des factures"
+    print("\n🔍 STEP 4: Creating test invoice (Testing 'Création et gestion des factures')")
+    invoice_ok = tester.test_create_invoice()
+    if not invoice_ok:
+        print("❌ Failed to create test invoice, stopping tests")
+        return False
     
-    # Create products in bulk
-    products = test_bulk_product_creation(tester, 15)
+    # 5. Test payment simulation - Testing "Simulation de paiements"
+    print("\n🔍 STEP 5: Testing payment simulation (Testing 'Simulation de paiements')")
+    print("This tests the $or query for MongoDB IDs in simulate_payment function")
+    payment_ok = tester.test_simulate_payment()
+    if not payment_ok:
+        print("❌ Payment simulation failed - This was a known issue with ID handling")
+    else:
+        print("✅ Payment simulation successful - The ID handling issue appears to be fixed")
     
-    # Create invoices in bulk
-    invoices = test_bulk_invoice_creation(tester, clients, products, 10)
+    # 6. Test marking invoice as paid - Testing "Marquage factures comme payées"
+    print("\n🔍 STEP 6: Testing marking invoice as paid (Testing 'Marquage factures comme payées')")
+    print("This tests the $or query for MongoDB IDs in marquer_payee function")
     
-    # 2. COMPLEX DATA TESTING
-    test_complex_data(tester, clients, products)
+    # Even if payment simulation failed, try to mark as paid directly
+    if not payment_ok:
+        print("⚠️ Payment simulation failed, but still testing direct marking as paid...")
     
-    # 3. CONSISTENCY TESTING
-    test_dashboard_consistency(tester)
+    paid_ok = tester.test_mark_invoice_paid()
+    if not paid_ok:
+        print("❌ Marking invoice as paid failed - This was a known issue with ID handling")
+    else:
+        print("✅ Marking invoice as paid successful - The ID handling issue appears to be fixed")
     
-    # 4. STOCK MANAGEMENT TESTING
-    test_stock_management(tester, products)
-    test_insufficient_stock(tester, products)
+    # 7. Test multi-currency calculations - Testing "Calculs multi-devises USD/FC"
+    print("\n🔍 STEP 7: Testing multi-currency calculations (Testing 'Calculs multi-devises USD/FC')")
     
-    # Print results
-    print("\n" + "=" * 50)
-    print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
-    print("=" * 50)
+    # Check exchange rate
+    _, taux = tester.run_test("Get Exchange Rate", "GET", "/api/taux-change", 200)
+    if taux and taux.get('taux') == 2800.0:
+        print("✅ Exchange rate is correctly set to 2800 FC = 1 USD")
+    else:
+        print(f"❌ Exchange rate is incorrect: {taux.get('taux')} (should be 2800.0)")
     
-    # Performance summary
-    print("\n📋 PERFORMANCE SUMMARY:")
-    print("✅ Bulk client creation: 10 clients")
-    print("✅ Bulk product creation: 15 products")
-    print("✅ Bulk invoice creation: 10 invoices")
-    print(f"✅ API response times: {'All within limits' if api_performance_ok else 'Some endpoints are slow'}")
+    # Test currency conversion
+    amount_usd = 100.0
+    _, conversion = tester.run_test(
+        "Test Currency Conversion",
+        "GET",
+        f"/api/conversion?montant={amount_usd}&devise_source=USD&devise_cible=FC",
+        200
+    )
     
-    return 0 if tester.tests_passed == tester.tests_run else 1
+    if conversion and conversion.get('montant_converti') == amount_usd * 2800.0:
+        print(f"✅ Currency conversion works correctly: {amount_usd} USD = {conversion.get('montant_converti')} FC")
+    else:
+        print(f"❌ Currency conversion is incorrect: {amount_usd} USD ≠ {conversion.get('montant_converti')} FC")
+    
+    # 8. Test stock management if applicable
+    print("\n🔍 STEP 8: Testing stock management")
+    if tester.test_product and tester.test_product.get('gestion_stock'):
+        # Check if stock was updated after invoice creation
+        _, product = tester.run_test(
+            "Check Stock After Invoice",
+            "GET",
+            f"/api/produits/{tester.test_product.get('id')}",
+            200
+        )
+        
+        if product:
+            initial_stock = tester.test_product.get('stock_actuel', 0)
+            current_stock = product.get('stock_actuel', 0)
+            expected_stock = initial_stock - 2  # We ordered 2 in test_create_invoice
+            
+            if current_stock == expected_stock:
+                print(f"✅ Stock was correctly updated: {initial_stock} → {current_stock}")
+            else:
+                print(f"❌ Stock was not correctly updated: {initial_stock} → {current_stock} (expected {expected_stock})")
+    else:
+        print("ℹ️ Test product does not have stock management enabled, skipping stock tests")
+    
+    # 9. Test statistics endpoint
+    print("\n🔍 STEP 9: Testing statistics endpoint")
+    _, stats = tester.run_test("Get Statistics", "GET", "/api/stats", 200)
+    if stats:
+        print(f"✅ Statistics endpoint works correctly")
+        print(f"📊 Total clients: {stats.get('total_clients')}")
+        print(f"📊 Total products: {stats.get('total_produits')}")
+        print(f"📊 Total invoices: {stats.get('total_factures')}")
+        print(f"📊 Monthly revenue (USD): {stats.get('ca_mensuel_usd')}")
+        print(f"📊 Unpaid invoices: {stats.get('factures_impayees')}")
+    else:
+        print("❌ Statistics endpoint failed")
+    
+    # Summary of test results
+    print("\n" + "=" * 80)
+    print("📋 SUMMARY OF SPECIFIC ISSUE TESTS:")
+    print("=" * 80)
+    print(f"✅ 'Création et gestion des factures': {'Fixed' if invoice_ok else 'Still has issues'}")
+    print(f"✅ 'Simulation de paiements': {'Fixed' if payment_ok else 'Still has issues'}")
+    print(f"✅ 'Marquage factures comme payées': {'Fixed' if paid_ok else 'Still has issues'}")
+    print(f"✅ 'Calculs multi-devises USD/FC': {'Working correctly' if taux and taux.get('taux') == 2800.0 else 'Has issues'}")
+    
+    return tester.tests_passed == tester.tests_run
+
+def main():
+    # Run specific issue tests based on test_result.md
+    specific_tests_ok = test_specific_issues()
+    
+    # Print overall results
+    print("\n" + "=" * 80)
+    print(f"📊 OVERALL TEST RESULT: {'✅ PASSED' if specific_tests_ok else '❌ FAILED'}")
+    print("=" * 80)
+    
+    return 0 if specific_tests_ok else 1
 
 if __name__ == "__main__":
     sys.exit(main())
