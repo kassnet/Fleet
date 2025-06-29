@@ -251,8 +251,8 @@ test_plan:
     - "Marquage factures comme payées"
     - "Boutons simulation paiement et marquage"
   stuck_tasks: []
-  test_all: false
-  test_priority: "stuck_first"
+  test_all: true
+  test_priority: "completed"
 
 agent_communication:
   - agent: "main"
