@@ -897,7 +897,8 @@ async def create_produit(produit: Produit, current_user: dict = Depends(manager_
     return produit
 
 @app.put("/api/produits/{produit_id}", response_model=Produit)
-async def update_produit(produit_id: str, produit: Produit):
+async def update_produit(produit_id: str, produit: Produit, current_user: dict = Depends(manager_and_admin())):
+    """Modifier un produit - Manager et Admin uniquement"""
     produit.id = produit_id
     
     # Recalculer le prix FC
