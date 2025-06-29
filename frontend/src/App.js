@@ -371,7 +371,7 @@ function App() {
       
       loadData();
       setShowTauxModal(false);
-      alert('Taux de change mis à jour');
+      showNotification('Taux de change mis à jour', 'success');
     } catch (error) {
       console.error('Erreur mise à jour taux:', error);
     }
