@@ -1583,8 +1583,8 @@ def test_id_corrections():
     return invoice_ok and paid_ok and objectid_ok
 
 def main():
-    # Run specific issue tests based on test_result.md
-    specific_tests_ok = test_specific_issues()
+    # Run ID correction tests
+    specific_tests_ok = test_id_corrections()
     
     # Print overall results
     print("\n" + "=" * 80)
