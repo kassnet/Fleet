@@ -1209,7 +1209,8 @@ async def envoyer_facture(facture_id: str, background_tasks: BackgroundTasks, cu
     return {"message": "Facture envoyée par email"}
 
 @app.post("/api/paiements/simulate")
-async def simulate_payment(request: dict):
+async def simulate_payment(request: dict, current_user: dict = Depends(comptable_manager_admin())):
+    """Simuler un paiement - Comptable, Manager et Admin"""
     facture_id = request.get("facture_id")
     devise_paiement = request.get("devise_paiement", "USD")
     
