@@ -141,13 +141,11 @@ const AppContent = () => {
         ? `${API_URL}/api/clients/${editingClient.id}` 
         : `${API_URL}/api/clients`;
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(clientForm)
-      });
-
-      if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
+      if (editingClient) {
+        await axios.put(url, clientForm);
+      } else {
+        await axios.post(url, clientForm);
+      }
 
       loadData();
       setShowClientModal(false);
