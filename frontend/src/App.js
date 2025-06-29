@@ -404,21 +404,9 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       async () => {
         try {
           console.log('📤 Envoi requête validation pour ID:', paiementId);
-          const response = await fetch(`${API_URL}/api/paiements/${paiementId}/valider`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          });
+          const response = await axios.post(`${API_URL}/api/paiements/${paiementId}/valider`);
           
-          console.log('📥 Réponse reçue:', response.status, response.statusText);
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Erreur response:', errorText);
-            throw new Error(`Erreur ${response.status}: ${errorText}`);
-          }
-          
-          const result = await response.json();
-          console.log('✅ Succès validation:', result);
+          console.log('✅ Succès validation:', response.data);
           
           showNotification('✅ Paiement validé avec succès !', 'success');
           
@@ -431,7 +419,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           
         } catch (error) {
           console.error('❌ Erreur validation paiement:', error);
-          showNotification(`❌ Erreur lors de la validation du paiement: ${error.message}`, 'error');
+          showNotification(`❌ Erreur lors de la validation du paiement: ${error.response?.data?.detail || error.message}`, 'error');
         }
       }
     );
