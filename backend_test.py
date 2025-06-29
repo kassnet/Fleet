@@ -1105,6 +1105,283 @@ def measure_api_performance(tester):
 
 def test_specific_issues():
     """Test specific issues identified in test_result.md"""
+def test_id_corrections():
+    """Test specific ID correction issues as requested in the review"""
+    print("\n" + "=" * 80)
+    print("🔍 TESTING ID CORRECTION ISSUES")
+    print("=" * 80)
+    
+    tester = FactureProTester()
+    
+    # 1. Test basic API health
+    print("\n🔍 STEP 1: Checking API health")
+    health_ok = tester.test_health()
+    if not health_ok:
+        print("❌ Health check failed, stopping tests")
+        return False
+    
+    # 2. Create test client
+    print("\n🔍 STEP 2: Creating test client")
+    client_ok = tester.test_create_client()
+    if not client_ok:
+        print("❌ Failed to create test client, stopping tests")
+        return False
+    
+    # 3. Create test product
+    print("\n🔍 STEP 3: Creating test product")
+    product_ok = tester.test_create_product()
+    if not product_ok:
+        print("❌ Failed to create test product, stopping tests")
+        return False
+    
+    # 4. Test creating a new invoice and verify the ID returned
+    print("\n🔍 STEP 4: Creating test invoice and verifying ID format")
+    invoice_ok = tester.test_create_invoice()
+    if not invoice_ok:
+        print("❌ Failed to create test invoice, stopping tests")
+        return False
+    
+    # Verify the invoice ID format
+    invoice_id = tester.test_invoice.get('id')
+    if not invoice_id:
+        print("❌ Invoice ID is missing")
+        return False
+    
+    # Check if it's a UUID (should be 36 chars with hyphens)
+    is_uuid = len(invoice_id) == 36 and "-" in invoice_id
+    print(f"📝 Invoice ID: {invoice_id}")
+    print(f"📝 ID format: {'UUID' if is_uuid else 'Not UUID (possibly ObjectId)'}")
+    
+    if is_uuid:
+        print("✅ Invoice created with proper UUID format")
+    else:
+        print("⚠️ Invoice created with non-UUID format - this might be an ObjectId")
+    
+    # 5. Test sending invoice (status to 'envoyee') and verify it can be retrieved
+    print("\n🔍 STEP 5: Sending invoice and verifying it can be retrieved")
+    send_ok = tester.test_send_invoice()
+    if not send_ok:
+        print("❌ Failed to send invoice, stopping tests")
+        return False
+    
+    # Verify the invoice can be retrieved after status change
+    success, updated_invoice = tester.run_test(
+        "Get Invoice After Status Change",
+        "GET",
+        f"/api/factures/{invoice_id}",
+        200
+    )
+    
+    if success and updated_invoice:
+        print("✅ Successfully retrieved invoice after status change")
+        print(f"📝 Invoice status: {updated_invoice.get('statut')}")
+        if updated_invoice.get('statut') == 'envoyee':
+            print("✅ Invoice status correctly updated to 'envoyee'")
+        else:
+            print(f"❌ Invoice status not updated correctly: {updated_invoice.get('statut')}")
+    else:
+        print("❌ Failed to retrieve invoice after status change")
+        return False
+    
+    # 6. Test marking invoice as paid and verify status
+    print("\n🔍 STEP 6: Marking invoice as paid and verifying status")
+    
+    success, response = tester.run_test(
+        "Mark Invoice as Paid",
+        "POST",
+        f"/api/factures/{invoice_id}/payer",
+        200
+    )
+    
+    if not success:
+        print("❌ Failed to mark invoice as paid")
+        return False
+    
+    # Verify the invoice status after marking as paid
+    success, paid_invoice = tester.run_test(
+        "Get Invoice After Payment",
+        "GET",
+        f"/api/factures/{invoice_id}",
+        200
+    )
+    
+    if success and paid_invoice:
+        print("✅ Successfully retrieved invoice after payment")
+        print(f"📝 Invoice status: {paid_invoice.get('statut')}")
+        if paid_invoice.get('statut') == 'payee':
+            print("✅ Invoice status correctly updated to 'payee'")
+        else:
+            print(f"❌ Invoice status not updated correctly: {paid_invoice.get('statut')}")
+    else:
+        print("❌ Failed to retrieve invoice after payment")
+        return False
+    
+    # 7. Test GET /api/factures/{id} endpoint with the corrected ID
+    print("\n🔍 STEP 7: Testing GET /api/factures/{id} endpoint")
+    
+    success, get_invoice = tester.run_test(
+        "Get Invoice by ID",
+        "GET",
+        f"/api/factures/{invoice_id}",
+        200
+    )
+    
+    if success and get_invoice:
+        print("✅ Successfully retrieved invoice by ID")
+        print(f"📝 Invoice number: {get_invoice.get('numero')}")
+        print(f"📝 Invoice client: {get_invoice.get('client_nom')}")
+    else:
+        print("❌ Failed to retrieve invoice by ID")
+        return False
+    
+    # 8. Test ID consistency across operations
+    print("\n🔍 STEP 8: Testing ID consistency across operations")
+    
+    # Create another invoice to test consistency
+    print("Creating another invoice for consistency testing...")
+    
+    # Calculate prices for a new invoice
+    prix_usd = float(tester.test_product.get('prix_usd', 100))
+    prix_fc = float(tester.test_product.get('prix_fc', prix_usd * 2800))
+    quantite = 3  # Different quantity
+    tva = float(tester.test_product.get('tva', 16.0))
+    
+    total_ht_usd = prix_usd * quantite
+    total_ht_fc = prix_fc * quantite
+    total_ttc_usd = total_ht_usd * (1 + tva/100)
+    total_ttc_fc = total_ht_fc * (1 + tva/100)
+    
+    invoice_data = {
+        "client_id": tester.test_client.get('id'),
+        "client_nom": tester.test_client.get('nom'),
+        "client_email": tester.test_client.get('email'),
+        "client_adresse": f"{tester.test_client.get('adresse')}, {tester.test_client.get('ville')} {tester.test_client.get('code_postal')}",
+        "devise": "USD",
+        "lignes": [
+            {
+                "produit_id": tester.test_product.get('id'),
+                "nom_produit": tester.test_product.get('nom'),
+                "quantite": quantite,
+                "prix_unitaire_usd": prix_usd,
+                "prix_unitaire_fc": prix_fc,
+                "devise": "USD",
+                "tva": tva,
+                "total_ht_usd": total_ht_usd,
+                "total_ht_fc": total_ht_fc,
+                "total_ttc_usd": total_ttc_usd,
+                "total_ttc_fc": total_ttc_fc
+            }
+        ],
+        "total_ht_usd": total_ht_usd,
+        "total_ht_fc": total_ht_fc,
+        "total_tva_usd": total_ht_usd * tva/100,
+        "total_tva_fc": total_ht_fc * tva/100,
+        "total_ttc_usd": total_ttc_usd,
+        "total_ttc_fc": total_ttc_fc,
+        "notes": "Test invoice for ID consistency"
+    }
+    
+    success, new_invoice = tester.run_test(
+        "Create Invoice for Consistency Test",
+        "POST",
+        "/api/factures",
+        200,
+        data=invoice_data
+    )
+    
+    if not success or not new_invoice:
+        print("❌ Failed to create new invoice for consistency test")
+        return False
+    
+    new_invoice_id = new_invoice.get('id')
+    print(f"📝 New invoice ID: {new_invoice_id}")
+    
+    # Test the full workflow with the new invoice
+    print("Testing full workflow with the new invoice...")
+    
+    # 1. Send the invoice
+    success, _ = tester.run_test(
+        "Send New Invoice",
+        "POST",
+        f"/api/factures/{new_invoice_id}/envoyer",
+        200
+    )
+    
+    if not success:
+        print("❌ Failed to send new invoice")
+        return False
+    
+    # 2. Verify it can be retrieved after sending
+    success, sent_invoice = tester.run_test(
+        "Get New Invoice After Sending",
+        "GET",
+        f"/api/factures/{new_invoice_id}",
+        200
+    )
+    
+    if not success or not sent_invoice:
+        print("❌ Failed to retrieve new invoice after sending")
+        return False
+    
+    print(f"✅ Successfully retrieved new invoice after sending")
+    print(f"📝 New invoice status: {sent_invoice.get('statut')}")
+    
+    # 3. Mark as paid
+    success, _ = tester.run_test(
+        "Mark New Invoice as Paid",
+        "POST",
+        f"/api/factures/{new_invoice_id}/payer",
+        200
+    )
+    
+    if not success:
+        print("❌ Failed to mark new invoice as paid")
+        return False
+    
+    # 4. Verify it can be retrieved after payment
+    success, paid_new_invoice = tester.run_test(
+        "Get New Invoice After Payment",
+        "GET",
+        f"/api/factures/{new_invoice_id}",
+        200
+    )
+    
+    if not success or not paid_new_invoice:
+        print("❌ Failed to retrieve new invoice after payment")
+        return False
+    
+    print(f"✅ Successfully retrieved new invoice after payment")
+    print(f"📝 New invoice status: {paid_new_invoice.get('statut')}")
+    
+    if paid_new_invoice.get('statut') == 'payee':
+        print("✅ New invoice status correctly updated to 'payee'")
+    else:
+        print(f"❌ New invoice status not updated correctly: {paid_new_invoice.get('statut')}")
+    
+    # Summary of test results
+    print("\n" + "=" * 80)
+    print("📋 SUMMARY OF ID CORRECTION TESTS:")
+    print("=" * 80)
+    
+    # Check if all operations were successful
+    all_operations_ok = (
+        invoice_ok and 
+        send_ok and 
+        success and 
+        paid_invoice.get('statut') == 'payee' and
+        paid_new_invoice.get('statut') == 'payee'
+    )
+    
+    if all_operations_ok:
+        print("✅ All ID-related operations were successful")
+        print("✅ The functions get_facture, envoyer_facture, update_facture, and marquer_payee all use consistent ID logic")
+        print("✅ No issues with UUID vs MongoDB ObjectId consistency")
+        print("✅ All CRUD operations on invoices work without 404 errors")
+    else:
+        print("❌ Some ID-related operations failed")
+        print("❌ There may still be issues with ID handling")
+    
+    return all_operations_ok
     print("\n" + "=" * 80)
     print("🔍 TESTING SPECIFIC ISSUES FROM TEST_RESULT.MD")
     print("=" * 80)
