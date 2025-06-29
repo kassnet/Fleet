@@ -108,22 +108,24 @@ const AppContent = () => {
   };
 
   const loadData = async () => {
-    if (!user) return; // Ne pas charger si pas authentifié
+    if (!user || !accessToken) {
+      console.log('❌ Pas d\'utilisateur ou de token, abandon du chargement');
+      return;
+    }
     
     setLoading(true);
     try {
-      console.log('🔄 Début chargement des données...');
+      console.log('🔄 Début chargement des données avec token...');
       const [clientsRes, produitsRes, facturesRes, statsRes, paiementsRes, tauxRes] = await Promise.all([
-        axios.get(`${API_URL}/api/clients`),
-        axios.get(`${API_URL}/api/produits`),
-        axios.get(`${API_URL}/api/factures`),
-        axios.get(`${API_URL}/api/stats`),
-        axios.get(`${API_URL}/api/paiements`),
-        axios.get(`${API_URL}/api/taux-change`)
+        apiCall('GET', '/api/clients'),
+        apiCall('GET', '/api/produits'),
+        apiCall('GET', '/api/factures'),
+        apiCall('GET', '/api/stats'),
+        apiCall('GET', '/api/paiements'),
+        apiCall('GET', '/api/taux-change')
       ]);
 
       console.log('💳 Paiements chargés:', paiementsRes.data.length, 'éléments');
-      console.log('📊 Premier paiement:', paiementsRes.data[0]);
 
       setClients(clientsRes.data || []);
       setProduits(produitsRes.data || []);
@@ -132,9 +134,9 @@ const AppContent = () => {
       setPaiements(Array.isArray(paiementsRes.data) ? paiementsRes.data : []);
       setTauxChange(tauxRes.data || { taux_change_actuel: 2800 });
       
-      console.log('✅ Toutes les données chargées');
+      console.log('✅ Toutes les données chargées avec succès');
     } catch (error) {
-      console.error('Erreur chargement données:', error);
+      console.error('❌ Erreur chargement données:', error.response?.status, error.response?.data || error.message);
       showNotification('Erreur lors du chargement des données', 'error');
       // Initialiser avec des valeurs par défaut en cas d'erreur
       setClients([]);
@@ -149,10 +151,11 @@ const AppContent = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && accessToken) {
+      console.log('👤 Utilisateur connecté, chargement des données...');
       loadData();
     }
-  }, [user]); // Charger seulement quand l'utilisateur est authentifié
+  }, [user, accessToken]); // Dépendre aussi du accessToken
 
   // Fonctions CRUD Clients
   const saveClient = async () => {
