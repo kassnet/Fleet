@@ -1173,7 +1173,8 @@ async def update_facture(facture_id: str, facture: Facture):
     return facture
 
 @app.post("/api/factures/{facture_id}/envoyer")
-async def envoyer_facture(facture_id: str, background_tasks: BackgroundTasks):
+async def envoyer_facture(facture_id: str, background_tasks: BackgroundTasks, current_user: dict = Depends(comptable_manager_admin())):
+    """Envoyer une facture - Comptable, Manager et Admin"""
     # Utiliser la même logique de recherche que les autres fonctions
     facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
     
