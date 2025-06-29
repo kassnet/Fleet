@@ -738,18 +738,36 @@ async def update_facture(facture_id: str, facture: Facture):
 
 @app.post("/api/factures/{facture_id}/envoyer")
 async def envoyer_facture(facture_id: str, background_tasks: BackgroundTasks):
-    facture = await db.factures.find_one({"id": facture_id})
+    # Utiliser la même logique de recherche que les autres fonctions
+    facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
+    
+    if not facture:
+        # Si pas trouvé, essayer de convertir l'ID MongoDB
+        try:
+            from bson import ObjectId
+            facture = await db.factures.find_one({"_id": ObjectId(facture_id)})
+        except:
+            pass
+    
     if not facture:
         raise HTTPException(status_code=404, detail="Facture non trouvée")
     
     # Simulation d'envoi email
     background_tasks.add_task(simulate_email_send, facture["client_email"], facture["numero"])
     
-    # Mettre à jour le statut
-    await db.factures.update_one(
-        {"id": facture_id},
-        {"$set": {"statut": "envoyee"}}
-    )
+    # Mettre à jour le statut - utiliser le même ID que celui trouvé
+    if "_id" in facture and not facture.get("id"):
+        # Facture trouvée avec ObjectId MongoDB
+        await db.factures.update_one(
+            {"_id": facture["_id"]},
+            {"$set": {"statut": "envoyee", "date_envoi": datetime.now()}}
+        )
+    else:
+        # Facture trouvée avec ID UUID
+        await db.factures.update_one(
+            {"id": facture["id"]},
+            {"$set": {"statut": "envoyee", "date_envoi": datetime.now()}}
+        )
     
     return {"message": "Facture envoyée par email"}
 
