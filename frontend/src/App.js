@@ -321,16 +321,8 @@ const AppContent = () => {
         taux_change_utilise: tauxChange.taux_change_actuel
       };
 
-      const response = await fetch(`${API_URL}/api/factures`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(factureData)
-      });
-
-      if (!response.ok) throw new Error('Erreur lors de la création');
-
-      const savedFacture = await response.json();
-      console.log('✅ Facture sauvegardée:', savedFacture);
+      const response = await axios.post(`${API_URL}/api/factures`, factureData);
+      console.log('✅ Facture sauvegardée:', response.data);
 
       loadData();
       setShowFactureModal(false);
