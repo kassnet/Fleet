@@ -105,10 +105,12 @@ const AppContent = () => {
   const convertirMontant = (montant, deviseSource, deviseCible) => {
     if (deviseSource === deviseCible) return montant;
     
+    const taux = tauxChange?.taux_change_actuel || 2800; // Valeur par défaut
+    
     if (deviseSource === 'USD' && deviseCible === 'FC') {
-      return montant * tauxChange.taux_change_actuel;
+      return montant * taux;
     } else if (deviseSource === 'FC' && deviseCible === 'USD') {
-      return montant / tauxChange.taux_change_actuel;
+      return montant / taux;
     }
     return montant;
   };
