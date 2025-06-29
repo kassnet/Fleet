@@ -269,3 +269,7 @@ agent_communication:
     message: "🔍 VALIDATION MANUELLE - Utilisateur rapporte que les boutons 'Valider' dans l'historique des paiements ne fonctionnent pas. Problem identifié: les modals de confirmation ne sont pas rendus dans le DOM!"
   - agent: "main"
     message: "✅ CORRECTION CRITIQUE - Ajout des modals de confirmation et notifications dans le rendu DOM. Remplacement complet des alertes natives. Les boutons 'Valider' devraient maintenant fonctionner correctement avec confirmations modernes."
+  - agent: "user"
+    message: "🔍 NOUVEAU PROBLÈME IDENTIFIÉ - Les factures marquées payées manuellement (FACT-20250629-BE208F, etc.) n'apparaissent pas dans l'historique des paiements. Seules les simulations Stripe y figurent."
+  - agent: "main"
+    message: "✅ PROBLÈME RÉSOLU - Modification de marquer_payee pour créer automatiquement un enregistrement de paiement avec méthode 'manuel' quand on marque une facture payée sans passer par simulation. Toutes les factures payées apparaîtront maintenant dans l'historique."
