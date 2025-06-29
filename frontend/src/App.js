@@ -617,12 +617,6 @@ Transaction ID: ${data.transaction_id}
       showNotification(`❌ Erreur lors de la simulation de paiement: ${error.message}`, 'error');
     }
   };
-      }
-    } catch (error) {
-      console.error('Erreur simulation paiement:', error);
-      showNotification(`❌ Erreur lors de la simulation de paiement: ${error.message}`, 'error');
-    }
-  };
 
   // Rendu des composants
   const renderDashboard = () => (
