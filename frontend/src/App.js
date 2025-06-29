@@ -564,24 +564,34 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   };
 
   const validerPaiement = async (paiementId) => {
+    console.log('🔍 Validation paiement - ID:', paiementId);
+    
     showConfirm(
       'Valider ce paiement comme terminé ?',
       async () => {
         try {
+          console.log('📤 Envoi requête validation pour ID:', paiementId);
           const response = await fetch(`${API_URL}/api/paiements/${paiementId}/valider`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
           });
           
+          console.log('📥 Réponse reçue:', response.status, response.statusText);
+          
           if (!response.ok) {
-            throw new Error(`Erreur ${response.status}`);
+            const errorText = await response.text();
+            console.error('❌ Erreur response:', errorText);
+            throw new Error(`Erreur ${response.status}: ${errorText}`);
           }
+          
+          const result = await response.json();
+          console.log('✅ Succès validation:', result);
           
           showNotification('✅ Paiement validé avec succès !', 'success');
           loadData();
         } catch (error) {
-          console.error('Erreur validation paiement:', error);
-          showNotification('❌ Erreur lors de la validation du paiement', 'error');
+          console.error('❌ Erreur validation paiement:', error);
+          showNotification(`❌ Erreur lors de la validation du paiement: ${error.message}`, 'error');
         }
       }
     );
