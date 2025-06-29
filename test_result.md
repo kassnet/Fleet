@@ -140,9 +140,9 @@ backend:
 
   - task: "Marquage factures comme payées"
     implemented: true
-    working: "unknown"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
@@ -152,6 +152,9 @@ backend:
       - working: "unknown"
         agent: "main"
         comment: "Fonction marquer_payee améliorée avec requête $or et gestion ObjectId. Doit être testé."
+      - working: false
+        agent: "testing"
+        comment: "❌ PROBLÈME PERSISTANT - API retourne 404 'Facture non trouvée' lors du marquage comme payée, même si la facture existe et peut être récupérée via GET. Le problème est dans la fonction marquer_payee avec gestion des IDs."
 
   - task: "Gestion des stocks produits"
     implemented: true
