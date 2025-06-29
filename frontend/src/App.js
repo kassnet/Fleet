@@ -160,15 +160,10 @@ const AppContent = () => {
   // Fonctions CRUD Clients
   const saveClient = async () => {
     try {
-      const method = editingClient ? 'PUT' : 'POST';
-      const url = editingClient 
-        ? `${API_URL}/api/clients/${editingClient.id}` 
-        : `${API_URL}/api/clients`;
-
       if (editingClient) {
-        await axios.put(url, clientForm);
+        await apiCall('PUT', `/api/clients/${editingClient.id}`, clientForm);
       } else {
-        await axios.post(url, clientForm);
+        await apiCall('POST', '/api/clients', clientForm);
       }
 
       loadData();
