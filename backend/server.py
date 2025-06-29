@@ -883,7 +883,8 @@ async def get_produit(produit_id: str, current_user: dict = Depends(all_authenti
     return Produit(**produit)
 
 @app.post("/api/produits", response_model=Produit)
-async def create_produit(produit: Produit):
+async def create_produit(produit: Produit, current_user: dict = Depends(manager_and_admin())):
+    """Créer un produit - Manager et Admin uniquement"""
     produit.id = str(uuid.uuid4())
     produit.date_creation = datetime.now()
     
