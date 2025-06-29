@@ -886,8 +886,29 @@ async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None):
     
     print(f"✅ MARQUAGE PAYÉE - Facture {facture.get('numero', 'N/A')} marquée comme payée")
     
-    # Mettre à jour le statut du paiement
-    if paiement_id:
+    # Si aucun paiement_id n'est fourni, créer un enregistrement de paiement manuel
+    if not paiement_id:
+        print(f"💳 MARQUAGE PAYÉE - Création d'un enregistrement de paiement manuel")
+        
+        # Créer un enregistrement de paiement pour l'historique
+        paiement_manuel = {
+            "id": str(uuid.uuid4()),
+            "facture_id": facture.get("id") or str(facture.get("_id")),
+            "facture_numero": facture["numero"],
+            "montant_usd": facture["total_ttc_usd"],
+            "montant_fc": facture["total_ttc_fc"],
+            "devise_paiement": "USD",  # Par défaut USD pour marquage manuel
+            "methode_paiement": "manuel",
+            "statut": "completed",
+            "transaction_id": f"manual_{uuid.uuid4().hex[:8]}",
+            "date_paiement": datetime.now(),
+            "notes": "Paiement marqué manuellement comme payé"
+        }
+        
+        await db.paiements.insert_one(paiement_manuel)
+        print(f"✅ MARQUAGE PAYÉE - Enregistrement de paiement créé avec ID: {paiement_manuel['id']}")
+    else:
+        # Mettre à jour le statut du paiement existant
         paiement_result = await db.paiements.update_one(
             {"$or": [{"id": paiement_id}, {"_id": paiement_id}]},
             {"$set": {"statut": "completed", "date_paiement": datetime.now()}}
