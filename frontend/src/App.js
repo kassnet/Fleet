@@ -93,29 +93,23 @@ const AppContent = () => {
     try {
       console.log('🔄 Début chargement des données...');
       const [clientsRes, produitsRes, facturesRes, statsRes, paiementsRes, tauxRes] = await Promise.all([
-        fetch(`${API_URL}/api/clients`),
-        fetch(`${API_URL}/api/produits`),
-        fetch(`${API_URL}/api/factures`),
-        fetch(`${API_URL}/api/stats`),
-        fetch(`${API_URL}/api/paiements`),
-        fetch(`${API_URL}/api/taux-change`)
+        axios.get(`${API_URL}/api/clients`),
+        axios.get(`${API_URL}/api/produits`),
+        axios.get(`${API_URL}/api/factures`),
+        axios.get(`${API_URL}/api/stats`),
+        axios.get(`${API_URL}/api/paiements`),
+        axios.get(`${API_URL}/api/taux-change`)
       ]);
 
-      // Vérifier que toutes les requêtes ont réussi
-      if (!clientsRes.ok || !produitsRes.ok || !facturesRes.ok || !statsRes.ok || !paiementsRes.ok || !tauxRes.ok) {
-        throw new Error('Erreur lors du chargement des données');
-      }
+      console.log('💳 Paiements chargés:', paiementsRes.data.length, 'éléments');
+      console.log('📊 Premier paiement:', paiementsRes.data[0]);
 
-      const paiementsData = await paiementsRes.json();
-      console.log('💳 Paiements chargés:', paiementsData.length, 'éléments');
-      console.log('📊 Premier paiement:', paiementsData[0]);
-
-      setClients(await clientsRes.json() || []);
-      setProduits(await produitsRes.json() || []);
-      setFactures(await facturesRes.json() || []);
-      setStats(await statsRes.json() || {});
-      setPaiements(Array.isArray(paiementsData) ? paiementsData : []);
-      setTauxChange(await tauxRes.json() || { taux_change_actuel: 2800 });
+      setClients(clientsRes.data || []);
+      setProduits(produitsRes.data || []);
+      setFactures(facturesRes.data || []);
+      setStats(statsRes.data || {});
+      setPaiements(Array.isArray(paiementsRes.data) ? paiementsRes.data : []);
+      setTauxChange(tauxRes.data || { taux_change_actuel: 2800 });
       
       console.log('✅ Toutes les données chargées');
     } catch (error) {
