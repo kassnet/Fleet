@@ -222,15 +222,18 @@ frontend:
 
   - task: "Notifications et confirmations UX"
     implemented: true
-    working: "unknown"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
     needs_retesting: true
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Système de notifications modernes implémenté mais je vois encore des window.confirm() et alert() dans le code - incohérence UX."
+      - working: false
+        agent: "main"
+        comment: "❌ PROBLÈME IDENTIFIÉ - L'application utilise un mélange d'alertes natives (window.confirm, alert) et de système moderne de notifications. Il faut unifier l'expérience utilisateur pour être cohérent."
 
 metadata:
   created_by: "main_agent"
