@@ -524,18 +524,31 @@ function App() {
   };
 
   const marquerCommePayee = async (facture) => {
-    if (window.confirm(`Marquer la facture ${facture.numero} comme payée ?\n\nMontant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(facture.total_ttc_fc, 'FC')}`)) {
+    const confirmMessage = `Marquer la facture ${facture.numero} comme payée ?
+
+Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(facture.total_ttc_fc, 'FC')}`;
+
+    if (window.confirm(confirmMessage)) {
       try {
-        await fetch(`${API_URL}/api/factures/${facture.id}/payer`, { 
+        const response = await fetch(`${API_URL}/api/factures/${facture.id}/payer`, { 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({})
         });
-        alert('✅ Facture marquée comme payée !');
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Erreur ${response.status}: ${errorText}`);
+        }
+
+        showNotification(`✅ Facture ${facture.numero} marquée comme payée !`, 'success');
         loadData();
       } catch (error) {
         console.error('Erreur marquage facture:', error);
-        alert('❌ Erreur lors du marquage de la facture');
+        showNotification(`❌ Erreur lors du marquage de la facture: ${error.message}`, 'error');
+      }
+    }
+  };
       }
     }
   };
