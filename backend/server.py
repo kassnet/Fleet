@@ -1045,7 +1045,8 @@ async def get_factures(current_user: dict = Depends(comptable_manager_admin())):
     return factures
 
 @app.get("/api/factures/{facture_id}", response_model=Facture)
-async def get_facture(facture_id: str):
+async def get_facture(facture_id: str, current_user: dict = Depends(comptable_manager_admin())):
+    """Récupérer une facture - Comptable, Manager et Admin"""
     # Utiliser la même logique de recherche que les autres fonctions
     facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
     
