@@ -932,7 +932,8 @@ async def update_produit(produit_id: str, produit: Produit, current_user: dict =
     return produit
 
 @app.delete("/api/produits/{produit_id}")
-async def delete_produit(produit_id: str):
+async def delete_produit(produit_id: str, current_user: dict = Depends(manager_and_admin())):
+    """Supprimer un produit - Manager et Admin uniquement"""
     # Chercher par id ou _id
     result = await db.produits.delete_one({"$or": [{"id": produit_id}, {"_id": produit_id}]})
     
