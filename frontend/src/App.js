@@ -621,23 +621,26 @@ Transaction ID: ${data.transaction_id}
 
 ✅ Confirmer le paiement ?`;
 
-      if (window.confirm(confirmMessage)) {
-        // Marquer comme payée en simulation
-        const payResponse = await fetch(`${API_URL}/api/factures/${facture.id}/payer`, { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paiement_id: data.paiement_id })
-        });
-        
-        if (!payResponse.ok) {
-          const errorText = await payResponse.text();
-          console.error('Erreur marquage facture payée:', errorText);
-          throw new Error(`Erreur lors du marquage comme payée: ${errorText}`);
-        }
+      showConfirm(
+        confirmMessage,
+        async () => {
+          // Marquer comme payée en simulation
+          const payResponse = await fetch(`${API_URL}/api/factures/${facture.id}/payer`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paiement_id: data.paiement_id })
+          });
+          
+          if (!payResponse.ok) {
+            const errorText = await payResponse.text();
+            console.error('Erreur marquage facture payée:', errorText);
+            throw new Error(`Erreur lors du marquage comme payée: ${errorText}`);
+          }
 
-        showNotification(`💳 Paiement simulé avec succès ! Facture ${facture.numero} marquée comme payée`, 'success');
-        loadData();
-      }
+          showNotification(`💳 Paiement simulé avec succès ! Facture ${facture.numero} marquée comme payée`, 'success');
+          loadData();
+        }
+      );
     } catch (error) {
       console.error('Erreur simulation paiement:', error);
       showNotification(`❌ Erreur lors de la simulation de paiement: ${error.message}`, 'error');
