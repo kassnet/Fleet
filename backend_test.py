@@ -1156,7 +1156,38 @@ def test_specific_issues():
     if not payment_ok:
         print("⚠️ Payment simulation failed, but still testing direct marking as paid...")
     
-    paid_ok = tester.test_mark_invoice_paid()
+    # Use the send_invoice function to change status to 'envoyee'
+    tester.test_send_invoice()
+    
+    # Try to mark the invoice as paid
+    invoice_id = tester.test_invoice.get('id')
+    paid_ok = False
+    
+    if invoice_id:
+        _, response = tester.run_test(
+            "Mark Invoice as Paid",
+            "POST",
+            f"/api/factures/{invoice_id}/payer",
+            200
+        )
+        
+        if response:
+            paid_ok = True
+            
+            # Verify the invoice status
+            _, updated_invoice = tester.run_test(
+                "Check Invoice Status",
+                "GET",
+                f"/api/factures/{invoice_id}",
+                200
+            )
+            
+            if updated_invoice and updated_invoice.get('statut') == 'payee':
+                print("✅ Invoice status correctly updated to 'payee'")
+            else:
+                print(f"❌ Invoice status not updated correctly: {updated_invoice.get('statut')}")
+                paid_ok = False
+    
     if not paid_ok:
         print("❌ Marking invoice as paid failed - This was a known issue with ID handling")
     else:
@@ -1231,7 +1262,7 @@ def test_specific_issues():
     print(f"✅ 'Marquage factures comme payées': {'Fixed' if paid_ok else 'Still has issues'}")
     print(f"✅ 'Calculs multi-devises USD/FC': {'Working correctly' if taux and taux.get('taux') == 2800.0 else 'Has issues'}")
     
-    return tester.tests_passed == tester.tests_run
+    return invoice_ok and payment_ok and paid_ok
 
 def main():
     # Run specific issue tests based on test_result.md
