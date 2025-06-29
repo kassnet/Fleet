@@ -588,7 +588,14 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           console.log('✅ Succès validation:', result);
           
           showNotification('✅ Paiement validé avec succès !', 'success');
-          loadData();
+          
+          // Recharger les données avec un petit délai pour s'assurer que la DB est mise à jour
+          console.log('🔄 Rechargement des données...');
+          setTimeout(async () => {
+            await loadData();
+            console.log('✅ Données rechargées');
+          }, 500);
+          
         } catch (error) {
           console.error('❌ Erreur validation paiement:', error);
           showNotification(`❌ Erreur lors de la validation du paiement: ${error.message}`, 'error');
