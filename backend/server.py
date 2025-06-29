@@ -1,18 +1,31 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from datetime import datetime, timedelta
 import uuid
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 import json
 from bson import ObjectId
+from passlib.context import CryptContext
+from jose import jwt, JWTError
+import secrets
 
 # Environment variables
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_urlsafe(32))
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-app = FastAPI(title="Application de Facturation", description="Application de facturation pour freelances")
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Security
+security = HTTPBearer()
+
+app = FastAPI(title="Application de Facturation", description="Application de facturation pour freelances avec authentification")
 
 # CORS
 app.add_middleware(
