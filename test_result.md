@@ -107,15 +107,18 @@ user_problem_statement: "L'utilisateur indique qu'il y a beaucoup d'erreurs dans
 backend:
   - task: "Création et gestion des factures"
     implemented: true
-    working: "unknown"  
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "L'endpoint /api/factures existe et semble correctement implémenté avec gestion des IDs. Correction précédente dans simulate_payment et marquer_payee pour gérer les IDs MongoDB avec requêtes $or."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Création de factures fonctionne correctement. UUID génération OK, calculs corrects USD/FC, stockage MongoDB réussi."
 
   - task: "Simulation de paiements"
     implemented: true
