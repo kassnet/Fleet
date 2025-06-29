@@ -1043,7 +1043,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {paiements.map((paiement) => (
+                        {(paiements || []).map((paiement) => (
                           <tr key={paiement.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                               {paiement.facture_numero}
