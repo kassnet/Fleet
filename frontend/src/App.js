@@ -564,24 +564,27 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   };
 
   const validerPaiement = async (paiementId) => {
-    if (window.confirm('Valider ce paiement comme terminé ?')) {
-      try {
-        const response = await fetch(`${API_URL}/api/paiements/${paiementId}/valider`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Erreur ${response.status}`);
+    showConfirm(
+      'Valider ce paiement comme terminé ?',
+      async () => {
+        try {
+          const response = await fetch(`${API_URL}/api/paiements/${paiementId}/valider`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Erreur ${response.status}`);
+          }
+          
+          showNotification('✅ Paiement validé avec succès !', 'success');
+          loadData();
+        } catch (error) {
+          console.error('Erreur validation paiement:', error);
+          showNotification('❌ Erreur lors de la validation du paiement', 'error');
         }
-        
-        alert('✅ Paiement validé avec succès !');
-        loadData();
-      } catch (error) {
-        console.error('Erreur validation paiement:', error);
-        alert('❌ Erreur lors de la validation du paiement');
       }
-    }
+    );
   };
 
   const simulerPaiement = async (facture, devise = 'USD') => {
