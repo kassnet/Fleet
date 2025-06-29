@@ -952,7 +952,8 @@ async def delete_produit(produit_id: str, current_user: dict = Depends(manager_a
 
 # Gestion des stocks
 @app.put("/api/produits/{produit_id}/stock")
-async def update_stock(produit_id: str, request: dict):
+async def update_stock(produit_id: str, request: dict, current_user: dict = Depends(manager_and_admin())):
+    """Mettre à jour le stock d'un produit - Manager et Admin uniquement"""
     nouvelle_quantite = request.get("nouvelle_quantite")
     motif = request.get("motif", "correction")
     
