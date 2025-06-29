@@ -559,9 +559,6 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       }
     }
   };
-      }
-    }
-  };
 
   const validerPaiement = async (paiementId) => {
     if (window.confirm('Valider ce paiement comme terminé ?')) {
