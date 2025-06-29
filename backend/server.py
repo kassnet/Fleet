@@ -743,7 +743,6 @@ async def envoyer_facture(facture_id: str, background_tasks: BackgroundTasks):
     
     return {"message": "Facture envoyée par email"}
 
-# Routes Paiements
 @app.post("/api/paiements/simulate")
 async def simulate_payment(request: dict):
     facture_id = request.get("facture_id")
@@ -752,9 +751,22 @@ async def simulate_payment(request: dict):
     if not facture_id:
         raise HTTPException(status_code=400, detail="facture_id requis")
     
-    facture = await db.factures.find_one({"id": facture_id})
+    # Chercher par id ou _id comme dans les autres fonctions
+    facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
+    
     if not facture:
+        # Si pas trouvé, essayer de convertir l'ID MongoDB
+        try:
+            from bson import ObjectId
+            facture = await db.factures.find_one({"_id": ObjectId(facture_id)})
+        except:
+            pass
+    
+    if not facture:
+        print(f"❌ PAIEMENT SIMULÉ - Facture avec ID {facture_id} non trouvée")
         raise HTTPException(status_code=404, detail="Facture non trouvée")
+    
+    print(f"✅ PAIEMENT SIMULÉ - Facture trouvée: {facture.get('numero', 'N/A')}")
     
     # Créer un enregistrement de paiement simulé
     paiement = {
