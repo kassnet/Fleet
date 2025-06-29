@@ -454,7 +454,12 @@ function App() {
     try {
       const client = clients.find(c => c.id === factureForm.client_id);
       if (!client) {
-        alert('Veuillez sélectionner un client');
+        showNotification('Veuillez sélectionner un client', 'error');
+        return;
+      }
+
+      if (factureForm.lignes.length === 0) {
+        showNotification('Veuillez ajouter au moins un produit', 'error');
         return;
       }
 
@@ -481,17 +486,30 @@ function App() {
         notes: factureForm.notes
       };
 
-      await fetch(`${API_URL}/api/factures`, {
+      console.log('Création facture avec les données:', facture);
+
+      const response = await fetch(`${API_URL}/api/factures`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(facture)
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erreur ${response.status}: ${errorText}`);
+      }
+
+      const factureCreee = await response.json();
+      console.log('Facture créée avec succès:', factureCreee);
+
+      showNotification(`Facture ${factureCreee.numero} créée avec succès !`, 'success');
+      
       loadData();
       setShowFactureModal(false);
       setFactureForm({ client_id: '', devise: 'USD', lignes: [], notes: '' });
     } catch (error) {
       console.error('Erreur création facture:', error);
+      showNotification(`Erreur lors de la création de la facture: ${error.message}`, 'error');
     }
   };
 
