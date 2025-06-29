@@ -338,7 +338,7 @@ const AppContent = () => {
         taux_change_utilise: tauxChange.taux_change_actuel
       };
 
-      const response = await axios.post(`${API_URL}/api/factures`, factureData);
+      const response = await apiCall('POST', '/api/factures', factureData);
       console.log('✅ Facture sauvegardée:', response.data);
 
       loadData();
@@ -356,7 +356,7 @@ const AppContent = () => {
       const montant = facture.devise === 'USD' ? facture.total_ttc_usd : facture.total_ttc_fc;
       const devise = facture.devise;
       
-      const response = await axios.post(`${API_URL}/api/paiements/simulate`, {
+      const response = await apiCall('POST', '/api/paiements/simulate', {
         facture_id: facture.id,
         montant: montant,
         devise: devise
@@ -378,7 +378,7 @@ Transaction ID: ${data.transaction_id}
         confirmMessage,
         async () => {
           // Marquer comme payée en simulation
-          await axios.post(`${API_URL}/api/factures/${facture.id}/payer`, { 
+          await apiCall('POST', `/api/factures/${facture.id}/payer`, { 
             paiement_id: data.paiement_id 
           });
 
@@ -401,7 +401,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       confirmMessage,
       async () => {
         try {
-          await axios.post(`${API_URL}/api/factures/${facture.id}/payer`, {});
+          await apiCall('POST', `/api/factures/${facture.id}/payer`, {});
 
           showNotification(`✅ Facture ${facture.numero} marquée comme payée !`, 'success');
           loadData();
@@ -421,7 +421,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       async () => {
         try {
           console.log('📤 Envoi requête validation pour ID:', paiementId);
-          const response = await axios.post(`${API_URL}/api/paiements/${paiementId}/valider`);
+          const response = await apiCall('POST', `/api/paiements/${paiementId}/valider`);
           
           console.log('✅ Succès validation:', response.data);
           
