@@ -1266,7 +1266,8 @@ async def simulate_payment(request: dict):
     }
 
 @app.post("/api/factures/{facture_id}/payer")
-async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None):
+async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None, current_user: dict = Depends(comptable_manager_admin())):
+    """Marquer une facture comme payée - Comptable, Manager et Admin"""
     print(f"🔍 MARQUAGE PAYÉE - Tentative de marquage pour ID: {facture_id}")
     
     # D'abord, vérifier si la facture existe avec find_one (même logique que simulate_payment)
