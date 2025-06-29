@@ -118,42 +118,36 @@ const AppContent = () => {
       console.log('🔄 Début chargement des données avec token pour rôle:', user.role);
       
       // Données accessibles à tous les utilisateurs authentifiés
-      const baseRequests = [
+      console.log('📊 Chargement des données de base...');
+      const [clientsRes, produitsRes, statsRes, tauxRes] = await Promise.all([
         apiCall('GET', '/api/clients'),
         apiCall('GET', '/api/produits'),
         apiCall('GET', '/api/stats'),
         apiCall('GET', '/api/taux-change')
-      ];
-
-      // Données accessibles seulement aux comptables, managers et admins
-      const restrictedRequests = [];
-      if (canManageInvoices() || canManagePayments()) {
-        restrictedRequests.push(
-          apiCall('GET', '/api/factures'),
-          apiCall('GET', '/api/paiements')
-        );
-      }
-
-      // Combiner toutes les requêtes
-      const allRequests = [...baseRequests, ...restrictedRequests];
-      const responses = await Promise.all(allRequests);
-
-      // Traiter les réponses selon l'ordre
-      const [clientsRes, produitsRes, statsRes, tauxRes, ...restrictedRes] = responses;
-
-      console.log('📊 Données de base chargées pour rôle:', user.role);
+      ]);
 
       setClients(clientsRes.data || []);
       setProduits(produitsRes.data || []);
       setStats(statsRes.data || {});
       setTauxChange(tauxRes.data || { taux_change_actuel: 2800 });
 
-      // Charger les données restreintes si disponibles
-      if (restrictedRes.length >= 2) {
-        const [facturesRes, paiementsRes] = restrictedRes;
-        setFactures(facturesRes.data || []);
-        setPaiements(Array.isArray(paiementsRes.data) ? paiementsRes.data : []);
-        console.log('💳 Données restreintes chargées - Factures:', facturesRes.data.length, 'Paiements:', paiementsRes.data.length);
+      // Données restreintes seulement pour certains rôles
+      if (user.role === 'admin' || user.role === 'manager' || user.role === 'comptable') {
+        console.log('💼 Chargement des données restreintes pour rôle:', user.role);
+        try {
+          const [facturesRes, paiementsRes] = await Promise.all([
+            apiCall('GET', '/api/factures'),
+            apiCall('GET', '/api/paiements')
+          ]);
+          
+          setFactures(facturesRes.data || []);
+          setPaiements(Array.isArray(paiementsRes.data) ? paiementsRes.data : []);
+          console.log('💳 Données restreintes chargées - Factures:', facturesRes.data.length, 'Paiements:', paiementsRes.data.length);
+        } catch (restrictedError) {
+          console.warn('⚠️ Erreur chargement données restreintes:', restrictedError.response?.status);
+          setFactures([]);
+          setPaiements([]);
+        }
       } else {
         // Utilisateur simple - pas d'accès aux factures et paiements
         setFactures([]);
@@ -163,7 +157,7 @@ const AppContent = () => {
       
       console.log('✅ Toutes les données chargées avec succès pour rôle:', user.role);
     } catch (error) {
-      console.error('❌ Erreur chargement données:', error.response?.status, error.response?.data || error.message);
+      console.error('❌ Erreur chargement données de base:', error.response?.status, error.response?.data || error.message);
       showNotification('Erreur lors du chargement des données', 'error');
       // Initialiser avec des valeurs par défaut en cas d'erreur
       setClients([]);
