@@ -152,7 +152,7 @@ const AppContent = () => {
         // Utilisateur simple - pas d'accès aux factures et paiements
         setFactures([]);
         setPaiements([]);
-        console.log('👤 Utilisateur simple - accès limité aux clients, produits et stats');
+        console.log('👤 Utilisateur simple - PAS de requête aux factures/paiements');
       }
       
       console.log('✅ Toutes les données chargées avec succès pour rôle:', user.role);
