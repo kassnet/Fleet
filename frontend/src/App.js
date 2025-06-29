@@ -44,6 +44,27 @@ const AppContent = () => {
 
   const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+  // Helper pour les requêtes authentifiées
+  const apiCall = (method, url, data = null) => {
+    const config = {
+      method,
+      url: `${API_URL}${url}`,
+      headers: {}
+    };
+
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    if (data && (method === 'POST' || method === 'PUT')) {
+      config.data = data;
+      config.headers['Content-Type'] = 'application/json';
+    }
+
+    console.log('🔑 API Call:', method, url, 'Token présent:', !!accessToken);
+    return axios(config);
+  };
+
   // Données de devises
   const devises = [
     { code: 'USD', nom: 'Dollar Américain', symbole: '$' },
