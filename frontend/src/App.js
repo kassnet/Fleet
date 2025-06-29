@@ -86,6 +86,8 @@ const AppContent = () => {
   };
 
   const loadData = async () => {
+    if (!user) return; // Ne pas charger si pas authentifié
+    
     setLoading(true);
     try {
       console.log('🔄 Début chargement des données...');
@@ -98,29 +100,43 @@ const AppContent = () => {
         fetch(`${API_URL}/api/taux-change`)
       ]);
 
+      // Vérifier que toutes les requêtes ont réussi
+      if (!clientsRes.ok || !produitsRes.ok || !facturesRes.ok || !statsRes.ok || !paiementsRes.ok || !tauxRes.ok) {
+        throw new Error('Erreur lors du chargement des données');
+      }
+
       const paiementsData = await paiementsRes.json();
       console.log('💳 Paiements chargés:', paiementsData.length, 'éléments');
       console.log('📊 Premier paiement:', paiementsData[0]);
 
-      setClients(await clientsRes.json());
-      setProduits(await produitsRes.json());
-      setFactures(await facturesRes.json());
-      setStats(await statsRes.json());
-      setPaiements(paiementsData);
-      setTauxChange(await tauxRes.json());
+      setClients(await clientsRes.json() || []);
+      setProduits(await produitsRes.json() || []);
+      setFactures(await facturesRes.json() || []);
+      setStats(await statsRes.json() || {});
+      setPaiements(Array.isArray(paiementsData) ? paiementsData : []);
+      setTauxChange(await tauxRes.json() || { taux_change_actuel: 2800 });
       
       console.log('✅ Toutes les données chargées');
     } catch (error) {
       console.error('Erreur chargement données:', error);
       showNotification('Erreur lors du chargement des données', 'error');
+      // Initialiser avec des valeurs par défaut en cas d'erreur
+      setClients([]);
+      setProduits([]);
+      setFactures([]);
+      setStats({});
+      setPaiements([]);
+      setTauxChange({ taux_change_actuel: 2800 });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user) {
+      loadData();
+    }
+  }, [user]); // Charger seulement quand l'utilisateur est authentifié
 
   // Fonctions CRUD Clients
   const saveClient = async () => {
