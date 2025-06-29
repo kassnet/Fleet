@@ -826,9 +826,10 @@ async def delete_client(client_id: str, current_user: dict = Depends(manager_and
     
     return {"message": "Client supprimé"}
 
-# Routes Produits
+# Routes Produits (Manager et Admin, sauf consultation pour tous)
 @app.get("/api/produits", response_model=List[Produit])
-async def get_produits():
+async def get_produits(current_user: dict = Depends(all_authenticated())):
+    """Récupérer tous les produits - Tous les utilisateurs authentifiés"""
     produits = []
     async for produit in db.produits.find():
         produit["id"] = str(produit["_id"]) if "_id" in produit else produit.get("id")
