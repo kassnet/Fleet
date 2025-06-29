@@ -445,9 +445,8 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
   const voirMouvementsStock = async (produitId) => {
     try {
-      const response = await fetch(`${API_URL}/api/produits/${produitId}/mouvements`);
-      const mouvements = await response.json();
-      setMouvementsStock(mouvements);
+      const response = await axios.get(`${API_URL}/api/produits/${produitId}/mouvements`);
+      setMouvementsStock(response.data);
       setShowMouvementsModal(true);
     } catch (error) {
       console.error('Erreur récupération mouvements:', error);
