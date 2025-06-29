@@ -169,11 +169,7 @@ const AppContent = () => {
       'Êtes-vous sûr de vouloir supprimer ce client ?',
       async () => {
         try {
-          const response = await fetch(`${API_URL}/api/clients/${clientId}`, {
-            method: 'DELETE'
-          });
-
-          if (!response.ok) throw new Error('Erreur lors de la suppression');
+          await axios.delete(`${API_URL}/api/clients/${clientId}`);
 
           loadData();
           showNotification('Client supprimé avec succès');
