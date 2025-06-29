@@ -103,6 +103,7 @@ function App() {
   const loadData = async () => {
     setLoading(true);
     try {
+      console.log('🔄 Début chargement des données...');
       const [clientsRes, produitsRes, facturesRes, statsRes, paiementsRes, tauxRes] = await Promise.all([
         fetch(`${API_URL}/api/clients`),
         fetch(`${API_URL}/api/produits`),
@@ -112,16 +113,23 @@ function App() {
         fetch(`${API_URL}/api/taux-change`)
       ]);
 
+      const paiementsData = await paiementsRes.json();
+      console.log('💳 Paiements chargés:', paiementsData.length, 'éléments');
+      console.log('📊 Premier paiement:', paiementsData[0]);
+
       setClients(await clientsRes.json());
       setProduits(await produitsRes.json());
       setFactures(await facturesRes.json());
       setStats(await statsRes.json());
-      setPaiements(await paiementsRes.json());
+      setPaiements(paiementsData);
       setTauxChange(await tauxRes.json());
+      
+      console.log('✅ Toutes les données chargées');
     } catch (error) {
-      console.error('Erreur de chargement:', error);
+      console.error('Erreur chargement données:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // Fonctions utilitaires
