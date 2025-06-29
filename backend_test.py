@@ -54,14 +54,14 @@ class FactureProTester:
 
     def test_health(self):
         """Test the health endpoint"""
-        success, data = self.run_test("Health Check", "/api/health")
+        success, data = self.run_test("Health Check", "GET", "/api/health")
         if success:
             print(f"🏥 Health status: {data.get('status')}")
         return success
 
     def test_stats(self):
         """Test the stats endpoint"""
-        success, data = self.run_test("Stats", "/api/stats")
+        success, data = self.run_test("Stats", "GET", "/api/stats")
         if success:
             print(f"📈 Total clients: {data.get('total_clients')}")
             print(f"📦 Total products: {data.get('total_produits')}")
@@ -72,47 +72,296 @@ class FactureProTester:
 
     def test_clients(self):
         """Test the clients endpoint"""
-        success, data = self.run_test("Clients List", "/api/clients")
+        success, data = self.run_test("Clients List", "GET", "/api/clients")
         if success:
             print(f"👥 Number of clients: {len(data)}")
-            for client in data:
+            for client in data[:2]:  # Show only first 2 clients
                 print(f"  - {client.get('nom')} ({client.get('email')})")
         return success
+    
+    def test_create_client(self):
+        """Test creating a new client"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        client_data = {
+            "nom": f"Test Client {timestamp}",
+            "email": f"test{timestamp}@example.com",
+            "telephone": "+243 81 234 5678",
+            "adresse": "Avenue Test 123",
+            "ville": "Kinshasa",
+            "code_postal": "12345",
+            "pays": "RDC",
+            "devise_preferee": "USD"
+        }
+        
+        success, response = self.run_test(
+            "Create Client",
+            "POST",
+            "/api/clients",
+            200,
+            data=client_data
+        )
+        
+        if success:
+            self.test_client = response
+            print(f"Created test client with ID: {response.get('id')}")
+            return True
+        return False
+
+    def test_update_client(self):
+        """Test updating an existing client"""
+        if not self.test_client:
+            print("❌ No test client available to update")
+            return False
+        
+        client_id = self.test_client.get('id')
+        updated_data = self.test_client.copy()
+        updated_data["telephone"] = "+243 99 876 5432"
+        updated_data["ville"] = "Lubumbashi"
+        
+        success, response = self.run_test(
+            "Update Client",
+            "PUT",
+            f"/api/clients/{client_id}",
+            200,
+            data=updated_data
+        )
+        
+        if success:
+            self.test_client = response
+            return True
+        return False
 
     def test_produits(self):
         """Test the products endpoint"""
-        success, data = self.run_test("Products List", "/api/produits")
+        success, data = self.run_test("Products List", "GET", "/api/produits")
         if success:
             print(f"📦 Number of products: {len(data)}")
-            for produit in data:
+            for produit in data[:2]:  # Show only first 2 products
                 print(f"  - {produit.get('nom')} (${produit.get('prix_usd')} USD / {produit.get('prix_fc')} FC)")
                 if produit.get('gestion_stock'):
                     print(f"    Stock: {produit.get('stock_actuel')} / {produit.get('stock_maximum')}")
         return success
+    
+    def test_create_product(self):
+        """Test creating a new product with stock management"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        product_data = {
+            "nom": f"Test Product {timestamp}",
+            "description": "Product for testing",
+            "prix_usd": 100.0,
+            "unite": "unité",
+            "tva": 16.0,
+            "actif": True,
+            "gestion_stock": True,
+            "stock_actuel": 50,
+            "stock_minimum": 10,
+            "stock_maximum": 100
+        }
+        
+        success, response = self.run_test(
+            "Create Product",
+            "POST",
+            "/api/produits",
+            200,
+            data=product_data
+        )
+        
+        if success:
+            self.test_product = response
+            print(f"Created test product with ID: {response.get('id')}")
+            return True
+        return False
+
+    def test_update_product_stock(self):
+        """Test updating stock for a product"""
+        if not self.test_product:
+            print("❌ No test product available to update stock")
+            return False
+        
+        product_id = self.test_product.get('id')
+        stock_data = {
+            "nouvelle_quantite": 75,
+            "motif": "Test stock update"
+        }
+        
+        success, response = self.run_test(
+            "Update Product Stock",
+            "PUT",
+            f"/api/produits/{product_id}/stock",
+            200,
+            data=stock_data
+        )
+        
+        if success:
+            # Check stock movements
+            self.run_test(
+                "Get Stock Movements",
+                "GET",
+                f"/api/produits/{product_id}/mouvements",
+                200
+            )
+            return True
+        return False
 
     def test_factures(self):
         """Test the invoices endpoint"""
-        success, data = self.run_test("Invoices List", "/api/factures")
+        success, data = self.run_test("Invoices List", "GET", "/api/factures")
         if success:
             print(f"📄 Number of invoices: {len(data)}")
-            for facture in data:
+            for facture in data[:2]:  # Show only first 2 invoices
                 print(f"  - {facture.get('numero')} - Client: {facture.get('client_nom')} - Status: {facture.get('statut')}")
                 print(f"    Amount: ${facture.get('total_ttc_usd')} USD / {facture.get('total_ttc_fc')} FC")
         return success
+    
+    def test_create_invoice(self):
+        """Test creating a new invoice"""
+        if not self.test_client or not self.test_product:
+            print("❌ Need both test client and product to create invoice")
+            return False
+        
+        # Calculate prices
+        prix_usd = float(self.test_product.get('prix_usd', 100))
+        prix_fc = float(self.test_product.get('prix_fc', prix_usd * 2800))
+        quantite = 2
+        tva = float(self.test_product.get('tva', 16.0))
+        
+        total_ht_usd = prix_usd * quantite
+        total_ht_fc = prix_fc * quantite
+        total_ttc_usd = total_ht_usd * (1 + tva/100)
+        total_ttc_fc = total_ht_fc * (1 + tva/100)
+        
+        invoice_data = {
+            "client_id": self.test_client.get('id'),
+            "client_nom": self.test_client.get('nom'),
+            "client_email": self.test_client.get('email'),
+            "client_adresse": f"{self.test_client.get('adresse')}, {self.test_client.get('ville')} {self.test_client.get('code_postal')}",
+            "devise": "USD",
+            "lignes": [
+                {
+                    "produit_id": self.test_product.get('id'),
+                    "nom_produit": self.test_product.get('nom'),
+                    "quantite": quantite,
+                    "prix_unitaire_usd": prix_usd,
+                    "prix_unitaire_fc": prix_fc,
+                    "devise": "USD",
+                    "tva": tva,
+                    "total_ht_usd": total_ht_usd,
+                    "total_ht_fc": total_ht_fc,
+                    "total_ttc_usd": total_ttc_usd,
+                    "total_ttc_fc": total_ttc_fc
+                }
+            ],
+            "total_ht_usd": total_ht_usd,
+            "total_ht_fc": total_ht_fc,
+            "total_tva_usd": total_ht_usd * tva/100,
+            "total_tva_fc": total_ht_fc * tva/100,
+            "total_ttc_usd": total_ttc_usd,
+            "total_ttc_fc": total_ttc_fc,
+            "notes": "Test invoice"
+        }
+        
+        success, response = self.run_test(
+            "Create Invoice",
+            "POST",
+            "/api/factures",
+            200,
+            data=invoice_data
+        )
+        
+        if success:
+            self.test_invoice = response
+            print(f"Created test invoice with ID: {response.get('id')}")
+            return True
+        return False
+
+    def test_send_invoice(self):
+        """Test sending an invoice"""
+        if not self.test_invoice:
+            print("❌ No test invoice available to send")
+            return False
+        
+        invoice_id = self.test_invoice.get('id')
+        
+        success, response = self.run_test(
+            "Send Invoice",
+            "POST",
+            f"/api/factures/{invoice_id}/envoyer",
+            200
+        )
+        
+        if success:
+            # Get updated invoice
+            _, updated_invoice = self.run_test(
+                "Get Updated Invoice",
+                "GET",
+                f"/api/factures/{invoice_id}",
+                200
+            )
+            if updated_invoice:
+                self.test_invoice = updated_invoice
+            return True
+        return False
 
     def test_paiements(self):
         """Test the payments endpoint"""
-        success, data = self.run_test("Payments List", "/api/paiements")
+        success, data = self.run_test("Payments List", "GET", "/api/paiements")
         if success:
             print(f"💳 Number of payments: {len(data)}")
-            for paiement in data:
+            for paiement in data[:2]:  # Show only first 2 payments
                 print(f"  - Invoice: {paiement.get('facture_numero')} - Status: {paiement.get('statut')}")
                 print(f"    Amount: ${paiement.get('montant_usd')} USD / {paiement.get('montant_fc')} FC")
         return success
+    
+    def test_simulate_payment(self):
+        """Test simulating a payment"""
+        if not self.test_invoice:
+            print("❌ No test invoice available for payment")
+            return False
+        
+        invoice_id = self.test_invoice.get('id')
+        payment_data = {
+            "facture_id": invoice_id,
+            "devise_paiement": "USD"
+        }
+        
+        success, response = self.run_test(
+            "Simulate Payment",
+            "POST",
+            "/api/paiements/simulate",
+            200,
+            data=payment_data
+        )
+        
+        if success:
+            self.test_payment = response
+            payment_id = response.get('paiement_id')
+            
+            # Validate payment
+            if payment_id:
+                self.run_test(
+                    "Validate Payment",
+                    "POST",
+                    f"/api/paiements/{payment_id}/valider",
+                    200
+                )
+            
+            # Check invoice status
+            _, updated_invoice = self.run_test(
+                "Check Invoice Status After Payment",
+                "GET",
+                f"/api/factures/{invoice_id}",
+                200
+            )
+            
+            if updated_invoice:
+                self.test_invoice = updated_invoice
+                
+            return True
+        return False
 
     def test_taux_change(self):
         """Test the exchange rate endpoint"""
-        success, data = self.run_test("Exchange Rate", "/api/taux-change")
+        success, data = self.run_test("Exchange Rate", "GET", "/api/taux-change")
         if success:
             print(f"💱 Exchange rate: {data.get('taux')} {data.get('devise_cible')}/{data.get('devise_base')}")
         return success
