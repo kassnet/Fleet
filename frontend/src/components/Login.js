@@ -33,26 +33,32 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-teal-500 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-teal-500 dark:from-gray-800 dark:via-gray-900 dark:to-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
             <div className="max-w-md w-full space-y-8">
+                {/* Contrôles de thème et langue en haut à droite */}
+                <div className="absolute top-4 right-4 flex items-center space-x-2">
+                    <ThemeToggle />
+                    <LanguageSelector />
+                </div>
+
                 {/* Logo et titre */}
                 <div className="text-center">
-                    <div className="mx-auto h-20 w-20 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                        <span className="text-2xl font-bold text-purple-600">📊</span>
+                    <div className="mx-auto h-20 w-20 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">📊</span>
                     </div>
                     <h2 className="mt-6 text-3xl font-extrabold text-white">
-                        FacturApp
+                        {t('app.title')}
                     </h2>
-                    <p className="mt-2 text-sm text-blue-100">
-                        Connectez-vous à votre compte
+                    <p className="mt-2 text-sm text-blue-100 dark:text-gray-300">
+                        {t('login.subtitle')}
                     </p>
                 </div>
 
                 {/* Formulaire de connexion */}
-                <div className="bg-white rounded-2xl shadow-2xl p-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
                                 {error}
                             </div>
                         )}
