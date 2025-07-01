@@ -1119,10 +1119,10 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-8">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-8">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-gray-500">
-            <p>💼 <strong>FacturApp</strong> - Système de gestion de facturation professionnel</p>
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>💼 <strong>{t('app.title')}</strong> - {t('app.description')}</p>
             <p className="mt-1">📦 Stocks • 💱 Multi-devises • 💳 Paiements • 🔐 Authentification sécurisée</p>
           </div>
         </div>
