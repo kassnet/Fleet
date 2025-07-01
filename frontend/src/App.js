@@ -675,13 +675,13 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Tableau de bord</h2>
-              <div className="text-sm text-gray-600">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h2>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Taux USD/FC: <span className="font-medium">{tauxChange.taux_change_actuel?.toLocaleString()}</span>
                 {canManageProducts() && (
                   <button 
                     onClick={() => setShowTauxModal(true)}
-                    className="ml-2 text-blue-600 hover:text-blue-800"
+                    className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                   >
                     Modifier
                   </button>
@@ -691,31 +691,31 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
             {/* Statistiques */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Clients</p>
-                    <p className="text-2xl font-bold">{stats.total_clients || 0}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.stats.totalClients')}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_clients || 0}</p>
                   </div>
                   <span className="text-3xl">👥</span>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Produits</p>
-                    <p className="text-2xl font-bold">{stats.total_produits || 0}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.stats.totalProducts')}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_produits || 0}</p>
                   </div>
                   <span className="text-3xl">📦</span>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Factures</p>
-                    <p className="text-2xl font-bold">{stats.total_factures || 0}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.stats.totalInvoices')}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_factures || 0}</p>
                   </div>
                   <span className="text-3xl">🧾</span>
                 </div>
