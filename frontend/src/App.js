@@ -780,7 +780,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                   onClick={() => setShowClientModal(true)}
                   className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition"
                 >
-                  + Nouveau client
+                  + {t('clients.add')}
                 </button>
               </div>
 
