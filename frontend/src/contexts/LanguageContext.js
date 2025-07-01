@@ -162,6 +162,7 @@ const translations = {
     'nav.products': 'Products',
     'nav.invoices': 'Invoices',
     'nav.payments': 'Payments',
+    'nav.sales': 'Sales',
     'nav.stock': 'Stock',
     'nav.settings': 'Settings',
     'nav.users': 'Users',
