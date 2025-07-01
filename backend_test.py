@@ -1107,13 +1107,14 @@ def measure_api_performance(tester):
 
 def test_specific_issues():
     """Test specific issues identified in test_result.md"""
-def test_id_corrections():
+def test_id_corrections(tester=None):
     """Test specific ID correction issues as requested in the review"""
     print("\n" + "=" * 80)
     print("🔍 TESTING ID CORRECTION ISSUES")
     print("=" * 80)
     
-    tester = FactureProTester()
+    if tester is None:
+        tester = FactureProTester()
     
     # 1. Test basic API health
     print("\n🔍 STEP 1: Checking API health")
