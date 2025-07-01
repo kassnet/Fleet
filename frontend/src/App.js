@@ -1111,7 +1111,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       <footer className="bg-white border-t mt-8">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
           <div className="text-center text-sm text-gray-500">
-            <p>🚗 <strong>FleetMaster</strong> - Système de gestion de flotte véhicules</p>
+            <p>💼 <strong>FacturApp</strong> - Système de gestion de facturation professionnel</p>
             <p className="mt-1">📦 Stocks • 💱 Multi-devises • 💳 Paiements • 🔐 Authentification sécurisée</p>
           </div>
         </div>
