@@ -25,7 +25,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Security
 security = HTTPBearer()
 
-app = FastAPI(title="FleetMaster", description="Système de gestion de flotte véhicules avec authentification")
+app = FastAPI(title="FacturApp", description="Système de gestion de facturation professionnel avec authentification")
 
 # CORS
 app.add_middleware(
