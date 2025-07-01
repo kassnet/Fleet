@@ -1553,6 +1553,26 @@ async def get_devis(current_user: dict = Depends(manager_and_admin())):
         devis.append(Devis(**d))
     return devis
 
+@app.get("/api/devis/{devis_id}", response_model=Devis)
+async def get_devis_by_id(devis_id: str, current_user: dict = Depends(manager_and_admin())):
+    """Récupérer un devis spécifique - Manager et Admin"""
+    devis = await db.devis.find_one({"$or": [{"id": devis_id}, {"_id": devis_id}]})
+    
+    if not devis:
+        try:
+            from bson import ObjectId
+            devis = await db.devis.find_one({"_id": ObjectId(devis_id)})
+        except:
+            pass
+    
+    if not devis:
+        raise HTTPException(status_code=404, detail="Devis non trouvé")
+    
+    devis["id"] = str(devis["_id"]) if "_id" in devis else devis.get("id")
+    if "_id" in devis:
+        del devis["_id"]
+    return Devis(**devis)
+
 @app.get("/api/paiements")
 async def get_paiements(current_user: dict = Depends(comptable_manager_admin())):
     """Récupérer tous les paiements - Comptable, Manager et Admin"""
