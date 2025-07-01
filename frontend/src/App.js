@@ -838,7 +838,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           <ProtectedRoute requiredRoles={['admin', 'manager']}>
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Gestion des produits</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('products.title')}</h2>
                 <div className="space-x-3">
                   <button
                     onClick={() => setShowStockModal(true)}
