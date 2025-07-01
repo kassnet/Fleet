@@ -54,6 +54,21 @@ const AppContent = () => {
   const [stockForm, setStockForm] = useState({ produit_id: '', nouvelle_quantite: '', motif: '' });
   const [nouveauTaux, setNouveauTaux] = useState(2800);
 
+  // Sales form states
+  const [devisForm, setDevisForm] = useState({ client_id: '', items: [], devise: 'USD', notes: '', validite_jours: 30 });
+  const [opportuniteForm, setOpportuniteForm] = useState({ 
+    titre: '', description: '', client_id: '', valeur_estimee_usd: '', devise: 'USD', 
+    probabilite: 50, etape: 'prospect', priorite: 'moyenne', notes: '' 
+  });
+  const [commandeForm, setCommandeForm] = useState({ 
+    client_id: '', opportunite_id: '', items: [], devise: 'USD', 
+    adresse_livraison: '', notes: '' 
+  });
+  const [activiteForm, setActiviteForm] = useState({
+    type_activite: 'appel', titre: '', description: '', date_activite: '', 
+    duree_minutes: '', resultat: '', prochaine_action: '', date_prochaine_action: ''
+  });
+
   // Edition states
   const [editingClient, setEditingClient] = useState(null);
   const [editingProduit, setEditingProduit] = useState(null);
