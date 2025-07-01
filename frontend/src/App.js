@@ -74,8 +74,19 @@ const AppContent = () => {
   const [editingProduit, setEditingProduit] = useState(null);
   const [editingFacture, setEditingFacture] = useState(null);
   const [mouvementsStock, setMouvementsStock] = useState([]);
+  
+  // Sales edition states
+  const [editingDevis, setEditingDevis] = useState(null);
+  const [editingOpportunite, setEditingOpportunite] = useState(null);
+  const [editingCommande, setEditingCommande] = useState(null);
+  const [selectedOpportunite, setSelectedOpportunite] = useState(null);
 
   const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+
+  // Permissions pour les ventes (Admin et Manager uniquement)
+  const canManageSales = () => {
+    return user && ['admin', 'manager'].includes(user.role);
+  };
 
   // Helper pour les requêtes authentifiées
   const apiCall = (method, url, data = null) => {
