@@ -1184,6 +1184,310 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           </ProtectedRoute>
         )}
 
+        {/* Section Ventes */}
+        {activeTab === 'ventes' && (
+          <ProtectedRoute requiredRoles={['admin', 'manager']}>
+            <div className="space-y-6">
+              {/* En-tête avec sous-navigation */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('sales.title')}</h2>
+                
+                {/* Sous-navigation des ventes */}
+                <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-600">
+                  {[
+                    { id: 'dashboard', label: t('sales.dashboard'), icon: '📊' },
+                    { id: 'devis', label: t('sales.quotes'), icon: '📋' },
+                    { id: 'opportunites', label: t('sales.opportunities'), icon: '🎯' },
+                    { id: 'commandes', label: t('sales.orders'), icon: '🛒' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveSalesTab(tab.id)}
+                      className={`flex items-center space-x-2 py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                        activeSalesTab === tab.id
+                          ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                      }`}
+                    >
+                      <span>{tab.icon}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dashboard des ventes */}
+              {activeSalesTab === 'dashboard' && (
+                <div className="space-y-6">
+                  {/* Statistiques de vente */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Devis total</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white">{venteStats.total_devis || 0}</p>
+                        </div>
+                        <span className="text-3xl">📋</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Taux conversion</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white">{venteStats.taux_conversion_devis || 0}%</p>
+                        </div>
+                        <span className="text-3xl">📈</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Opportunités actives</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white">{venteStats.opportunites_en_cours || 0}</p>
+                        </div>
+                        <span className="text-3xl">🎯</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Pipeline (USD)</p>
+                          <p className="text-2xl font-bold text-gray-900 dark:text-white">${(venteStats.valeur_pipeline_usd || 0).toLocaleString()}</p>
+                        </div>
+                        <span className="text-3xl">💰</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions rapides ventes */}
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('common.quickActions')}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <button
+                        onClick={() => setShowDevisModal(true)}
+                        className="flex items-center justify-center space-x-2 p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
+                      >
+                        <span className="text-2xl">📋</span>
+                        <span>{t('quotes.add')}</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => setShowOpportuniteModal(true)}
+                        className="flex items-center justify-center space-x-2 p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
+                      >
+                        <span className="text-2xl">🎯</span>
+                        <span>{t('opportunities.add')}</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => setShowCommandeModal(true)}
+                        className="flex items-center justify-center space-x-2 p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
+                      >
+                        <span className="text-2xl">🛒</span>
+                        <span>{t('orders.add')}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Section Devis */}
+              {activeSalesTab === 'devis' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('quotes.title')}</h3>
+                    <button
+                      onClick={() => setShowDevisModal(true)}
+                      className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition"
+                    >
+                      + {t('quotes.add')}
+                    </button>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
+                    {loading ? (
+                      <div className="p-8 text-center">
+                        <div className="text-gray-500 dark:text-gray-400">{t('common.loading')}</div>
+                      </div>
+                    ) : (devis || []).length === 0 ? (
+                      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                        Aucun devis trouvé. Créez votre premier devis !
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('quotes.number')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('quotes.client')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('quotes.amount')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('quotes.status')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('quotes.validity')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('quotes.actions')}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {(devis || []).map((d) => (
+                              <tr key={d.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{d.numero}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{d.client_nom}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                  {formatMontant(d.total_ttc_usd, 'USD')} / {formatMontant(d.total_ttc_fc, 'FC')}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 text-xs rounded-full ${getStatutBadge(d.statut)}`}>
+                                    {d.statut}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                  {d.validite_jours} jours
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                  {d.statut === 'accepte' && (
+                                    <button
+                                      onClick={() => convertirDevisEnFacture(d.id)}
+                                      className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
+                                    >
+                                      {t('quotes.convert')}
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Section Opportunités */}
+              {activeSalesTab === 'opportunites' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('opportunities.title')}</h3>
+                    <button
+                      onClick={() => setShowOpportuniteModal(true)}
+                      className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition"
+                    >
+                      + {t('opportunities.add')}
+                    </button>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
+                    {loading ? (
+                      <div className="p-8 text-center">
+                        <div className="text-gray-500 dark:text-gray-400">{t('common.loading')}</div>
+                      </div>
+                    ) : (opportunites || []).length === 0 ? (
+                      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                        Aucune opportunité trouvée. Créez votre première opportunité !
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.name')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.client')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.value')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.probability')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.stage')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.priority')}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {(opportunites || []).map((opp) => (
+                              <tr key={opp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{opp.titre}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{opp.client_nom}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                  {formatMontant(opp.valeur_estimee_usd, 'USD')}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{opp.probabilite}%</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 text-xs rounded-full ${getStatutBadge(opp.etape)}`}>
+                                    {opp.etape}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{opp.priorite}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Section Commandes */}
+              {activeSalesTab === 'commandes' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('orders.title')}</h3>
+                    <button
+                      onClick={() => setShowCommandeModal(true)}
+                      className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition"
+                    >
+                      + {t('orders.add')}
+                    </button>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
+                    {loading ? (
+                      <div className="p-8 text-center">
+                        <div className="text-gray-500 dark:text-gray-400">{t('common.loading')}</div>
+                      </div>
+                    ) : (commandes || []).length === 0 ? (
+                      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                        Aucune commande trouvée. Créez votre première commande !
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('orders.number')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('orders.client')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('orders.amount')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('orders.status')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('orders.delivery')}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {(commandes || []).map((cmd) => (
+                              <tr key={cmd.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{cmd.numero}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{cmd.client_nom}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                  {formatMontant(cmd.total_usd, 'USD')} / {formatMontant(cmd.total_fc, 'FC')}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 text-xs rounded-full ${getStatutBadge(cmd.statut)}`}>
+                                    {cmd.statut}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                                  {cmd.date_livraison_prevue ? new Date(cmd.date_livraison_prevue).toLocaleDateString() : 'Non définie'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </ProtectedRoute>
+        )}
+
         {/* Section Gestion des utilisateurs */}
         {activeTab === 'users' && (
           <ProtectedRoute requiredRoles={['admin']}>
