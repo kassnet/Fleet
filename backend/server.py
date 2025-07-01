@@ -475,7 +475,7 @@ async def init_admin_user():
     # Utilisateurs de démonstration
     demo_users = [
         {
-            "email": "admin@facturepro.rdc",
+            "email": "admin@facturapp.rdc",
             "nom": "Administrateur",
             "prenom": "Système",
             "role": "admin",
