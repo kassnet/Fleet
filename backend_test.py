@@ -1585,22 +1585,22 @@ def test_id_corrections(tester=None):
     
     return invoice_ok and paid_ok and objectid_ok
 
-def test_authentication():
-    """Test authentication with admin credentials"""
+def test_authentication(email="admin@facturapp.rdc", password="admin123"):
+    """Test authentication with credentials"""
     print("\n" + "=" * 80)
-    print("🔑 TESTING AUTHENTICATION")
+    print(f"🔑 TESTING AUTHENTICATION WITH {email}")
     print("=" * 80)
     
     tester = FactureProTester()
     
-    # Test login with admin credentials
+    # Test login with credentials
     login_data = {
-        "email": "admin@facturapp.rdc",
-        "password": "admin123"
+        "email": email,
+        "password": password
     }
     
     success, response = tester.run_test(
-        "Admin Login",
+        f"Login with {email}",
         "POST",
         "/api/auth/login",
         200,
@@ -1608,7 +1608,7 @@ def test_authentication():
     )
     
     if success and response and "access_token" in response:
-        print("✅ Successfully authenticated with admin credentials")
+        print(f"✅ Successfully authenticated with {email}")
         # Store the token for future requests
         tester.token = response["access_token"]
         # Update headers to include the token
@@ -1616,10 +1616,73 @@ def test_authentication():
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {tester.token}'
         }
+        # Store user role
+        tester.user_role = response.get("user", {}).get("role")
+        print(f"👤 User role: {tester.user_role}")
         return True, tester
     else:
-        print("❌ Failed to authenticate with admin credentials")
+        print(f"❌ Failed to authenticate with {email}")
         return False, None
+
+def test_vente_access(tester):
+    """Test access to sales module based on user role"""
+    print("\n" + "=" * 80)
+    print(f"🔒 TESTING SALES MODULE ACCESS FOR ROLE: {tester.user_role}")
+    print("=" * 80)
+    
+    # Test vente/stats endpoint
+    success_stats, stats_data = tester.run_test(
+        "Vente Stats Access",
+        "GET",
+        "/api/vente/stats",
+        200 if tester.user_role in ['admin', 'manager'] else 403
+    )
+    
+    # Test devis endpoint
+    success_devis, devis_data = tester.run_test(
+        "Devis Access",
+        "GET",
+        "/api/devis",
+        200 if tester.user_role in ['admin', 'manager'] else 403
+    )
+    
+    # Test opportunites endpoint
+    success_opportunites, opportunites_data = tester.run_test(
+        "Opportunites Access",
+        "GET",
+        "/api/opportunites",
+        200 if tester.user_role in ['admin', 'manager'] else 403
+    )
+    
+    # Test commandes endpoint
+    success_commandes, commandes_data = tester.run_test(
+        "Commandes Access",
+        "GET",
+        "/api/commandes",
+        200 if tester.user_role in ['admin', 'manager'] else 403
+    )
+    
+    if tester.user_role in ['admin', 'manager']:
+        expected_access = True
+        print(f"✅ User with role {tester.user_role} should have access to sales module")
+    else:
+        expected_access = False
+        print(f"❌ User with role {tester.user_role} should NOT have access to sales module")
+    
+    # Check if access matches expectations
+    access_correct = (
+        (success_stats == expected_access) and
+        (success_devis == expected_access) and
+        (success_opportunites == expected_access) and
+        (success_commandes == expected_access)
+    )
+    
+    if access_correct:
+        print(f"✅ Access permissions are correctly enforced for role {tester.user_role}")
+    else:
+        print(f"❌ Access permissions are NOT correctly enforced for role {tester.user_role}")
+    
+    return access_correct
 
 def main():
     # First authenticate
