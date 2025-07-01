@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "✅ RÉSOLU - L'utilisateur indiquait qu'il y avait beaucoup d'erreurs dans l'application FacturePro RDC malgré les corrections précédentes. Tous les problèmes ont été identifiés et corrigés avec succès. L'application est maintenant 100% fonctionnelle."
+user_problem_statement: "✅ RÉSOLU - L'utilisateur indiquait qu'il y avait beaucoup d'erreurs dans l'application FacturApp malgré les corrections précédentes. Tous les problèmes ont été identifiés et corrigés avec succès. L'application est maintenant 100% fonctionnelle."
 
 backend:
   - task: "Création et gestion des factures"
