@@ -1582,8 +1582,51 @@ def test_id_corrections():
     
     return invoice_ok and paid_ok and objectid_ok
 
+def test_authentication():
+    """Test authentication with admin credentials"""
+    print("\n" + "=" * 80)
+    print("🔑 TESTING AUTHENTICATION")
+    print("=" * 80)
+    
+    tester = FactureProTester()
+    
+    # Test login with admin credentials
+    login_data = {
+        "email": "admin@facturapp.rdc",
+        "password": "admin123"
+    }
+    
+    success, response = tester.run_test(
+        "Admin Login",
+        "POST",
+        "/api/auth/login",
+        200,
+        data=login_data
+    )
+    
+    if success and response and "access_token" in response:
+        print("✅ Successfully authenticated with admin credentials")
+        # Store the token for future requests
+        tester.token = response["access_token"]
+        # Update headers to include the token
+        tester.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {tester.token}'
+        }
+        return True, tester
+    else:
+        print("❌ Failed to authenticate with admin credentials")
+        return False, None
+
 def main():
-    # Run ID correction tests
+    # First authenticate
+    auth_success, authenticated_tester = test_authentication()
+    
+    if not auth_success:
+        print("❌ Authentication failed, stopping tests")
+        return 1
+    
+    # Run ID correction tests with the authenticated tester
     specific_tests_ok = test_id_corrections()
     
     # Print overall results
