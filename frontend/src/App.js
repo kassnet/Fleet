@@ -556,27 +556,27 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   // Fonction pour déterminer quels onglets afficher selon le rôle
   const getAvailableTabs = () => {
     const tabs = [
-      { id: 'dashboard', label: 'Tableau de bord', icon: '📊', roles: ['admin', 'manager', 'comptable', 'utilisateur'] }
+      { id: 'dashboard', label: t('nav.dashboard'), icon: '📊', roles: ['admin', 'manager', 'comptable', 'utilisateur'] }
     ];
 
     if (canManageClients()) {
-      tabs.push({ id: 'clients', label: 'Clients', icon: '👥', roles: ['admin', 'manager'] });
+      tabs.push({ id: 'clients', label: t('nav.clients'), icon: '👥', roles: ['admin', 'manager'] });
     }
 
     if (canManageProducts()) {
-      tabs.push({ id: 'produits', label: 'Produits', icon: '📦', roles: ['admin', 'manager'] });
+      tabs.push({ id: 'produits', label: t('nav.products'), icon: '📦', roles: ['admin', 'manager'] });
     }
 
     if (canManageInvoices()) {
-      tabs.push({ id: 'factures', label: 'Factures', icon: '🧾', roles: ['admin', 'manager', 'comptable'] });
+      tabs.push({ id: 'factures', label: t('nav.invoices'), icon: '🧾', roles: ['admin', 'manager', 'comptable'] });
     }
 
     if (canManagePayments()) {
-      tabs.push({ id: 'paiements', label: 'Paiements', icon: '💳', roles: ['admin', 'manager', 'comptable'] });
+      tabs.push({ id: 'paiements', label: t('nav.payments'), icon: '💳', roles: ['admin', 'manager', 'comptable'] });
     }
 
     if (canManageUsers()) {
-      tabs.push({ id: 'users', label: 'Utilisateurs', icon: '👤', roles: ['admin'] });
+      tabs.push({ id: 'users', label: t('nav.users'), icon: '👤', roles: ['admin'] });
     }
 
     return tabs;
