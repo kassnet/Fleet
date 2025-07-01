@@ -118,36 +118,36 @@ const Login = () => {
                         {/* Comptes de démonstration */}
                         <div className="border-t border-gray-200 dark:border-gray-600 pt-6">
                             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                Comptes de démonstration :
+                                {t('login.demo')} :
                             </p>
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 <button
                                     type="button"
                                     onClick={() => handleDemoLogin('admin@facturapp.rdc', 'admin123')}
-                                    className="px-3 py-2 bg-red-50 text-red-700 rounded border border-red-200 hover:bg-red-100 transition"
+                                    className="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
                                 >
-                                    👑 Admin
+                                    👑 {t('user.role.admin')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => handleDemoLogin('manager@demo.com', 'manager123')}
-                                    className="px-3 py-2 bg-blue-50 text-blue-700 rounded border border-blue-200 hover:bg-blue-100 transition"
+                                    className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
                                 >
-                                    👔 Manager
+                                    👔 {t('user.role.manager')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => handleDemoLogin('comptable@demo.com', 'comptable123')}
-                                    className="px-3 py-2 bg-green-50 text-green-700 rounded border border-green-200 hover:bg-green-100 transition"
+                                    className="px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition"
                                 >
-                                    💰 Comptable
+                                    💰 {t('user.role.comptable')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => handleDemoLogin('user@demo.com', 'user123')}
-                                    className="px-3 py-2 bg-gray-50 text-gray-700 rounded border border-gray-200 hover:bg-gray-100 transition"
+                                    className="px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                                 >
-                                    👤 Utilisateur
+                                    👤 {t('user.role.utilisateur')}
                                 </button>
                             </div>
                         </div>
