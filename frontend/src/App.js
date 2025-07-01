@@ -721,11 +721,11 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">CA Mensuel (USD)</p>
-                    <p className="text-2xl font-bold">${(stats.ca_mensuel_usd || 0).toLocaleString()}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.stats.totalRevenue')} (USD)</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">${(stats.ca_mensuel_usd || 0).toLocaleString()}</p>
                   </div>
                   <span className="text-3xl">💰</span>
                 </div>
@@ -733,13 +733,13 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
             </div>
 
             {/* Actions rapides */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-medium mb-4">Actions rapides</h3>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Actions rapides</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {canManageClients() && (
                   <button
                     onClick={() => setShowClientModal(true)}
-                    className="flex items-center justify-center space-x-2 p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                    className="flex items-center justify-center space-x-2 p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-700 dark:text-gray-300"
                   >
                     <span className="text-2xl">👥</span>
                     <span>Nouveau client</span>
