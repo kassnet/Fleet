@@ -146,7 +146,7 @@ const Login = () => {
                 {/* Footer */}
                 <div className="text-center">
                     <p className="text-blue-100 text-sm">
-                        🚗 FleetMaster - Système de gestion de flotte véhicules
+                        💼 FacturApp - Système de gestion de facturation professionnel
                     </p>
                 </div>
             </div>
