@@ -28,6 +28,7 @@ const translations = {
     'nav.products': 'Produits',
     'nav.invoices': 'Factures',
     'nav.payments': 'Paiements',
+    'nav.sales': 'Ventes',
     'nav.stock': 'Stock',
     'nav.settings': 'Paramètres',
     'nav.users': 'Utilisateurs',
