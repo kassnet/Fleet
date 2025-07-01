@@ -26,6 +26,13 @@ const AppContent = () => {
   const [notification, setNotification] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
 
+  // Sales states
+  const [devis, setDevis] = useState([]);
+  const [opportunites, setOpportunites] = useState([]);
+  const [commandes, setCommandes] = useState([]);
+  const [venteStats, setVenteStats] = useState({});
+  const [activeSalesTab, setActiveSalesTab] = useState('dashboard');
+
   // Modal states
   const [showClientModal, setShowClientModal] = useState(false);
   const [showProduitModal, setShowProduitModal] = useState(false);
