@@ -612,7 +612,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">📊</span>
-                <h1 className="text-xl font-bold text-gray-900">FacturePro RDC</h1>
+                <h1 className="text-xl font-bold text-gray-900">FleetMaster</h1>
               </div>
             </div>
             
