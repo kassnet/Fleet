@@ -156,8 +156,8 @@ const Login = () => {
 
                 {/* Footer */}
                 <div className="text-center">
-                    <p className="text-blue-100 text-sm">
-                        💼 FacturApp - Système de gestion de facturation professionnel
+                    <p className="text-blue-100 dark:text-gray-300 text-sm">
+                        💼 {t('app.title')} - {t('app.description')}
                     </p>
                 </div>
             </div>
