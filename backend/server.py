@@ -195,6 +195,140 @@ class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
 
+# ===== SALES MODELS =====
+class LigneDevis(BaseModel):
+    produit_id: str
+    nom_produit: str
+    quantite: float
+    prix_unitaire_usd: float
+    prix_unitaire_fc: float
+    devise: str  # USD ou FC
+    tva: float
+    total_ht_usd: float
+    total_ht_fc: float
+    total_ttc_usd: float
+    total_ttc_fc: float
+
+class Devis(BaseModel):
+    id: Optional[str] = None
+    numero: Optional[str] = None
+    client_id: str
+    client_nom: str
+    client_email: str
+    client_adresse: Optional[str] = None
+    devise: str = "USD"
+    lignes: List[LigneDevis]
+    total_ht_usd: float
+    total_ht_fc: float
+    total_tva_usd: float
+    total_tva_fc: float
+    total_ttc_usd: float
+    total_ttc_fc: float
+    statut: str = "brouillon"  # brouillon, envoye, accepte, refuse, expire
+    validite_jours: int = 30
+    date_creation: Optional[datetime] = None
+    date_expiration: Optional[datetime] = None
+    date_acceptation: Optional[datetime] = None
+    notes: Optional[str] = None
+    conditions: Optional[str] = None
+    facture_id: Optional[str] = None  # Si converti en facture
+
+class Opportunite(BaseModel):
+    id: Optional[str] = None
+    titre: str
+    description: Optional[str] = None
+    client_id: str
+    client_nom: str
+    valeur_estimee_usd: float
+    valeur_estimee_fc: float
+    devise: str = "USD"
+    probabilite: int = 50  # Pourcentage 0-100
+    etape: str = "prospect"  # prospect, qualification, proposition, negociation, ferme_gagne, ferme_perdu
+    priorite: str = "moyenne"  # basse, moyenne, haute
+    date_creation: Optional[datetime] = None
+    date_cloture_prevue: Optional[datetime] = None
+    date_cloture_reelle: Optional[datetime] = None
+    notes: Optional[str] = None
+    commercial_id: Optional[str] = None  # ID utilisateur responsable
+    devis_ids: List[str] = []
+    activites: List[Dict[str, Any]] = []  # Historique des activités
+
+class LigneCommande(BaseModel):
+    produit_id: str
+    nom_produit: str
+    quantite: float
+    prix_unitaire_usd: float
+    prix_unitaire_fc: float
+    devise: str
+    total_usd: float
+    total_fc: float
+    statut_livraison: str = "en_attente"  # en_attente, expedie, livre
+
+class Commande(BaseModel):
+    id: Optional[str] = None
+    numero: Optional[str] = None
+    client_id: str
+    client_nom: str
+    client_email: str
+    client_adresse: Optional[str] = None
+    opportunite_id: Optional[str] = None
+    devis_id: Optional[str] = None
+    lignes: List[LigneCommande]
+    total_usd: float
+    total_fc: float
+    devise: str = "USD"
+    statut: str = "nouvelle"  # nouvelle, confirmee, en_preparation, expediee, livree, annulee
+    date_creation: Optional[datetime] = None
+    date_confirmation: Optional[datetime] = None
+    date_livraison_prevue: Optional[datetime] = None
+    date_livraison_reelle: Optional[datetime] = None
+    adresse_livraison: Optional[str] = None
+    transporteur: Optional[str] = None
+    numero_suivi: Optional[str] = None
+    notes: Optional[str] = None
+    facture_id: Optional[str] = None
+
+class VenteStats(BaseModel):
+    # Statistiques générales
+    total_devis: int
+    total_devis_acceptes: int
+    taux_conversion_devis: float
+    total_opportunites: int
+    opportunites_en_cours: int
+    valeur_pipeline_usd: float
+    valeur_pipeline_fc: float
+    total_commandes: int
+    commandes_en_cours: int
+    
+    # Chiffres d'affaires
+    ca_devis_mois_usd: float
+    ca_devis_mois_fc: float
+    ca_commandes_mois_usd: float
+    ca_commandes_mois_fc: float
+    
+    # Top performers
+    top_clients: List[Dict[str, Any]]
+    top_produits: List[Dict[str, Any]]
+    
+    # Prévisions
+    objectif_mensuel_usd: float = 0
+    objectif_mensuel_fc: float = 0
+    realisation_pourcentage: float = 0
+
+class ActiviteCommerciale(BaseModel):
+    id: Optional[str] = None
+    opportunite_id: str
+    type_activite: str  # appel, email, reunion, visite, proposition, suivi
+    titre: str
+    description: Optional[str] = None
+    date_activite: datetime
+    duree_minutes: Optional[int] = None
+    commercial_id: str
+    commercial_nom: str
+    resultat: Optional[str] = None  # positif, neutre, negatif
+    prochaine_action: Optional[str] = None
+    date_prochaine_action: Optional[datetime] = None
+
 # Helper functions
 def generate_invoice_number():
     return f"FACT-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
