@@ -206,6 +206,37 @@ const AppContent = () => {
         setPaiements([]);
         console.log('👤 Utilisateur simple - PAS de requête aux factures/paiements');
       }
+
+      // Données de vente pour Admin et Manager uniquement
+      if (user.role === 'admin' || user.role === 'manager') {
+        console.log('💼 Chargement des données de vente pour rôle:', user.role);
+        try {
+          const [devisRes, opportunitesRes, commandesRes, venteStatsRes] = await Promise.all([
+            apiCall('GET', '/api/devis'),
+            apiCall('GET', '/api/opportunites'),
+            apiCall('GET', '/api/commandes'),
+            apiCall('GET', '/api/vente/stats')
+          ]);
+          
+          setDevis(devisRes.data || []);
+          setOpportunites(opportunitesRes.data || []);
+          setCommandes(commandesRes.data || []);
+          setVenteStats(venteStatsRes.data || {});
+          console.log('💼 Données de vente chargées - Devis:', devisRes.data.length, 'Opportunités:', opportunitesRes.data.length, 'Commandes:', commandesRes.data.length);
+        } catch (salesError) {
+          console.warn('⚠️ Erreur chargement données de vente:', salesError.response?.status);
+          setDevis([]);
+          setOpportunites([]);
+          setCommandes([]);
+          setVenteStats({});
+        }
+      } else {
+        // Pas d'accès aux données de vente
+        setDevis([]);
+        setOpportunites([]);
+        setCommandes([]);
+        setVenteStats({});
+      }
       
       console.log('✅ Toutes les données chargées avec succès pour rôle:', user.role);
     } catch (error) {
