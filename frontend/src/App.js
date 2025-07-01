@@ -40,6 +40,12 @@ const AppContent = () => {
   const [showStockModal, setShowStockModal] = useState(false);
   const [showMouvementsModal, setShowMouvementsModal] = useState(false);
   const [showTauxModal, setShowTauxModal] = useState(false);
+  
+  // Sales modal states
+  const [showDevisModal, setShowDevisModal] = useState(false);
+  const [showOpportuniteModal, setShowOpportuniteModal] = useState(false);
+  const [showCommandeModal, setShowCommandeModal] = useState(false);
+  const [showActiviteModal, setShowActiviteModal] = useState(false);
 
   // Form states
   const [clientForm, setClientForm] = useState({ nom: '', email: '', telephone: '', adresse: '' });
