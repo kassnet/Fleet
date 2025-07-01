@@ -146,7 +146,7 @@ const Login = () => {
                 {/* Footer */}
                 <div className="text-center">
                     <p className="text-blue-100 text-sm">
-                        🇨🇩 FacturePro RDC - Système de facturation pour la RDC
+                        🚗 FleetMaster - Système de gestion de flotte véhicules
                     </p>
                 </div>
             </div>
