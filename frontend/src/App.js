@@ -942,7 +942,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           <ProtectedRoute requiredRoles={['admin', 'manager', 'comptable']}>
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Gestion des factures</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('invoices.title')}</h2>
                 {!canViewOnly() && (
                   <button
                     onClick={() => setShowFactureModal(true)}
