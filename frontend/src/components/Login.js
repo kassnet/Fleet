@@ -112,7 +112,7 @@ const Login = () => {
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 <button
                                     type="button"
-                                    onClick={() => handleDemoLogin('admin@facturepro.rdc', 'admin123')}
+                                    onClick={() => handleDemoLogin('admin@facturapp.rdc', 'admin123')}
                                     className="px-3 py-2 bg-red-50 text-red-700 rounded border border-red-200 hover:bg-red-100 transition"
                                 >
                                     👑 Admin
