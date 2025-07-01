@@ -609,32 +609,38 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Header avec authentification */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl">📊</span>
-                <h1 className="text-xl font-bold text-gray-900">FacturApp</h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('app.title')}</h1>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
+              {/* Contrôles de thème et langue */}
+              <div className="flex items-center space-x-2">
+                <ThemeToggle />
+                <LanguageSelector />
+              </div>
+              
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium">{user.prenom} {user.nom}</span>
-                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-                  {user.role === 'admin' ? '👑 Admin' : 
-                   user.role === 'manager' ? '👔 Manager' :
-                   user.role === 'comptable' ? '💰 Comptable' : '👤 Utilisateur'}
+                <span className="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs rounded">
+                  {user.role === 'admin' ? `👑 ${t('user.role.admin')}` : 
+                   user.role === 'manager' ? `👔 ${t('user.role.manager')}` :
+                   user.role === 'comptable' ? `💰 ${t('user.role.comptable')}` : `👤 ${t('user.role.utilisateur')}`}
                 </span>
               </div>
               <button
                 onClick={logout}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm rounded-lg hover:bg-gray-100"
+                className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                🚪 Déconnexion
+                🚪 {t('user.logout')}
               </button>
             </div>
           </div>
