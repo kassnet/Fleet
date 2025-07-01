@@ -12,6 +12,8 @@ class FactureProTester:
         self.test_product = None
         self.test_invoice = None
         self.test_payment = None
+        self.token = None
+        self.headers = {'Content-Type': 'application/json'}
 
     def run_test(self, name, method, endpoint, expected_status=200, data=None, print_response=True):
         """Run a single API test"""
