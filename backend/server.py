@@ -333,6 +333,28 @@ class ActiviteCommerciale(BaseModel):
 def generate_invoice_number():
     return f"FACT-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
 
+def generate_devis_number():
+    return f"DEVIS-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+
+def generate_commande_number():
+    return f"CMD-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+
+def calculer_date_expiration(validite_jours: int = 30) -> datetime:
+    """Calcule la date d'expiration d'un devis"""
+    return datetime.now() + timedelta(days=validite_jours)
+
+def calculer_etape_probabilite(etape: str) -> int:
+    """Retourne la probabilité par défaut selon l'étape"""
+    etapes_probabilite = {
+        "prospect": 10,
+        "qualification": 25,
+        "proposition": 50,
+        "negociation": 75,
+        "ferme_gagne": 100,
+        "ferme_perdu": 0
+    }
+    return etapes_probabilite.get(etape, 50)
+
 def convertir_devise(montant: float, devise_source: str, devise_cible: str, taux: float = None) -> float:
     """Convertit un montant d'une devise à une autre"""
     if devise_source == devise_cible:
