@@ -1685,22 +1685,59 @@ def test_vente_access(tester):
     return access_correct
 
 def main():
-    # First authenticate
-    auth_success, authenticated_tester = test_authentication()
+    # Test with admin user
+    print("\n==== Testing with Admin User ====")
+    auth_success, admin_tester = test_authentication("admin@facturapp.rdc", "admin123")
     
     if not auth_success:
-        print("❌ Authentication failed, stopping tests")
+        print("❌ Authentication failed for admin, stopping tests")
         return 1
     
-    # Run ID correction tests with the authenticated tester
-    specific_tests_ok = test_id_corrections(authenticated_tester)
+    # Run ID correction tests with the authenticated admin
+    specific_tests_ok = test_id_corrections(admin_tester)
+    
+    # Test sales module access with admin
+    sales_access_admin = test_vente_access(admin_tester)
+    
+    # Test with manager user
+    print("\n==== Testing with Manager User ====")
+    auth_success, manager_tester = test_authentication("manager@demo.com", "manager123")
+    
+    if auth_success:
+        # Test sales module access with manager
+        sales_access_manager = test_vente_access(manager_tester)
+    else:
+        print("❌ Authentication failed for manager")
+        sales_access_manager = False
+    
+    # Test with comptable user (should not have access to sales)
+    print("\n==== Testing with Comptable User ====")
+    auth_success, comptable_tester = test_authentication("comptable@demo.com", "comptable123")
+    
+    if auth_success:
+        # Test sales module access with comptable (should be denied)
+        sales_access_comptable = test_vente_access(comptable_tester)
+        # For comptable, success means they were correctly denied access
+        sales_access_comptable = not sales_access_comptable
+    else:
+        print("❌ Authentication failed for comptable")
+        sales_access_comptable = False
     
     # Print overall results
     print("\n" + "=" * 80)
-    print(f"📊 OVERALL TEST RESULT: {'✅ PASSED' if specific_tests_ok else '❌ FAILED'}")
+    print("📊 OVERALL TEST RESULTS:")
+    print("=" * 80)
+    print(f"ID Correction Tests: {'✅ PASSED' if specific_tests_ok else '❌ FAILED'}")
+    print(f"Admin Sales Access: {'✅ PASSED' if sales_access_admin else '❌ FAILED'}")
+    print(f"Manager Sales Access: {'✅ PASSED' if sales_access_manager else '❌ FAILED'}")
+    print(f"Comptable Sales Access Restriction: {'✅ PASSED' if sales_access_comptable else '❌ FAILED'}")
+    
+    overall_result = specific_tests_ok and sales_access_admin and sales_access_manager and sales_access_comptable
+    print("\n" + "=" * 80)
+    print(f"📊 FINAL RESULT: {'✅ PASSED' if overall_result else '❌ FAILED'}")
     print("=" * 80)
     
-    return 0 if specific_tests_ok else 1
+    return 0 if overall_result else 1
 
 if __name__ == "__main__":
     sys.exit(main())
