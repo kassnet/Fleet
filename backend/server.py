@@ -1573,6 +1573,257 @@ async def get_devis_by_id(devis_id: str, current_user: dict = Depends(manager_an
         del devis["_id"]
     return Devis(**devis)
 
+@app.post("/api/devis", response_model=Devis)
+async def create_devis(devis: Devis, current_user: dict = Depends(manager_and_admin())):
+    """Créer un nouveau devis - Manager et Admin"""
+    devis.id = str(uuid.uuid4())
+    devis.numero = generate_devis_number()
+    devis.date_creation = datetime.now()
+    devis.date_expiration = calculer_date_expiration(devis.validite_jours)
+    
+    devis_dict = devis.dict()
+    result = await db.devis.insert_one(devis_dict)
+    
+    return devis
+
+@app.put("/api/devis/{devis_id}")
+async def update_devis_status(devis_id: str, statut: str, current_user: dict = Depends(manager_and_admin())):
+    """Mettre à jour le statut d'un devis - Manager et Admin"""
+    result = await db.devis.update_one(
+        {"$or": [{"id": devis_id}, {"_id": devis_id}]},
+        {"$set": {"statut": statut, "date_acceptation": datetime.now() if statut == "accepte" else None}}
+    )
+    
+    if result.matched_count == 0:
+        try:
+            await db.devis.update_one(
+                {"_id": ObjectId(devis_id)},
+                {"$set": {"statut": statut, "date_acceptation": datetime.now() if statut == "accepte" else None}}
+            )
+        except:
+            pass
+    
+    return {"message": f"Devis mis à jour avec le statut: {statut}"}
+
+@app.post("/api/devis/{devis_id}/convertir-facture")
+async def convertir_devis_facture(devis_id: str, current_user: dict = Depends(manager_and_admin())):
+    """Convertir un devis en facture - Manager et Admin"""
+    devis = await db.devis.find_one({"$or": [{"id": devis_id}, {"_id": devis_id}]})
+    
+    if not devis:
+        try:
+            devis = await db.devis.find_one({"_id": ObjectId(devis_id)})
+        except:
+            pass
+    
+    if not devis:
+        raise HTTPException(status_code=404, detail="Devis non trouvé")
+    
+    if devis["statut"] != "accepte":
+        raise HTTPException(status_code=400, detail="Seuls les devis acceptés peuvent être convertis en facture")
+    
+    # Créer une facture à partir du devis
+    facture = Facture(
+        id=str(uuid.uuid4()),
+        numero=generate_invoice_number(),
+        client_id=devis["client_id"],
+        client_nom=devis["client_nom"],
+        client_email=devis["client_email"],
+        client_adresse=devis.get("client_adresse"),
+        devise=devis["devise"],
+        lignes=[LigneFacture(**ligne) for ligne in devis["lignes"]],
+        total_ht_usd=devis["total_ht_usd"],
+        total_ht_fc=devis["total_ht_fc"],
+        total_tva_usd=devis["total_tva_usd"],
+        total_tva_fc=devis["total_tva_fc"],
+        total_ttc_usd=devis["total_ttc_usd"],
+        total_ttc_fc=devis["total_ttc_fc"],
+        date_creation=datetime.now(),
+        notes=devis.get("notes", "Facture générée à partir du devis " + devis["numero"])
+    )
+    
+    facture_dict = facture.dict()
+    await db.factures.insert_one(facture_dict)
+    
+    # Mettre à jour le devis avec l'ID de la facture
+    await db.devis.update_one(
+        {"$or": [{"id": devis_id}, {"_id": devis_id}]},
+        {"$set": {"facture_id": facture.id}}
+    )
+    
+    return {"message": "Devis converti en facture", "facture_id": facture.id, "facture_numero": facture.numero}
+
+# OPPORTUNITÉS Routes
+@app.get("/api/opportunites", response_model=List[Opportunite])
+async def get_opportunites(current_user: dict = Depends(manager_and_admin())):
+    """Récupérer toutes les opportunités - Manager et Admin"""
+    opportunites = []
+    async for opp in db.opportunites.find().sort("date_creation", -1):
+        opp["id"] = str(opp["_id"]) if "_id" in opp else opp.get("id")
+        if "_id" in opp:
+            del opp["_id"]
+        opportunites.append(opp)
+    return opportunites
+
+@app.post("/api/opportunites", response_model=Opportunite)
+async def create_opportunite(opportunite: Opportunite, current_user: dict = Depends(manager_and_admin())):
+    """Créer une nouvelle opportunité - Manager et Admin"""
+    opportunite.id = str(uuid.uuid4())
+    opportunite.date_creation = datetime.now()
+    opportunite.commercial_id = current_user["id"]
+    
+    # Ajuster la probabilité selon l'étape
+    if not opportunite.probabilite or opportunite.probabilite == 50:
+        opportunite.probabilite = calculer_etape_probabilite(opportunite.etape)
+    
+    opportunite_dict = opportunite.dict()
+    result = await db.opportunites.insert_one(opportunite_dict)
+    
+    return opportunite
+
+@app.put("/api/opportunites/{opportunite_id}")
+async def update_opportunite(opportunite_id: str, opportunite_update: dict, current_user: dict = Depends(manager_and_admin())):
+    """Mettre à jour une opportunité - Manager et Admin"""
+    
+    # Ajuster la probabilité selon l'étape
+    if "etape" in opportunite_update:
+        opportunite_update["probabilite"] = calculer_etape_probabilite(opportunite_update["etape"])
+        if opportunite_update["etape"] in ["ferme_gagne", "ferme_perdu"]:
+            opportunite_update["date_cloture_reelle"] = datetime.now()
+    
+    result = await db.opportunites.update_one(
+        {"$or": [{"id": opportunite_id}, {"_id": opportunite_id}]},
+        {"$set": opportunite_update}
+    )
+    
+    if result.matched_count == 0:
+        try:
+            await db.opportunites.update_one(
+                {"_id": ObjectId(opportunite_id)},
+                {"$set": opportunite_update}
+            )
+        except:
+            pass
+    
+    return {"message": "Opportunité mise à jour"}
+
+# COMMANDES Routes
+@app.get("/api/commandes", response_model=List[Commande])
+async def get_commandes(current_user: dict = Depends(manager_and_admin())):
+    """Récupérer toutes les commandes - Manager et Admin"""
+    commandes = []
+    async for cmd in db.commandes.find().sort("date_creation", -1):
+        cmd["id"] = str(cmd["_id"]) if "_id" in cmd else cmd.get("id")
+        if "_id" in cmd:
+            del cmd["_id"]
+        commandes.append(cmd)
+    return commandes
+
+@app.post("/api/commandes", response_model=Commande)
+async def create_commande(commande: Commande, current_user: dict = Depends(manager_and_admin())):
+    """Créer une nouvelle commande - Manager et Admin"""
+    commande.id = str(uuid.uuid4())
+    commande.numero = generate_commande_number()
+    commande.date_creation = datetime.now()
+    
+    commande_dict = commande.dict()
+    result = await db.commandes.insert_one(commande_dict)
+    
+    return commande
+
+@app.put("/api/commandes/{commande_id}/statut")
+async def update_commande_statut(commande_id: str, statut: str, current_user: dict = Depends(manager_and_admin())):
+    """Mettre à jour le statut d'une commande - Manager et Admin"""
+    update_data = {"statut": statut}
+    
+    if statut == "confirmee":
+        update_data["date_confirmation"] = datetime.now()
+    elif statut == "livree":
+        update_data["date_livraison_reelle"] = datetime.now()
+    
+    result = await db.commandes.update_one(
+        {"$or": [{"id": commande_id}, {"_id": commande_id}]},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        try:
+            await db.commandes.update_one(
+                {"_id": ObjectId(commande_id)},
+                {"$set": update_data}
+            )
+        except:
+            pass
+    
+    return {"message": f"Commande mise à jour avec le statut: {statut}"}
+
+# STATISTIQUES VENTE
+@app.get("/api/vente/stats", response_model=VenteStats)
+async def get_vente_stats(current_user: dict = Depends(manager_and_admin())):
+    """Récupérer les statistiques de vente - Manager et Admin"""
+    
+    # Statistiques générales
+    total_devis = await db.devis.count_documents({})
+    total_devis_acceptes = await db.devis.count_documents({"statut": "accepte"})
+    taux_conversion_devis = (total_devis_acceptes / total_devis * 100) if total_devis > 0 else 0
+    
+    total_opportunites = await db.opportunites.count_documents({})
+    opportunites_en_cours = await db.opportunites.count_documents({"etape": {"$nin": ["ferme_gagne", "ferme_perdu"]}})
+    
+    total_commandes = await db.commandes.count_documents({})
+    commandes_en_cours = await db.commandes.count_documents({"statut": {"$nin": ["livree", "annulee"]}})
+    
+    # Valeur du pipeline
+    pipeline_cursor = db.opportunites.find({"etape": {"$nin": ["ferme_gagne", "ferme_perdu"]}})
+    valeur_pipeline_usd = 0
+    valeur_pipeline_fc = 0
+    
+    async for opp in pipeline_cursor:
+        valeur_pipeline_usd += opp.get("valeur_estimee_usd", 0) * (opp.get("probabilite", 0) / 100)
+        valeur_pipeline_fc += opp.get("valeur_estimee_fc", 0) * (opp.get("probabilite", 0) / 100)
+    
+    # CA mensuel devis et commandes
+    now = datetime.now()
+    debut_mois = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    devis_mois = db.devis.find({"statut": "accepte", "date_acceptation": {"$gte": debut_mois}})
+    ca_devis_mois_usd = 0
+    ca_devis_mois_fc = 0
+    
+    async for devis in devis_mois:
+        ca_devis_mois_usd += devis.get("total_ttc_usd", 0)
+        ca_devis_mois_fc += devis.get("total_ttc_fc", 0)
+    
+    commandes_mois = db.commandes.find({"statut": "livree", "date_livraison_reelle": {"$gte": debut_mois}})
+    ca_commandes_mois_usd = 0
+    ca_commandes_mois_fc = 0
+    
+    async for cmd in commandes_mois:
+        ca_commandes_mois_usd += cmd.get("total_usd", 0)
+        ca_commandes_mois_fc += cmd.get("total_fc", 0)
+    
+    # Top clients et produits (simplifié pour l'instant)
+    top_clients = []
+    top_produits = []
+    
+    return VenteStats(
+        total_devis=total_devis,
+        total_devis_acceptes=total_devis_acceptes,
+        taux_conversion_devis=round(taux_conversion_devis, 2),
+        total_opportunites=total_opportunites,
+        opportunites_en_cours=opportunites_en_cours,
+        valeur_pipeline_usd=round(valeur_pipeline_usd, 2),
+        valeur_pipeline_fc=round(valeur_pipeline_fc, 2),
+        total_commandes=total_commandes,
+        commandes_en_cours=commandes_en_cours,
+        ca_devis_mois_usd=round(ca_devis_mois_usd, 2),
+        ca_devis_mois_fc=round(ca_devis_mois_fc, 2),
+        ca_commandes_mois_usd=round(ca_commandes_mois_usd, 2),
+        ca_commandes_mois_fc=round(ca_commandes_mois_fc, 2),
+        top_clients=top_clients,
+        top_produits=top_produits
+    )
+
 @app.get("/api/paiements")
 async def get_paiements(current_user: dict = Depends(comptable_manager_admin())):
     """Récupérer tous les paiements - Comptable, Manager et Admin"""
