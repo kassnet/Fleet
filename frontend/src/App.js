@@ -623,6 +623,128 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     }
   };
 
+  // ===== FONCTIONS VENTES =====
+  
+  // Fonction pour convertir un devis en facture
+  const convertirDevisEnFacture = async (devisId) => {
+    try {
+      setLoading(true);
+      const response = await apiCall('POST', `/api/devis/${devisId}/convertir-facture`);
+      
+      showNotification(
+        `Devis converti en facture ${response.data.facture_numero}`, 
+        'success'
+      );
+      
+      // Recharger les données
+      loadData();
+    } catch (error) {
+      console.error('Erreur conversion devis:', error);
+      showNotification('Erreur lors de la conversion du devis en facture', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour créer un devis
+  const saveDevis = async () => {
+    try {
+      if (!devisForm.client_id || devisForm.items.length === 0) {
+        showNotification('Veuillez sélectionner un client et ajouter au moins un produit', 'error');
+        return;
+      }
+
+      // Trouver les infos du client
+      const client = clients.find(c => c.id === devisForm.client_id);
+      if (!client) {
+        showNotification('Client non trouvé', 'error');
+        return;
+      }
+
+      // Calculer les totaux
+      const totaux = calculateFactureTotals(); // Réutiliser la même fonction
+
+      const devisData = {
+        ...devisForm,
+        client_nom: client.nom,
+        client_email: client.email,
+        client_adresse: client.adresse,
+        lignes: devisForm.items.map(item => {
+          const produit = produits.find(p => p.id === item.produit_id);
+          return {
+            produit_id: item.produit_id,
+            nom_produit: produit ? produit.nom : 'Produit inconnu',
+            quantite: item.quantite,
+            prix_unitaire_usd: item.prix_unitaire_usd || 0,
+            prix_unitaire_fc: item.prix_unitaire_fc || 0,
+            devise: devisForm.devise,
+            tva: 0.16,
+            total_ht_usd: (item.prix_unitaire_usd || 0) * item.quantite,
+            total_ht_fc: (item.prix_unitaire_fc || 0) * item.quantite,
+            total_ttc_usd: (item.prix_unitaire_usd || 0) * item.quantite * 1.16,
+            total_ttc_fc: (item.prix_unitaire_fc || 0) * item.quantite * 1.16
+          };
+        }),
+        total_ht_usd: totaux.sousTotal,
+        total_ht_fc: convertirMontant(totaux.sousTotal, devisForm.devise, 'FC'),
+        total_tva_usd: totaux.tva,
+        total_tva_fc: convertirMontant(totaux.tva, devisForm.devise, 'FC'),
+        total_ttc_usd: totaux.total,
+        total_ttc_fc: convertirMontant(totaux.total, devisForm.devise, 'FC')
+      };
+
+      await apiCall('POST', '/api/devis', devisData);
+      
+      showNotification('Devis créé avec succès', 'success');
+      setShowDevisModal(false);
+      setDevisForm({ client_id: '', items: [], devise: 'USD', notes: '', validite_jours: 30 });
+      loadData();
+    } catch (error) {
+      console.error('Erreur création devis:', error);
+      showNotification('Erreur lors de la création du devis', 'error');
+    }
+  };
+
+  // Fonction pour créer une opportunité
+  const saveOpportunite = async () => {
+    try {
+      if (!opportuniteForm.titre || !opportuniteForm.client_id) {
+        showNotification('Veuillez remplir les champs obligatoires', 'error');
+        return;
+      }
+
+      // Trouver les infos du client
+      const client = clients.find(c => c.id === opportuniteForm.client_id);
+      if (!client) {
+        showNotification('Client non trouvé', 'error');
+        return;
+      }
+
+      const opportuniteData = {
+        ...opportuniteForm,
+        client_nom: client.nom,
+        valeur_estimee_fc: convertirMontant(
+          parseFloat(opportuniteForm.valeur_estimee_usd) || 0, 
+          opportuniteForm.devise, 
+          'FC'
+        )
+      };
+
+      await apiCall('POST', '/api/opportunites', opportuniteData);
+      
+      showNotification('Opportunité créée avec succès', 'success');
+      setShowOpportuniteModal(false);
+      setOpportuniteForm({ 
+        titre: '', description: '', client_id: '', valeur_estimee_usd: '', devise: 'USD', 
+        probabilite: 50, etape: 'prospect', priorite: 'moyenne', notes: '' 
+      });
+      loadData();
+    } catch (error) {
+      console.error('Erreur création opportunité:', error);
+      showNotification('Erreur lors de la création de l\'opportunité', 'error');
+    }
+  };
+
   // Fonction pour déterminer quels onglets afficher selon le rôle
   const getAvailableTabs = () => {
     const tabs = [
