@@ -734,7 +734,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
             {/* Actions rapides */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Actions rapides</h3>
+              <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('common.quickActions')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {canManageClients() && (
                   <button
