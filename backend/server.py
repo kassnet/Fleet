@@ -1541,6 +1541,18 @@ async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None, curr
     
     return {"message": "Facture marquée comme payée"}
 
+
+@app.get("/api/devis", response_model=List[Devis])
+async def get_devis(current_user: dict = Depends(manager_and_admin())):
+    """Récupérer tous les devis - Manager et Admin"""
+    devis = []
+    async for d in db.devis.find().sort("date_creation", -1):
+        d["id"] = str(d["_id"]) if "_id" in d else d.get("id")
+        if "_id" in d:
+            del d["_id"]
+        devis.append(Devis(**d))
+    return devis
+
 @app.get("/api/paiements")
 async def get_paiements(current_user: dict = Depends(comptable_manager_admin())):
     """Récupérer tous les paiements - Comptable, Manager et Admin"""
