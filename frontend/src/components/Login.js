@@ -36,7 +36,7 @@ const Login = () => {
                         <span className="text-2xl font-bold text-purple-600">📊</span>
                     </div>
                     <h2 className="mt-6 text-3xl font-extrabold text-white">
-                        FleetMaster
+                        FacturApp
                     </h2>
                     <p className="mt-2 text-sm text-blue-100">
                         Connectez-vous à votre compte
