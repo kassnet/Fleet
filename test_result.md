@@ -278,4 +278,4 @@ agent_communication:
   - agent: "user"
     message: "❌ ERREURS JAVASCRIPT - L'utilisateur rapporte des erreurs 'paiements.map n'est pas une fonction' et dysfonctionnements des onglets navigation. Boutons 'nouveau produit' et 'nouvelle facture' non fonctionnels."
   - agent: "main"
-    message: "✅ CORRECTIONS MAJEURES APPLIQUÉES - (1) Protection .map() avec fallbacks [], (2) Chargement données seulement si utilisateur authentifié, (3) Ajout de tous les modals manquants (produits, factures, stock, etc.), (4) Gestion erreurs API robuste. Application complètement fonctionnelle avec authentification."
+    message: "✅ RENOMMAGE COMPLET VERS FacturApp - Changement du nom de l'application de 'FacturePro RDC'/'FleetMaster' vers 'FacturApp'. Mis à jour: titre HTML, interface principale, composant Login, backend FastAPI et email admin par défaut. Application renommée avec succès."
