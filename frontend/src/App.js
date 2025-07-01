@@ -752,7 +752,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                     className="flex items-center justify-center space-x-2 p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
                   >
                     <span className="text-2xl">📦</span>
-                    <span>Nouveau produit</span>
+                    <span>{t('products.add')}</span>
                   </button>
                 )}
                 
