@@ -173,6 +173,61 @@ const translations = {
     'dashboard.stats.totalInvoices': 'Total Invoices',
     'dashboard.stats.totalRevenue': 'Total Revenue',
     
+    // Clients Section
+    'clients.title': 'Client Management',
+    'clients.add': 'New Client',
+    'clients.edit': 'Edit Client',
+    'clients.name': 'Client Name',
+    'clients.email': 'Email',
+    'clients.phone': 'Phone',
+    'clients.address': 'Address',
+    'clients.actions': 'Actions',
+    'clients.empty': 'No clients found',
+    
+    // Products Section
+    'products.title': 'Product Management',
+    'products.add': 'New Product',
+    'products.edit': 'Edit Product',
+    'products.name': 'Product Name',
+    'products.description': 'Description',
+    'products.priceUSD': 'Price USD',
+    'products.priceFC': 'Price FC',
+    'products.stock': 'Stock',
+    'products.stockMin': 'Min Stock',
+    'products.stockManagement': 'Stock Management',
+    'products.actions': 'Actions',
+    'products.empty': 'No products found',
+    
+    // Invoices Section
+    'invoices.title': 'Invoice Management',
+    'invoices.add': 'New Invoice',
+    'invoices.edit': 'Edit Invoice',
+    'invoices.number': 'Number',
+    'invoices.client': 'Client',
+    'invoices.date': 'Date',
+    'invoices.total': 'Total',
+    'invoices.status': 'Status',
+    'invoices.actions': 'Actions',
+    'invoices.empty': 'No invoices found',
+    
+    // Payments Section
+    'payments.title': 'Payment History',
+    'payments.invoice': 'Invoice',
+    'payments.amount': 'Amount',
+    'payments.method': 'Method',
+    'payments.date': 'Date',
+    'payments.status': 'Status',
+    'payments.actions': 'Actions',
+    'payments.empty': 'No payments found',
+    
+    // Users Section
+    'users.title': 'User Management',
+    'users.add': 'New User',
+    'users.name': 'Name',
+    'users.email': 'Email',
+    'users.role': 'Role',
+    'users.actions': 'Actions',
+    
     // Buttons
     'btn.add': 'Add',
     'btn.edit': 'Edit',
@@ -181,6 +236,11 @@ const translations = {
     'btn.cancel': 'Cancel',
     'btn.close': 'Close',
     'btn.confirm': 'Confirm',
+    'btn.view': 'View',
+    'btn.send': 'Send',
+    'btn.simulate': 'Simulate Payment',
+    'btn.markPaid': 'Mark Paid',
+    'btn.validate': 'Validate',
     
     // Forms
     'form.name': 'Name',
@@ -190,6 +250,8 @@ const translations = {
     'form.description': 'Description',
     'form.price': 'Price',
     'form.quantity': 'Quantity',
+    'form.currency': 'Currency',
+    'form.notes': 'Notes',
     
     // Messages
     'msg.success': 'Success',
@@ -213,7 +275,8 @@ const translations = {
     'common.filter': 'Filter',
     'common.sort': 'Sort',
     'common.export': 'Export',
-    'common.import': 'Import'
+    'common.import': 'Import',
+    'common.quickActions': 'Quick Actions'
   }
 };
 
