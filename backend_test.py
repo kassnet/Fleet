@@ -1629,7 +1629,7 @@ def main():
         return 1
     
     # Run ID correction tests with the authenticated tester
-    specific_tests_ok = test_id_corrections()
+    specific_tests_ok = test_id_corrections(authenticated_tester)
     
     # Print overall results
     print("\n" + "=" * 80)
