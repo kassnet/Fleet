@@ -1,0 +1,82 @@
+<analysis>
+The AI engineer's trajectory began with an initial struggle to acquire the correct codebase, eventually successfully cloning the FacturePro RDC application. The work then transitioned into an iterative bug-fixing process, addressing critical issues such as MongoDB ID inconsistencies, non-functional payment simulations, and UI/UX improvements by replacing native alerts with modern components. A significant phase involved implementing a comprehensive user authentication and authorization system with roles (Admin, Manager, Comptable, Utilisateur) and JWT-based protection. Recurring problems involved  errors and data loading issues due to  vs.  mismatches, which were resolved by migrating to a centralized  helper. The final major fix addressed a  error during invoice creation due to data format mismatch. The most recent task involves renaming the application from FacturePro RDC to FleetMaster, which is partially complete.
+</analysis>
+
+<product_requirements>
+The primary goal is to deliver a fully functional, demonstration-ready invoicing application for freelancers in the Democratic Republic of Congo (RDC), initially named FacturePro RDC. Key features include comprehensive CRUD for clients, products/services, and invoices; automatic stock management with low stock alerts; a simulated Stripe payment system with manual validation; and multi-currency support (USD/FC at 1 USD = 2800 FC). The application requires a professional, responsive UI with modern notifications and loading indicators, addressing initial issues like MongoDB ID incompatibility, invoice calculation errors, duplicate Mark as Paid buttons, and native pop-ups. It should be ready for real API integrations (Stripe, email). Recently, the user also requested a complete user management system with email/password authentication, admin-only registration, password reset functionality, and specific roles (Admin, Manager, Utilisateur, Comptable) with granular permissions. The latest request is to rename the application to FleetMaster.
+</product_requirements>
+
+<key_technical_concepts>
+-   **Full-stack Architecture**: React frontend, FastAPI backend, MongoDB database.
+-   **UUIDs**: Used for IDs to ensure JSON serializability and avoid MongoDB's ObjectIDs.
+-   **Supervisor**: Process manager for , , and  services.
+-   **Multi-currency**: USD/FC conversion with a configurable exchange rate.
+-   **JWT Authentication**: Implemented for user authentication and authorization.
+-   **Pydantic**: Data validation for backend models.
+-   **Axios**: HTTP client for frontend API calls.
+</key_technical_concepts>
+
+<code_architecture>
+The application follows a standard full-stack architecture, comprising a React frontend, a FastAPI backend, and a MongoDB database.
+
+
+
+-   ****:
+    -   **Importance**: Centralizes all backend logic including FastAPI endpoints for clients, products, invoices, payments, stock management, multi-currency conversions, and MongoDB interactions.
+    -   **Changes Made**:
+        -   Replaced initial template with the full FacturePro RDC application logic.
+        -   Modified , , ,  to correctly handle MongoDB  and uid=0(root) gid=0(root) groups=0(root) lookup inconsistencies, primarily using  queries.
+        -   Enhanced  to automatically create payment entries for manually marked invoices.
+        -   Added User, Role, and Token models, JWT authentication, password hashing (bcrypt), and authorization middleware (, ).
+        -   Implemented  event to create a default admin user and protected existing API routes based on user roles (Admin, Manager, Comptable, Utilisateur).
+        -   Updated default admin email domain for application renaming.
+-   ****:
+    -   **Importance**: Main React component managing UI, state, and API interactions. It contains routing, conditional rendering, and core application logic.
+    -   **Changes Made**:
+        -   Replaced initial template with the complete professional UI.
+        -   Modified  to correctly capture and utilize invoice uid=0(root) gid=0(root) groups=0(root) from API.
+        -   Replaced native / with modern / system, ensuring their modals are rendered in the DOM.
+        -   Integrated  for global authentication state and user roles.
+        -   Migrated all  API calls to  and then further refined to use a custom  helper to ensure correct  header transmission and conditional data loading based on user roles to prevent  errors for restricted users.
+        -   Fixed  errors by ensuring arrays are initialized or checked for null.
+        -   Restored missing modals for product, invoice, stock, exchange rate, and movements.
+        -   Modified  to transform frontend  data into the backend's expected  format to resolve  errors.
+        -   Changed application name display from FacturePro RDC to FleetMaster.
+-   ****:
+    -   **Importance**: Lists Python dependencies for the FastAPI backend.
+    -   **Changes Made**: Updated with , , , , , , , .
+-   ****:
+    -   **Importance**: Defines Node.js dependencies and scripts for the React frontend.
+    -   **Changes Made**: Updated to include , , , , , , , etc.
+-   ** and **:
+    -   **Importance**: Contain critical environment variables.
+    -   **Changes Made**: No direct modifications to content, as per strict instructions. Their correct usage was ensured throughout the development.
+</code_architecture>
+
+<pending_tasks>
+-   Continue renaming application assets and content from Facturation/Facture related terms to FleetMaster terminology, especially in the backend logic, if a complete refactoring for a fleet management system is desired. (Currently, only the display name and some UI elements have been changed).
+</pending_tasks>
+
+<current_work>
+Immediately before this summary, the AI engineer was addressing a user request to rename the application from FacturePro RDC to FleetMaster. The engineer had initiated this task by performing a search for FacturePro in the frontend and FacturePro in the backend.
+
+Specific modifications involved:
+-   **Frontend ()**: The application display name was changed.
+-   **Frontend ()**: The application name in the login component was updated.
+-   **Backend ()**: The default admin user's email domain for the initial creation was updated to reflect the  domain as a technical consistency, but not the display name.
+
+The AI engineer acknowledged that a full transition from facturation concepts to fleet management would be a significant refactoring and opted to prioritize the visible name change first. The last action was to update the HTML page title, which was the continuation of the renaming process.
+
+The application is currently considered 100% functional by the AI engineer, having successfully resolved:
+-   All MongoDB ID inconsistency issues in backend CRUD operations.
+-   Corrected invoice payment simulation and manual marking.
+-   Replaced all native UI alerts and confirms with a modern notification system.
+-   Implemented a robust JWT-based authentication system with four distinct roles (Admin, Manager, Comptable, Utilisateur) and granular route-level permissions.
+-   Resolved frontend data loading issues ( errors) by migrating all API calls to an authenticated Axios helper and implementing conditional data fetching based on user roles.
+-   Fixed  error during invoice creation by correctly formatting the data sent from frontend to backend.
+The current state is that the core application functionality and the authentication system are fully operational, and the application's display name is being updated.
+</current_work>
+
+<optional_next_step>
+Continue changing the application name from FacturePro RDC to FleetMaster in the frontend HTML title.
+</optional_next_step>

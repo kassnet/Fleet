@@ -4,7 +4,7 @@
 
 Ce rapport présente les résultats des tests de performance et de robustesse effectués sur l'application FacturePro RDC. Les tests ont été réalisés pour évaluer la capacité de l'application à gérer des charges importantes, des données complexes, et pour vérifier la cohérence des fonctionnalités métier.
 
-**URL de l'application:** https://3f83a5b3-5c70-4e1a-8b47-a7e6128d64d2.preview.emergentagent.com
+**URL de l'application:** https://122fd5ed-f22e-4bd5-80c6-6f62870e625e.preview.emergentagent.com
 
 **Résultat global:** ✅ L'application est prête pour la mise en production
 
