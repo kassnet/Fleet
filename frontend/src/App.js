@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import UserManagement from './components/UserManagement';
+import ThemeToggle from './components/ThemeToggle';
+import LanguageSelector from './components/LanguageSelector';
 import axios from 'axios';
 
 const AppContent = () => {
   const { user, logout, accessToken, canManageClients, canManageProducts, canManageInvoices, canManagePayments, canManageUsers, canViewOnly } = useAuth();
+  const { t } = useLanguage();
   
   // States existants
   const [activeTab, setActiveTab] = useState('dashboard');
