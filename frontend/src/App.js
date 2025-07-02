@@ -680,8 +680,8 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         return;
       }
 
-      // Calculer les totaux
-      const totaux = calculateFactureTotals(); // Réutiliser la même fonction
+      // Calculer les totaux avec la fonction générique
+      const totaux = calculateTotals(devisForm.items, devisForm.devise);
 
       const devisData = {
         ...devisForm,
@@ -704,12 +704,12 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
             total_ttc_fc: (item.prix_unitaire_fc || 0) * item.quantite * 1.16
           };
         }),
-        total_ht_usd: totaux.sousTotal,
-        total_ht_fc: convertirMontant(totaux.sousTotal, devisForm.devise, 'FC'),
-        total_tva_usd: totaux.tva,
-        total_tva_fc: convertirMontant(totaux.tva, devisForm.devise, 'FC'),
-        total_ttc_usd: totaux.total,
-        total_ttc_fc: convertirMontant(totaux.total, devisForm.devise, 'FC')
+        total_ht_usd: totaux.totalUSD / 1.16,
+        total_ht_fc: totaux.totalFC / 1.16,
+        total_tva_usd: totaux.totalUSD - (totaux.totalUSD / 1.16),
+        total_tva_fc: totaux.totalFC - (totaux.totalFC / 1.16),
+        total_ttc_usd: totaux.totalUSD,
+        total_ttc_fc: totaux.totalFC
       };
 
       await apiCall('POST', '/api/devis', devisData);
