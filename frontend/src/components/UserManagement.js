@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
 
 const UserManagement = () => {
-    const { user, checkPermission } = useAuth();
+    const { user, accessToken } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -20,6 +19,30 @@ const UserManagement = () => {
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+    // Helper pour les requêtes authentifiées (même que dans App.js)
+    const apiCall = async (method, endpoint, data = null) => {
+        const url = `${API_URL}${endpoint}`;
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }),
+            },
+        };
+
+        if (data && (method === 'POST' || method === 'PUT')) {
+            options.body = JSON.stringify(data);
+        }
+
+        const response = await fetch(url, options);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    };
+
     const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 3000);
@@ -28,8 +51,8 @@ const UserManagement = () => {
     const loadUsers = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_URL}/api/users`);
-            setUsers(response.data);
+            const response = await apiCall('GET', '/api/users');
+            setUsers(response || []);
         } catch (error) {
             console.error('Erreur chargement utilisateurs:', error);
             showNotification('Erreur lors du chargement des utilisateurs', 'error');
