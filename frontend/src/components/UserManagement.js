@@ -79,11 +79,11 @@ const UserManagement = () => {
                     role: userForm.role
                 };
                 
-                await axios.put(`${API_URL}/api/users/${editingUser.id}`, updateData);
+                await apiCall('PUT', `/api/users/${editingUser.id}`, updateData);
                 showNotification('Utilisateur modifié avec succès !');
             } else {
                 // Création
-                await axios.post(`${API_URL}/api/users`, userForm);
+                await apiCall('POST', '/api/users', userForm);
                 showNotification('Utilisateur créé avec succès !');
             }
             
@@ -92,7 +92,7 @@ const UserManagement = () => {
         } catch (error) {
             console.error('Erreur sauvegarde utilisateur:', error);
             showNotification(
-                error.response?.data?.detail || 'Erreur lors de la sauvegarde',
+                'Erreur lors de la sauvegarde',
                 'error'
             );
         }
