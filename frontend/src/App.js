@@ -764,6 +764,46 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     }
   };
 
+  // Fonction pour créer une commande
+  const saveCommande = async () => {
+    try {
+      if (!commandeForm.client_id) {
+        showNotification('Veuillez sélectionner un client', 'error');
+        return;
+      }
+
+      // Trouver les infos du client
+      const client = clients.find(c => c.id === commandeForm.client_id);
+      if (!client) {
+        showNotification('Client non trouvé', 'error');
+        return;
+      }
+
+      const commandeData = {
+        ...commandeForm,
+        client_nom: client.nom,
+        client_email: client.email,
+        client_adresse: client.adresse,
+        lignes: [], // Pour l'instant, commande sans produits (peut être étendu plus tard)
+        total_usd: 0,
+        total_fc: 0
+      };
+
+      await apiCall('POST', '/api/commandes', commandeData);
+      
+      showNotification('Commande créée avec succès', 'success');
+      setShowCommandeModal(false);
+      setCommandeForm({ 
+        client_id: '', opportunite_id: '', items: [], devise: 'USD', 
+        adresse_livraison: '', notes: '' 
+      });
+      loadData();
+    } catch (error) {
+      console.error('Erreur création commande:', error);
+      showNotification('Erreur lors de la création de la commande', 'error');
+    }
+  };
+
   // Fonction pour déterminer quels onglets afficher selon le rôle
   const getAvailableTabs = () => {
     const tabs = [
