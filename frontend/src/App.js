@@ -410,6 +410,25 @@ const AppContent = () => {
     };
   };
 
+  // Fonction générique pour calculer les totaux
+  const calculateTotals = (items, devise) => {
+    const sousTotal = items.reduce((acc, item) => {
+      const prix = devise === 'USD' ? item.prix_unitaire_usd : item.prix_unitaire_fc;
+      return acc + (prix * item.quantite);
+    }, 0);
+    
+    const tva = sousTotal * 0.16;
+    const total = sousTotal + tva;
+    
+    return {
+      sousTotal,
+      tva,
+      total,
+      totalUSD: devise === 'USD' ? total : convertirMontant(total, 'FC', 'USD'),
+      totalFC: devise === 'FC' ? total : convertirMontant(total, 'USD', 'FC')
+    };
+  };
+
   const saveFacture = async () => {
     try {
       if (!factureForm.client_id) {
