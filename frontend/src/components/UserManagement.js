@@ -62,10 +62,10 @@ const UserManagement = () => {
     };
 
     useEffect(() => {
-        if (checkPermission(['admin'])) {
+        if (user?.role === 'admin') {
             loadUsers();
         }
-    }, []);
+    }, [user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
