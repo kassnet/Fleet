@@ -2664,10 +2664,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 {t('btn.cancel')}
               </button>
               <button
-                onClick={() => {
-                  showNotification('Fonction de création de commande en cours de développement', 'info');
-                  setShowCommandeModal(false);
-                }}
+                onClick={saveCommande}
                 className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
               >
                 {t('btn.save')}
