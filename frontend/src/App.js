@@ -2387,19 +2387,19 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Sous-total:</span>
-                      <span>{formatMontant(calculateFactureTotals().sousTotal, devisForm.devise)}</span>
+                      <span>{formatMontant(calculateTotals(devisForm.items, devisForm.devise).sousTotal, devisForm.devise)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>TVA (16%):</span>
-                      <span>{formatMontant(calculateFactureTotals().tva, devisForm.devise)}</span>
+                      <span>{formatMontant(calculateTotals(devisForm.items, devisForm.devise).tva, devisForm.devise)}</span>
                     </div>
                     <div className="flex justify-between font-medium text-lg border-t pt-2">
                       <span>Total TTC:</span>
-                      <span>{formatMontant(calculateFactureTotals().total, devisForm.devise)}</span>
+                      <span>{formatMontant(calculateTotals(devisForm.items, devisForm.devise).total, devisForm.devise)}</span>
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                      USD: {formatMontant(calculateFactureTotals().totalUSD, 'USD')} | 
-                      FC: {formatMontant(calculateFactureTotals().totalFC, 'FC')}
+                      USD: {formatMontant(calculateTotals(devisForm.items, devisForm.devise).totalUSD, 'USD')} | 
+                      FC: {formatMontant(calculateTotals(devisForm.items, devisForm.devise).totalFC, 'FC')}
                     </div>
                   </div>
                 </div>
