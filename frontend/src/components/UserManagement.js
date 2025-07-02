@@ -113,13 +113,13 @@ const UserManagement = () => {
     const handleDelete = async (userId) => {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
             try {
-                await axios.delete(`${API_URL}/api/users/${userId}`);
+                await apiCall('DELETE', `/api/users/${userId}`);
                 showNotification('Utilisateur supprimé avec succès !');
                 loadUsers();
             } catch (error) {
                 console.error('Erreur suppression utilisateur:', error);
                 showNotification(
-                    error.response?.data?.detail || 'Erreur lors de la suppression',
+                    'Erreur lors de la suppression',
                     'error'
                 );
             }
