@@ -160,7 +160,7 @@ const UserManagement = () => {
         );
     };
 
-    if (!checkPermission(['admin'])) {
+    if (user?.role !== 'admin') {
         return (
             <div className="text-center py-8">
                 <p className="text-red-600">Accès refusé. Seuls les administrateurs peuvent gérer les utilisateurs.</p>
