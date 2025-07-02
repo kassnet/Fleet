@@ -2214,23 +2214,38 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       {/* Modal Devis */}
       {showDevisModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
             <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('quotes.add')}</h3>
             
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('form.client')} *</label>
-                <select
-                  value={devisForm.client_id}
-                  onChange={(e) => setDevisForm(prev => ({...prev, client_id: e.target.value}))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  required
-                >
-                  <option value="">Sélectionner un client</option>
-                  {(clients || []).map(client => (
-                    <option key={client.id} value={client.id}>{client.nom}</option>
-                  ))}
-                </select>
+            <div className="space-y-6">
+              {/* Informations de base */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client *</label>
+                  <select
+                    value={devisForm.client_id}
+                    onChange={(e) => setDevisForm(prev => ({...prev, client_id: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="">Sélectionner un client</option>
+                    {(clients || []).map(client => (
+                      <option key={client.id} value={client.id}>{client.nom}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Devise</label>
+                  <select
+                    value={devisForm.devise}
+                    onChange={(e) => setDevisForm(prev => ({...prev, devise: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="USD">USD</option>
+                    <option value="FC">FC</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -2245,8 +2260,134 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 />
               </div>
 
+              {/* Section Produits */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('form.notes')}</label>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white">Produits/Services *</h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newItem = {
+                        produit_id: '',
+                        nom_produit: '',
+                        quantite: 1,
+                        prix_unitaire_usd: 0,
+                        prix_unitaire_fc: 0
+                      };
+                      setDevisForm(prev => ({
+                        ...prev,
+                        items: [...prev.items, newItem]
+                      }));
+                    }}
+                    className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                  >
+                    + Ajouter un produit
+                  </button>
+                </div>
+
+                {devisForm.items.map((item, index) => (
+                  <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-3">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produit</label>
+                        <select
+                          value={item.produit_id}
+                          onChange={(e) => {
+                            const produit = produits.find(p => p.id === e.target.value);
+                            const updatedItems = [...devisForm.items];
+                            updatedItems[index] = {
+                              ...item,
+                              produit_id: e.target.value,
+                              nom_produit: produit ? produit.nom : '',
+                              prix_unitaire_usd: produit ? produit.prix_usd : 0,
+                              prix_unitaire_fc: produit ? produit.prix_fc : 0
+                            };
+                            setDevisForm(prev => ({...prev, items: updatedItems}));
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="">Sélectionner un produit</option>
+                          {(produits || []).map(produit => (
+                            <option key={produit.id} value={produit.id}>
+                              {produit.nom} - {formatMontant(produit.prix_usd, 'USD')}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantité</label>
+                        <input
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          value={item.quantite}
+                          onChange={(e) => {
+                            const updatedItems = [...devisForm.items];
+                            updatedItems[index] = {...item, quantite: parseFloat(e.target.value) || 1};
+                            setDevisForm(prev => ({...prev, items: updatedItems}));
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="flex items-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updatedItems = devisForm.items.filter((_, i) => i !== index);
+                            setDevisForm(prev => ({...prev, items: updatedItems}));
+                          }}
+                          className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Affichage du sous-total de la ligne */}
+                    {item.produit_id && (
+                      <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        Sous-total: {formatMontant((item.prix_unitaire_usd || 0) * (item.quantite || 1), 'USD')} / 
+                        {formatMontant((item.prix_unitaire_fc || 0) * (item.quantite || 1), 'FC')}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {devisForm.items.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                    Aucun produit ajouté. Cliquez sur "Ajouter un produit" pour commencer.
+                  </div>
+                )}
+              </div>
+
+              {/* Totaux */}
+              {devisForm.items.length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Sous-total:</span>
+                      <span>{formatMontant(calculateFactureTotals().sousTotal, devisForm.devise)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>TVA (16%):</span>
+                      <span>{formatMontant(calculateFactureTotals().tva, devisForm.devise)}</span>
+                    </div>
+                    <div className="flex justify-between font-medium text-lg border-t pt-2">
+                      <span>Total TTC:</span>
+                      <span>{formatMontant(calculateFactureTotals().total, devisForm.devise)}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                      USD: {formatMontant(calculateFactureTotals().totalUSD, 'USD')} | 
+                      FC: {formatMontant(calculateFactureTotals().totalFC, 'FC')}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
                 <textarea
                   value={devisForm.notes}
                   onChange={(e) => setDevisForm(prev => ({...prev, notes: e.target.value}))}
@@ -2265,13 +2406,13 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 }}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
               >
-                {t('btn.cancel')}
+                Annuler
               </button>
               <button
                 onClick={saveDevis}
                 className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
               >
-                {t('btn.save')}
+                Créer le devis
               </button>
             </div>
           </div>
