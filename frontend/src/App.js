@@ -2208,6 +2208,274 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           </div>
         </div>
       )}
+
+      {/* ===== MODALS DE VENTE ===== */}
+      
+      {/* Modal Devis */}
+      {showDevisModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('quotes.add')}</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('form.client')} *</label>
+                <select
+                  value={devisForm.client_id}
+                  onChange={(e) => setDevisForm(prev => ({...prev, client_id: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  required
+                >
+                  <option value="">Sélectionner un client</option>
+                  {(clients || []).map(client => (
+                    <option key={client.id} value={client.id}>{client.nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Validité (jours)</label>
+                <input
+                  type="number"
+                  value={devisForm.validite_jours}
+                  onChange={(e) => setDevisForm(prev => ({...prev, validite_jours: parseInt(e.target.value)}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  min="1"
+                  max="365"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('form.notes')}</label>
+                <textarea
+                  value={devisForm.notes}
+                  onChange={(e) => setDevisForm(prev => ({...prev, notes: e.target.value}))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Notes du devis..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowDevisModal(false);
+                  setDevisForm({ client_id: '', items: [], devise: 'USD', notes: '', validite_jours: 30 });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                {t('btn.cancel')}
+              </button>
+              <button
+                onClick={saveDevis}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+              >
+                {t('btn.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Opportunité */}
+      {showOpportuniteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('opportunities.add')}</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('opportunities.name')} *</label>
+                <input
+                  type="text"
+                  value={opportuniteForm.titre}
+                  onChange={(e) => setOpportuniteForm(prev => ({...prev, titre: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Nom de l'opportunité"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('opportunities.client')} *</label>
+                <select
+                  value={opportuniteForm.client_id}
+                  onChange={(e) => setOpportuniteForm(prev => ({...prev, client_id: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  required
+                >
+                  <option value="">Sélectionner un client</option>
+                  {(clients || []).map(client => (
+                    <option key={client.id} value={client.id}>{client.nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('opportunities.value')} (USD)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={opportuniteForm.valeur_estimee_usd}
+                  onChange={(e) => setOpportuniteForm(prev => ({...prev, valeur_estimee_usd: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('opportunities.stage')}</label>
+                  <select
+                    value={opportuniteForm.etape}
+                    onChange={(e) => setOpportuniteForm(prev => ({...prev, etape: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="prospect">Prospect</option>
+                    <option value="qualification">Qualification</option>
+                    <option value="proposition">Proposition</option>
+                    <option value="negociation">Négociation</option>
+                    <option value="ferme_gagne">Fermé - Gagné</option>
+                    <option value="ferme_perdu">Fermé - Perdu</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('opportunities.priority')}</label>
+                  <select
+                    value={opportuniteForm.priorite}
+                    onChange={(e) => setOpportuniteForm(prev => ({...prev, priorite: e.target.value}))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="basse">Basse</option>
+                    <option value="moyenne">Moyenne</option>
+                    <option value="haute">Haute</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('form.description')}</label>
+                <textarea
+                  value={opportuniteForm.description}
+                  onChange={(e) => setOpportuniteForm(prev => ({...prev, description: e.target.value}))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Description de l'opportunité..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowOpportuniteModal(false);
+                  setOpportuniteForm({ 
+                    titre: '', description: '', client_id: '', valeur_estimee_usd: '', devise: 'USD', 
+                    probabilite: 50, etape: 'prospect', priorite: 'moyenne', notes: '' 
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                {t('btn.cancel')}
+              </button>
+              <button
+                onClick={saveOpportunite}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+              >
+                {t('btn.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Commande */}
+      {showCommandeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('orders.add')}</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('orders.client')} *</label>
+                <select
+                  value={commandeForm.client_id}
+                  onChange={(e) => setCommandeForm(prev => ({...prev, client_id: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  required
+                >
+                  <option value="">Sélectionner un client</option>
+                  {(clients || []).map(client => (
+                    <option key={client.id} value={client.id}>{client.nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Opportunité liée (optionnel)</label>
+                <select
+                  value={commandeForm.opportunite_id}
+                  onChange={(e) => setCommandeForm(prev => ({...prev, opportunite_id: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Aucune opportunité liée</option>
+                  {(opportunites || []).map(opp => (
+                    <option key={opp.id} value={opp.id}>{opp.titre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adresse de livraison</label>
+                <textarea
+                  value={commandeForm.adresse_livraison}
+                  onChange={(e) => setCommandeForm(prev => ({...prev, adresse_livraison: e.target.value}))}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Adresse de livraison..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('form.notes')}</label>
+                <textarea
+                  value={commandeForm.notes}
+                  onChange={(e) => setCommandeForm(prev => ({...prev, notes: e.target.value}))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Notes de la commande..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowCommandeModal(false);
+                  setCommandeForm({ 
+                    client_id: '', opportunite_id: '', items: [], devise: 'USD', 
+                    adresse_livraison: '', notes: '' 
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                {t('btn.cancel')}
+              </button>
+              <button
+                onClick={() => {
+                  showNotification('Fonction de création de commande en cours de développement', 'info');
+                  setShowCommandeModal(false);
+                }}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+              >
+                {t('btn.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
