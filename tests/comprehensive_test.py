@@ -263,6 +263,7 @@ class FacturAppComprehensiveTester:
             "client_id": self.test_client.get('id'),
             "client_nom": self.test_client.get('nom'),
             "valeur_estimee_usd": 5000.0,
+            "valeur_estimee_fc": 5000.0 * 2800.0,  # Add FC value
             "devise": "USD",
             "probabilite": 50,
             "etape": "prospect",
