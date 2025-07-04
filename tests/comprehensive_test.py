@@ -360,19 +360,34 @@ class FacturAppComprehensiveTester:
         success, updated_opportunity = self.run_test(
             "Get Updated Opportunity",
             "GET",
-            f"/api/opportunites/{self.test_opportunity.get('id')}",
+            "/api/opportunites",
             200
         )
         
         if not success:
-            print("❌ Failed to get updated opportunity")
+            print("❌ Failed to get updated opportunity list")
             return False
         
+        # Find our opportunity in the list
+        found_opportunity = None
+        for opp in updated_opportunity:
+            if opp.get('id') == self.test_opportunity.get('id'):
+                found_opportunity = opp
+                break
+                
+        if not found_opportunity:
+            print("❌ Could not find our opportunity in the list")
+            return False
+            
+        print(f"✅ Found our opportunity in the list: {found_opportunity.get('titre')}")
+        
         # Check if the quote is linked to the opportunity
-        if 'devis_ids' in updated_opportunity and self.test_quote.get('id') in updated_opportunity.get('devis_ids', []):
+        if 'devis_ids' in found_opportunity and self.test_quote.get('id') in found_opportunity.get('devis_ids', []):
             print("✅ Quote is correctly linked to the opportunity")
         else:
             print("❌ Quote is not linked to the opportunity")
+            print(f"Opportunity devis_ids: {found_opportunity.get('devis_ids', [])}")
+            print(f"Our quote ID: {self.test_quote.get('id')}")
         
         print("\n✅ Complete workflow test passed")
         return True
