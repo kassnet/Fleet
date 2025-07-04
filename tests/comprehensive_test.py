@@ -385,7 +385,9 @@ def main():
         return 1
     
     # Test clients and products (needed for other tests)
-    if not tester.test_clients() or not tester.test_products():
+    clients_ok = tester.test_clients()
+    products_ok = tester.test_products()
+    if not clients_ok or not products_ok:
         print("❌ Failed to get clients or products, stopping tests")
         return 1
     
