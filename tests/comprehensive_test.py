@@ -97,7 +97,7 @@ class FacturAppComprehensiveTester:
                 print(f"Selected test client: {self.test_client.get('nom')}")
         return success
     
-    def test_products(self):
+    def get_products(self):
         """Test the products endpoint"""
         success, data = self.run_test("Products List", "GET", "/api/produits")
         if success:
