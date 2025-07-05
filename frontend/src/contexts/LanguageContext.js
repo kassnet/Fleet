@@ -199,7 +199,28 @@ const translations = {
     'common.sort': 'Trier',
     'common.export': 'Exporter',
     'common.import': 'Importer',
-    'common.quickActions': 'Actions rapides'
+    'common.quickActions': 'Actions rapides',
+    
+    // Configuration Section
+    'config.title': 'Configuration de l\'application',
+    'config.general': 'Paramètres généraux',
+    'config.logo': 'Logo de l\'application',
+    'config.logo.upload': 'Téléverser un nouveau logo',
+    'config.logo.current': 'Logo actuel',
+    'config.logo.change': 'Changer le logo',
+    'config.users': 'Gestion des utilisateurs',
+    'config.users.activate': 'Activer',
+    'config.users.deactivate': 'Désactiver',
+    'config.users.status': 'Statut',
+    'config.users.active': 'Actif',
+    'config.users.inactive': 'Inactif',
+    'config.users.permissions': 'Permissions',
+    'config.users.role': 'Rôle',
+    'config.users.lastLogin': 'Dernière connexion',
+    'config.app': 'Application',
+    'config.app.name': 'Nom de l\'application',
+    'config.app.theme': 'Thème par défaut',
+    'config.app.language': 'Langue par défaut'
   },
   en: {
     // Header
