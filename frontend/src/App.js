@@ -883,12 +883,21 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           await apiCall('POST', '/api/config/logo', formData);
           
           // Mettre à jour le logo localement
-          setAppConfig(prev => ({
-            ...prev,
-            logoUrl: e.target.result
-          }));
+          setAppConfig(prev => {
+            const newConfig = {
+              ...prev,
+              logoUrl: e.target.result
+            };
+            console.log('🖼️ Logo mis à jour dans appConfig:', newConfig);
+            return newConfig;
+          });
           
           showNotification('Logo mis à jour avec succès', 'success');
+          
+          // Forcer un re-render de l'interface
+          setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+          }, 100);
         } catch (error) {
           console.error('Erreur upload logo:', error);
           showNotification('Erreur lors de la mise à jour du logo', 'error');
