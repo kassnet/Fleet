@@ -38,11 +38,11 @@ const Login = () => {
 
                 {/* Logo et titre */}
                 <div className="text-center">
-                    <div className="mx-auto h-20 w-20 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                    <div className="mx-auto h-24 w-24 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden p-2">
                         <img 
                             src="/logo.png" 
                             alt="FacturApp Logo" 
-                            className="h-16 w-16 object-contain"
+                            className="h-20 w-20 object-cover rounded-lg"
                         />
                     </div>
                     <h2 className="mt-6 text-3xl font-extrabold text-white">
