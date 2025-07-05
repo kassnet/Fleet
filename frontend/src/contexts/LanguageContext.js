@@ -409,7 +409,28 @@ const translations = {
     'common.sort': 'Sort',
     'common.export': 'Export',
     'common.import': 'Import',
-    'common.quickActions': 'Quick Actions'
+    'common.quickActions': 'Quick Actions',
+    
+    // Configuration Section
+    'config.title': 'Application Configuration',
+    'config.general': 'General Settings',
+    'config.logo': 'Application Logo',
+    'config.logo.upload': 'Upload New Logo',
+    'config.logo.current': 'Current Logo',
+    'config.logo.change': 'Change Logo',
+    'config.users': 'User Management',
+    'config.users.activate': 'Activate',
+    'config.users.deactivate': 'Deactivate',
+    'config.users.status': 'Status',
+    'config.users.active': 'Active',
+    'config.users.inactive': 'Inactive',
+    'config.users.permissions': 'Permissions',
+    'config.users.role': 'Role',
+    'config.users.lastLogin': 'Last Login',
+    'config.app': 'Application',
+    'config.app.name': 'Application Name',
+    'config.app.theme': 'Default Theme',
+    'config.app.language': 'Default Language'
   }
 };
 
