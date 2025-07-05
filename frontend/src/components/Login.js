@@ -27,11 +27,6 @@ const Login = () => {
         setLoading(false);
     };
 
-    const handleDemoLogin = (demoEmail, demoPassword) => {
-        setEmail(demoEmail);
-        setPassword(demoPassword);
-    };
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-teal-500 dark:from-gray-800 dark:via-gray-900 dark:to-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
             <div className="max-w-md w-full space-y-8">
