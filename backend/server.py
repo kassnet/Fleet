@@ -1991,6 +1991,134 @@ async def convertir_montant(montant: float, devise_source: str, devise_cible: st
         "devise_cible": devise_cible
     }
 
+# ===== CONFIGURATION ROUTES =====
+
+@app.post("/api/config/logo")
+async def upload_logo(request: dict, current_user: dict = Depends(admin_only())):
+    """Téléverser un nouveau logo - Admin seulement"""
+    try:
+        logo_data = request.get("logo")
+        filename = request.get("filename", "logo.png")
+        
+        if not logo_data:
+            raise HTTPException(status_code=400, detail="Aucune image fournie")
+        
+        # Sauvegarder dans la base de données (ou fichier selon votre préférence)
+        config_update = {
+            "logo_url": logo_data,
+            "logo_filename": filename,
+            "updated_at": datetime.now(),
+            "updated_by": current_user["id"]
+        }
+        
+        # Mettre à jour ou créer la configuration
+        await db.app_config.update_one(
+            {"type": "logo"},
+            {"$set": config_update},
+            upsert=True
+        )
+        
+        return {"message": "Logo mis à jour avec succès", "logo_url": logo_data}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour du logo: {str(e)}")
+
+@app.put("/api/config/app")
+async def update_app_config(config: dict, current_user: dict = Depends(admin_only())):
+    """Mettre à jour la configuration de l'application - Admin seulement"""
+    try:
+        config_update = {
+            **config,
+            "updated_at": datetime.now(),
+            "updated_by": current_user["id"]
+        }
+        
+        # Mettre à jour la configuration générale
+        await db.app_config.update_one(
+            {"type": "general"},
+            {"$set": config_update},
+            upsert=True
+        )
+        
+        return {"message": "Configuration mise à jour avec succès"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour de la configuration: {str(e)}")
+
+@app.get("/api/config")
+async def get_app_config(current_user: dict = Depends(admin_only())):
+    """Récupérer la configuration de l'application - Admin seulement"""
+    try:
+        # Récupérer la configuration générale
+        general_config = await db.app_config.find_one({"type": "general"}) or {}
+        logo_config = await db.app_config.find_one({"type": "logo"}) or {}
+        
+        config = {
+            "appName": general_config.get("appName", "FacturApp"),
+            "theme": general_config.get("theme", "light"),
+            "language": general_config.get("language", "fr"),
+            "logoUrl": logo_config.get("logo_url", "/logo.png")
+        }
+        
+        return config
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération de la configuration: {str(e)}")
+
+@app.put("/api/users/{user_id}/status")
+async def toggle_user_status(user_id: str, status_data: dict, current_user: dict = Depends(admin_only())):
+    """Activer/désactiver un utilisateur - Admin seulement"""
+    try:
+        is_active = status_data.get("is_active", True)
+        
+        result = await db.users.update_one(
+            {"$or": [{"id": user_id}, {"_id": user_id}]},
+            {"$set": {"is_active": is_active, "updated_at": datetime.now()}}
+        )
+        
+        if result.matched_count == 0:
+            try:
+                await db.users.update_one(
+                    {"_id": ObjectId(user_id)},
+                    {"$set": {"is_active": is_active, "updated_at": datetime.now()}}
+                )
+            except:
+                pass
+        
+        return {"message": f"Utilisateur {'activé' if is_active else 'désactivé'} avec succès"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour du statut: {str(e)}")
+
+@app.put("/api/users/{user_id}/role")
+async def change_user_role(user_id: str, role_data: dict, current_user: dict = Depends(admin_only())):
+    """Changer le rôle d'un utilisateur - Admin seulement"""
+    try:
+        new_role = role_data.get("role")
+        valid_roles = ["admin", "manager", "comptable", "utilisateur"]
+        
+        if new_role not in valid_roles:
+            raise HTTPException(status_code=400, detail="Rôle invalide")
+        
+        result = await db.users.update_one(
+            {"$or": [{"id": user_id}, {"_id": user_id}]},
+            {"$set": {"role": new_role, "updated_at": datetime.now()}}
+        )
+        
+        if result.matched_count == 0:
+            try:
+                await db.users.update_one(
+                    {"_id": ObjectId(user_id)},
+                    {"$set": {"role": new_role, "updated_at": datetime.now()}}
+                )
+            except:
+                pass
+        
+        return {"message": f"Rôle utilisateur mis à jour vers {new_role}"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour du rôle: {str(e)}")
+
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "message": "Application de facturation opérationnelle"}
