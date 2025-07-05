@@ -40,13 +40,16 @@ const Login = ({ logoUrl = '/logo.png', appName = 'FacturApp' }) => {
                 <div className="text-center">
                     <div className="mx-auto h-24 w-24 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden p-2">
                         <img 
-                            src="/logo.png" 
-                            alt="FacturApp Logo" 
+                            src={logoUrl} 
+                            alt={`${appName} Logo`} 
                             className="h-20 w-20 object-cover rounded-lg"
+                            onError={(e) => {
+                                e.target.src = '/logo.png'; // Fallback si l'image ne charge pas
+                            }}
                         />
                     </div>
                     <h2 className="mt-6 text-3xl font-extrabold text-white">
-                        {t('app.title')}
+                        {appName}
                     </h2>
                     <p className="mt-2 text-sm text-blue-100 dark:text-gray-300">
                         {t('login.subtitle')}
