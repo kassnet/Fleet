@@ -871,7 +871,11 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <span className="text-2xl">📊</span>
+                <img 
+                  src="/logo.png" 
+                  alt="FacturApp Logo" 
+                  className="h-8 w-8 object-contain"
+                />
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('app.title')}</h1>
               </div>
             </div>
