@@ -1016,7 +1016,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   };
 
   if (!user) {
-    return <Login />;
+    return <Login logoUrl={appConfig.logoUrl} appName={appConfig.appName} />;
   }
 
   return (
