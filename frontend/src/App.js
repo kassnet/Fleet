@@ -248,6 +248,22 @@ const AppContent = () => {
         setCommandes([]);
         setVenteStats({});
       }
+
+      // Données utilisateurs pour Admin uniquement
+      if (user.role === 'admin') {
+        console.log('👤 Chargement des données utilisateurs pour Admin');
+        try {
+          const usersRes = await apiCall('GET', '/api/users');
+          setUsers(usersRes.data || []);
+          console.log('👤 Données utilisateurs chargées - Utilisateurs:', usersRes.data.length);
+        } catch (usersError) {
+          console.warn('⚠️ Erreur chargement données utilisateurs:', usersError.response?.status);
+          setUsers([]);
+        }
+      } else {
+        // Pas d'accès aux données utilisateurs
+        setUsers([]);
+      }
       
       console.log('✅ Toutes les données chargées avec succès pour rôle:', user.role);
     } catch (error) {
