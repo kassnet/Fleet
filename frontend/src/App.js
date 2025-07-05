@@ -253,16 +253,38 @@ const AppContent = () => {
       if (user.role === 'admin') {
         console.log('👤 Chargement des données utilisateurs pour Admin');
         try {
-          const usersRes = await apiCall('GET', '/api/users');
+          const [usersRes, configRes] = await Promise.all([
+            apiCall('GET', '/api/users'),
+            apiCall('GET', '/api/config')
+          ]);
           setUsers(usersRes.data || []);
+          setAppConfig(configRes.data || {
+            appName: 'FacturApp',
+            logoUrl: '/logo.png',
+            theme: 'light',
+            language: 'fr'
+          });
           console.log('👤 Données utilisateurs chargées - Utilisateurs:', usersRes.data.length);
+          console.log('⚙️ Configuration chargée:', configRes.data);
         } catch (usersError) {
           console.warn('⚠️ Erreur chargement données utilisateurs:', usersError.response?.status);
           setUsers([]);
+          setAppConfig({
+            appName: 'FacturApp',
+            logoUrl: '/logo.png',
+            theme: 'light',
+            language: 'fr'
+          });
         }
       } else {
         // Pas d'accès aux données utilisateurs
         setUsers([]);
+        setAppConfig({
+          appName: 'FacturApp',
+          logoUrl: '/logo.png',
+          theme: 'light',
+          language: 'fr'
+        });
       }
       
       console.log('✅ Toutes les données chargées avec succès pour rôle:', user.role);
