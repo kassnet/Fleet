@@ -831,6 +831,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     }
 
     if (canManageUsers()) {
+      tabs.push({ id: 'configuration', label: t('nav.settings'), icon: '⚙️', roles: ['admin'] });
       tabs.push({ id: 'users', label: t('nav.users'), icon: '👤', roles: ['admin'] });
     }
 
