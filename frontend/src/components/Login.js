@@ -5,7 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
 
-const Login = () => {
+const Login = ({ logoUrl = '/logo.png', appName = 'FacturApp' }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
