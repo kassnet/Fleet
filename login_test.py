@@ -1,12 +1,7 @@
 import requests
 import sys
 import os
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
+import json
 
 class FacturAppLoginTester:
     def __init__(self, base_url=None):
@@ -53,6 +48,23 @@ class FacturAppLoginTester:
         except Exception as e:
             print(f"❌ API Login error: {str(e)}")
             return False
+            
+    def test_all_demo_accounts(self):
+        """Test all demo accounts"""
+        demo_accounts = [
+            {"email": "admin@facturapp.rdc", "password": "admin123", "role": "admin"},
+            {"email": "manager@demo.com", "password": "manager123", "role": "manager"},
+            {"email": "comptable@demo.com", "password": "comptable123", "role": "comptable"},
+            {"email": "user@demo.com", "password": "user123", "role": "utilisateur"}
+        ]
+        
+        all_passed = True
+        for account in demo_accounts:
+            result = self.test_api_login(account["email"], account["password"])
+            if not result:
+                all_passed = False
+                
+        return all_passed
 
 def main():
     # Setup
