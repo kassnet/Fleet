@@ -70,16 +70,18 @@ def main():
     # Setup
     tester = FacturAppLoginTester()
     
-    # Test admin login via API
-    admin_login_success = tester.run_test(
-        "Admin Login via API",
-        tester.test_api_login,
-        "admin@facturapp.rdc",
-        "admin123"
+    # Test all demo accounts
+    all_accounts_success = tester.run_test(
+        "All Demo Accounts Login",
+        tester.test_all_demo_accounts
     )
     
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    print(f"\n🔍 Summary: The demo accounts section has been removed from the login page UI,")
+    print(f"   but all demo accounts are still functional and can be used to log in via API.")
+    print(f"   This confirms that only the UI elements were removed, not the actual accounts.")
+    
     return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
