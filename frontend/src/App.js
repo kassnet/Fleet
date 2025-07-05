@@ -47,6 +47,16 @@ const AppContent = () => {
   const [showCommandeModal, setShowCommandeModal] = useState(false);
   const [showActiviteModal, setShowActiviteModal] = useState(false);
 
+  // Configuration states
+  const [appConfig, setAppConfig] = useState({
+    appName: 'FacturApp',
+    logoUrl: '/logo.png',
+    theme: 'light',
+    language: 'fr'
+  });
+  const [configLoading, setConfigLoading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
   // Form states
   const [clientForm, setClientForm] = useState({ nom: '', email: '', telephone: '', adresse: '' });
   const [produitForm, setProduitForm] = useState({ nom: '', description: '', prix_usd: '', prix_fc: '', stock_actuel: '', stock_minimum: '', gestion_stock: true });
