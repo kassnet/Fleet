@@ -814,6 +814,112 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     }
   };
 
+  // ===== FONCTIONS DE CONFIGURATION =====
+  
+  // Fonction pour téléverser un nouveau logo
+  const uploadLogo = async (file) => {
+    try {
+      setUploadingLogo(true);
+      
+      // Validation du fichier
+      if (!file.type.startsWith('image/')) {
+        showNotification('Veuillez sélectionner un fichier image', 'error');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        showNotification('Le fichier est trop volumineux (max 5MB)', 'error');
+        return;
+      }
+
+      // Convertir en base64 pour l'envoi
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const formData = {
+            logo: e.target.result,
+            filename: file.name
+          };
+
+          await apiCall('POST', '/api/config/logo', formData);
+          
+          // Mettre à jour le logo localement
+          setAppConfig(prev => ({
+            ...prev,
+            logoUrl: e.target.result
+          }));
+          
+          showNotification('Logo mis à jour avec succès', 'success');
+        } catch (error) {
+          console.error('Erreur upload logo:', error);
+          showNotification('Erreur lors de la mise à jour du logo', 'error');
+        } finally {
+          setUploadingLogo(false);
+        }
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Erreur upload:', error);
+      showNotification('Erreur lors du téléversement', 'error');
+      setUploadingLogo(false);
+    }
+  };
+
+  // Fonction pour activer/désactiver un utilisateur
+  const toggleUserStatus = async (userId, isActive) => {
+    try {
+      await apiCall('PUT', `/api/users/${userId}/status`, { is_active: !isActive });
+      
+      showNotification(
+        `Utilisateur ${!isActive ? 'activé' : 'désactivé'} avec succès`, 
+        'success'
+      );
+      
+      // Recharger les données utilisateurs
+      loadData();
+    } catch (error) {
+      console.error('Erreur changement statut utilisateur:', error);
+      showNotification('Erreur lors du changement de statut', 'error');
+    }
+  };
+
+  // Fonction pour changer le rôle d'un utilisateur
+  const changeUserRole = async (userId, newRole) => {
+    try {
+      await apiCall('PUT', `/api/users/${userId}/role`, { role: newRole });
+      
+      showNotification('Rôle utilisateur mis à jour avec succès', 'success');
+      
+      // Recharger les données utilisateurs
+      loadData();
+    } catch (error) {
+      console.error('Erreur changement rôle utilisateur:', error);
+      showNotification('Erreur lors du changement de rôle', 'error');
+    }
+  };
+
+  // Fonction pour sauvegarder la configuration de l'application
+  const saveAppConfig = async (configData) => {
+    try {
+      setConfigLoading(true);
+      
+      await apiCall('PUT', '/api/config/app', configData);
+      
+      setAppConfig(prev => ({
+        ...prev,
+        ...configData
+      }));
+      
+      showNotification('Configuration sauvegardée avec succès', 'success');
+    } catch (error) {
+      console.error('Erreur sauvegarde config:', error);
+      showNotification('Erreur lors de la sauvegarde', 'error');
+    } finally {
+      setConfigLoading(false);
+    }
+  };
+
   // Fonction pour déterminer quels onglets afficher selon le rôle
   const getAvailableTabs = () => {
     const tabs = [
