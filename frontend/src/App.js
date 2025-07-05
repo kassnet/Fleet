@@ -1029,12 +1029,15 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
               <div className="flex items-center space-x-2">
                 <div className="h-10 w-10 bg-white dark:bg-gray-700 rounded-lg flex items-center justify-center shadow-sm overflow-hidden p-1">
                   <img 
-                    src="/logo.png" 
+                    src={appConfig.logoUrl || '/logo.png'} 
                     alt="FacturApp Logo" 
                     className="h-8 w-8 object-cover rounded"
+                    onError={(e) => {
+                      e.target.src = '/logo.png'; // Fallback si l'image ne charge pas
+                    }}
                   />
                 </div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('app.title')}</h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{appConfig.appName || t('app.title')}</h1>
               </div>
             </div>
             
