@@ -32,6 +32,7 @@ const AppContent = () => {
   const [commandes, setCommandes] = useState([]);
   const [venteStats, setVenteStats] = useState({});
   const [activeSalesTab, setActiveSalesTab] = useState('dashboard');
+  const [users, setUsers] = useState([]);
 
   // Modal states
   const [showClientModal, setShowClientModal] = useState(false);
