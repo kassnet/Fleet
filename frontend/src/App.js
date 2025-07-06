@@ -2028,6 +2028,19 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                               >
                                 {userItem.is_active ? t('config.users.deactivate') : t('config.users.activate')}
                               </button>
+                              
+                              {/* Bouton Supprimer (sauf pour l'utilisateur connecté) */}
+                              {userItem.id !== user.id && (
+                                <button
+                                  onClick={() => showConfirm(
+                                    `Êtes-vous sûr de vouloir supprimer définitivement l'utilisateur "${userItem.prenom} ${userItem.nom}" ?\n\nCette action est irréversible.`,
+                                    () => deleteUser(userItem.id)
+                                  )}
+                                  className="px-3 py-1 rounded text-xs font-medium bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-800"
+                                >
+                                  🗑️ Supprimer
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))}
