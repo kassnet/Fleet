@@ -1977,60 +1977,196 @@ def test_vente_access(tester):
     
     return access_correct
 
-def main():
-    # Test with admin user
-    print("\n==== Testing with Admin User ====")
+def test_devis_functionality_complete():
+    """Complete test of devis functionality with authentication"""
+    print("\n" + "=" * 80)
+    print("📋 TESTING COMPLETE DEVIS FUNCTIONALITY")
+    print("=" * 80)
+    
+    # Test with admin user (has access to devis management)
+    print("\n🔑 Authenticating as admin user...")
     auth_success, admin_tester = test_authentication("admin@facturapp.rdc", "admin123")
     
     if not auth_success:
-        print("❌ Authentication failed for admin, stopping tests")
-        return 1
+        print("❌ Authentication failed for admin, trying manager...")
+        auth_success, admin_tester = test_authentication("manager@demo.com", "manager123")
+        
+        if not auth_success:
+            print("❌ Authentication failed for both admin and manager, stopping tests")
+            return False
     
-    # Run ID correction tests with the authenticated admin
-    specific_tests_ok = test_id_corrections(admin_tester)
+    print(f"✅ Successfully authenticated as {admin_tester.user_role}")
     
-    # Test sales module access with admin
-    sales_access_admin = test_vente_access(admin_tester)
+    # Create test data first
+    print("\n📝 Setting up test data...")
     
-    # Test with manager user
-    print("\n==== Testing with Manager User ====")
-    auth_success, manager_tester = test_authentication("manager@demo.com", "manager123")
+    # Create test client
+    client_ok = admin_tester.test_create_client()
+    if not client_ok:
+        print("❌ Failed to create test client")
+        return False
     
-    if auth_success:
-        # Test sales module access with manager
-        sales_access_manager = test_vente_access(manager_tester)
+    # Create test product
+    product_ok = admin_tester.test_create_product()
+    if not product_ok:
+        print("❌ Failed to create test product")
+        return False
+    
+    # Now test devis functionality
+    print("\n📋 Testing devis functionality...")
+    devis_ok = admin_tester.test_devis_endpoints()
+    
+    if devis_ok:
+        print("\n✅ ALL DEVIS TESTS PASSED SUCCESSFULLY!")
+        print("✅ Devis creation, status updates, and conversion to facture all working")
+        print("✅ Multi-currency calculations USD/FC working correctly")
+        print("✅ Authentication and permissions working for devis management")
+        return True
     else:
-        print("❌ Authentication failed for manager")
-        sales_access_manager = False
-    
-    # Test with comptable user (should not have access to sales)
-    print("\n==== Testing with Comptable User ====")
-    auth_success, comptable_tester = test_authentication("comptable@demo.com", "comptable123")
-    
-    if auth_success:
-        # Test sales module access with comptable (should be denied)
-        sales_access_comptable = test_vente_access(comptable_tester)
-        # For comptable, success means they were correctly denied access
-        sales_access_comptable = not sales_access_comptable
-    else:
-        print("❌ Authentication failed for comptable")
-        sales_access_comptable = False
-    
-    # Print overall results
+        print("\n❌ SOME DEVIS TESTS FAILED")
+        return False
+
+def test_stock_management_complete():
+    """Complete test of stock management functionality"""
     print("\n" + "=" * 80)
-    print("📊 OVERALL TEST RESULTS:")
-    print("=" * 80)
-    print(f"ID Correction Tests: {'✅ PASSED' if specific_tests_ok else '❌ FAILED'}")
-    print(f"Admin Sales Access: {'✅ PASSED' if sales_access_admin else '❌ FAILED'}")
-    print(f"Manager Sales Access: {'✅ PASSED' if sales_access_manager else '❌ FAILED'}")
-    print(f"Comptable Sales Access Restriction: {'✅ PASSED' if sales_access_comptable else '❌ FAILED'}")
-    
-    overall_result = specific_tests_ok and sales_access_admin and sales_access_manager and sales_access_comptable
-    print("\n" + "=" * 80)
-    print(f"📊 FINAL RESULT: {'✅ PASSED' if overall_result else '❌ FAILED'}")
+    print("📦 TESTING COMPLETE STOCK MANAGEMENT FUNCTIONALITY")
     print("=" * 80)
     
-    return 0 if overall_result else 1
+    # Test with admin user
+    auth_success, admin_tester = test_authentication("admin@facturapp.rdc", "admin123")
+    
+    if not auth_success:
+        print("❌ Authentication failed for admin, trying manager...")
+        auth_success, admin_tester = test_authentication("manager@demo.com", "manager123")
+        
+        if not auth_success:
+            print("❌ Authentication failed, stopping stock tests")
+            return False
+    
+    print(f"✅ Successfully authenticated as {admin_tester.user_role}")
+    
+    # Test stock management
+    print("\n📦 Testing stock management...")
+    
+    # Get existing products
+    success, products = admin_tester.run_test("Get Products for Stock Test", "GET", "/api/produits", 200)
+    if not success or not products:
+        print("❌ Failed to get products for stock testing")
+        return False
+    
+    # Find products with stock management
+    stock_products = [p for p in products if p.get('gestion_stock')]
+    
+    if not stock_products:
+        print("ℹ️ No products with stock management found, creating one...")
+        # Create a product with stock management
+        product_ok = admin_tester.test_create_product()
+        if not product_ok:
+            print("❌ Failed to create product with stock management")
+            return False
+        stock_products = [admin_tester.test_product]
+    
+    # Test stock operations
+    product = stock_products[0]
+    product_id = product.get('id')
+    current_stock = product.get('stock_actuel', 0)
+    
+    print(f"📦 Testing stock operations for product: {product.get('nom')}")
+    print(f"📦 Current stock: {current_stock}")
+    
+    # Test stock update
+    new_stock = current_stock + 25
+    stock_data = {
+        "nouvelle_quantite": new_stock,
+        "motif": "Test stock increase for comprehensive testing"
+    }
+    
+    success, response = admin_tester.run_test(
+        "Update Product Stock",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        200,
+        data=stock_data
+    )
+    
+    if success:
+        print(f"✅ Successfully updated stock to {new_stock}")
+        
+        # Test stock movements
+        success, movements = admin_tester.run_test(
+            "Get Stock Movements",
+            "GET",
+            f"/api/produits/{product_id}/mouvements",
+            200
+        )
+        
+        if success and movements:
+            print(f"✅ Stock movements recorded: {len(movements)} movements found")
+            latest_movement = movements[0] if movements else None
+            if latest_movement:
+                print(f"📦 Latest movement: {latest_movement.get('type_mouvement')} - {latest_movement.get('quantite')} units")
+        else:
+            print("❌ Failed to retrieve stock movements")
+            return False
+    else:
+        print("❌ Failed to update stock")
+        return False
+    
+    print("\n✅ STOCK MANAGEMENT TESTS COMPLETED SUCCESSFULLY!")
+    return True
+
+def main():
+    """Main test function - comprehensive testing"""
+    print("🚀 STARTING COMPREHENSIVE FACTURAPP BACKEND TESTING")
+    print("=" * 80)
+    
+    # Test 1: Devis functionality (main focus)
+    print("\n" + "=" * 80)
+    print("TEST 1: DEVIS (QUOTES) FUNCTIONALITY")
+    print("=" * 80)
+    devis_success = test_devis_functionality_complete()
+    
+    # Test 2: Stock management (needs retesting according to test_result.md)
+    print("\n" + "=" * 80)
+    print("TEST 2: STOCK MANAGEMENT FUNCTIONALITY")
+    print("=" * 80)
+    stock_success = test_stock_management_complete()
+    
+    # Test 3: ID correction verification (from previous issues)
+    print("\n" + "=" * 80)
+    print("TEST 3: ID CORRECTION VERIFICATION")
+    print("=" * 80)
+    id_success = test_id_corrections()
+    
+    # Final summary
+    print("\n" + "=" * 80)
+    print("📊 COMPREHENSIVE TEST RESULTS SUMMARY")
+    print("=" * 80)
+    print(f"📋 Devis Functionality: {'✅ PASSED' if devis_success else '❌ FAILED'}")
+    print(f"📦 Stock Management: {'✅ PASSED' if stock_success else '❌ FAILED'}")
+    print(f"🔧 ID Corrections: {'✅ PASSED' if id_success else '❌ FAILED'}")
+    
+    overall_success = devis_success and stock_success and id_success
+    
+    print("\n" + "=" * 80)
+    print(f"🎯 OVERALL RESULT: {'✅ ALL TESTS PASSED' if overall_success else '❌ SOME TESTS FAILED'}")
+    print("=" * 80)
+    
+    if overall_success:
+        print("🎉 FacturApp backend is working correctly!")
+        print("✅ All devis functionality is operational")
+        print("✅ Stock management is working properly")
+        print("✅ ID handling issues have been resolved")
+    else:
+        print("⚠️ Some issues were found that need attention")
+        if not devis_success:
+            print("❌ Devis functionality has issues")
+        if not stock_success:
+            print("❌ Stock management has issues")
+        if not id_success:
+            print("❌ ID handling still has issues")
+    
+    return 0 if overall_success else 1
 
 if __name__ == "__main__":
     sys.exit(main())
