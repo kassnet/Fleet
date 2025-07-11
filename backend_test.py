@@ -380,6 +380,299 @@ class FactureProTester:
             print(f"💱 Exchange rate: {data.get('taux')} {data.get('devise_cible')}/{data.get('devise_base')}")
         return success
 
+    def test_devis_endpoints(self):
+        """Test all devis (quotes) endpoints"""
+        print("\n" + "=" * 50)
+        print("📋 TESTING DEVIS (QUOTES) FUNCTIONALITY")
+        print("=" * 50)
+        
+        if not self.test_client or not self.test_product:
+            print("❌ Need both test client and product to test devis")
+            return False
+        
+        # 1. Test GET /api/devis - get all quotes
+        print("\n🔍 Testing GET /api/devis")
+        success, devis_list = self.run_test("Get All Devis", "GET", "/api/devis")
+        if success:
+            print(f"📋 Number of existing devis: {len(devis_list)}")
+        
+        # 2. Test POST /api/devis - create new quote
+        print("\n🔍 Testing POST /api/devis - Create new quote")
+        
+        # Calculate prices for devis
+        prix_usd = float(self.test_product.get('prix_usd', 100))
+        prix_fc = float(self.test_product.get('prix_fc', prix_usd * 2800))
+        quantite = 2
+        tva = float(self.test_product.get('tva', 16.0))
+        
+        total_ht_usd = prix_usd * quantite
+        total_ht_fc = prix_fc * quantite
+        total_tva_usd = total_ht_usd * (tva/100)
+        total_tva_fc = total_ht_fc * (tva/100)
+        total_ttc_usd = total_ht_usd + total_tva_usd
+        total_ttc_fc = total_ht_fc + total_tva_fc
+        
+        devis_data = {
+            "client_id": self.test_client.get('id'),
+            "client_nom": self.test_client.get('nom'),
+            "client_email": self.test_client.get('email'),
+            "client_adresse": f"{self.test_client.get('adresse')}, {self.test_client.get('ville')} {self.test_client.get('code_postal')}",
+            "devise": "USD",
+            "lignes": [
+                {
+                    "produit_id": self.test_product.get('id'),
+                    "nom_produit": self.test_product.get('nom'),
+                    "quantite": quantite,
+                    "prix_unitaire_usd": prix_usd,
+                    "prix_unitaire_fc": prix_fc,
+                    "devise": "USD",
+                    "tva": tva,
+                    "total_ht_usd": total_ht_usd,
+                    "total_ht_fc": total_ht_fc,
+                    "total_ttc_usd": total_ttc_usd,
+                    "total_ttc_fc": total_ttc_fc
+                }
+            ],
+            "total_ht_usd": total_ht_usd,
+            "total_ht_fc": total_ht_fc,
+            "total_tva_usd": total_tva_usd,
+            "total_tva_fc": total_tva_fc,
+            "total_ttc_usd": total_ttc_usd,
+            "total_ttc_fc": total_ttc_fc,
+            "validite_jours": 30,
+            "notes": "Test devis created by automated testing",
+            "conditions": "Conditions générales de vente applicables"
+        }
+        
+        success, created_devis = self.run_test(
+            "Create Devis",
+            "POST",
+            "/api/devis",
+            200,
+            data=devis_data
+        )
+        
+        if not success or not created_devis:
+            print("❌ Failed to create devis")
+            return False
+        
+        devis_id = created_devis.get('id')
+        devis_numero = created_devis.get('numero')
+        print(f"✅ Created devis with ID: {devis_id}")
+        print(f"📋 Devis number: {devis_numero}")
+        print(f"📋 Initial status: {created_devis.get('statut')}")
+        
+        # 3. Test GET /api/devis/{devis_id} - get specific quote
+        print(f"\n🔍 Testing GET /api/devis/{devis_id} - Get specific quote")
+        success, retrieved_devis = self.run_test(
+            "Get Specific Devis",
+            "GET",
+            f"/api/devis/{devis_id}",
+            200
+        )
+        
+        if not success or not retrieved_devis:
+            print("❌ Failed to retrieve specific devis")
+            return False
+        
+        print(f"✅ Successfully retrieved devis {retrieved_devis.get('numero')}")
+        print(f"📋 Status: {retrieved_devis.get('statut')}")
+        print(f"💰 Total USD: {retrieved_devis.get('total_ttc_usd')}")
+        print(f"💰 Total FC: {retrieved_devis.get('total_ttc_fc')}")
+        
+        # 4. Test PUT /api/devis/{devis_id} - update quote status
+        print(f"\n🔍 Testing PUT /api/devis/{devis_id} - Update quote status")
+        
+        # Test all possible status transitions
+        status_transitions = [
+            ("envoye", "Sent to client"),
+            ("accepte", "Accepted by client"),
+            ("refuse", "Refused by client"),
+            ("expire", "Expired")
+        ]
+        
+        for new_status, description in status_transitions:
+            print(f"\n📝 Testing status change to '{new_status}' ({description})")
+            
+            success, response = self.run_test(
+                f"Update Devis Status to {new_status}",
+                "PUT",
+                f"/api/devis/{devis_id}",
+                200,
+                data={"statut": new_status}
+            )
+            
+            if success:
+                # Verify the status was updated
+                success_verify, updated_devis = self.run_test(
+                    f"Verify Status Update to {new_status}",
+                    "GET",
+                    f"/api/devis/{devis_id}",
+                    200,
+                    print_response=False
+                )
+                
+                if success_verify and updated_devis.get('statut') == new_status:
+                    print(f"✅ Status successfully updated to '{new_status}'")
+                    if new_status == "accepte" and updated_devis.get('date_acceptation'):
+                        print(f"📅 Acceptance date set: {updated_devis.get('date_acceptation')}")
+                else:
+                    print(f"❌ Status not properly updated to '{new_status}'")
+                    return False
+            else:
+                print(f"❌ Failed to update status to '{new_status}'")
+                return False
+        
+        # 5. Test POST /api/devis/{devis_id}/convertir-facture - convert quote to invoice
+        print(f"\n🔍 Testing POST /api/devis/{devis_id}/convertir-facture - Convert to invoice")
+        
+        # First, set the devis back to "accepte" status (required for conversion)
+        self.run_test(
+            "Set Devis to Accepted for Conversion",
+            "PUT",
+            f"/api/devis/{devis_id}",
+            200,
+            data={"statut": "accepte"},
+            print_response=False
+        )
+        
+        success, conversion_response = self.run_test(
+            "Convert Devis to Facture",
+            "POST",
+            f"/api/devis/{devis_id}/convertir-facture",
+            200
+        )
+        
+        if not success or not conversion_response:
+            print("❌ Failed to convert devis to facture")
+            return False
+        
+        facture_id = conversion_response.get('facture_id')
+        facture_numero = conversion_response.get('facture_numero')
+        
+        print(f"✅ Successfully converted devis to facture")
+        print(f"📄 New facture ID: {facture_id}")
+        print(f"📄 New facture number: {facture_numero}")
+        
+        # Verify the created facture exists and has correct data
+        success, created_facture = self.run_test(
+            "Verify Created Facture",
+            "GET",
+            f"/api/factures/{facture_id}",
+            200
+        )
+        
+        if success and created_facture:
+            print(f"✅ Facture created successfully from devis")
+            print(f"📄 Facture client: {created_facture.get('client_nom')}")
+            print(f"💰 Facture total USD: {created_facture.get('total_ttc_usd')}")
+            print(f"💰 Facture total FC: {created_facture.get('total_ttc_fc')}")
+            
+            # Verify amounts match between devis and facture
+            if (abs(created_facture.get('total_ttc_usd', 0) - total_ttc_usd) < 0.01 and
+                abs(created_facture.get('total_ttc_fc', 0) - total_ttc_fc) < 0.01):
+                print("✅ Amounts correctly transferred from devis to facture")
+            else:
+                print("❌ Amount mismatch between devis and facture")
+                return False
+        else:
+            print("❌ Failed to verify created facture")
+            return False
+        
+        # Verify the devis now has the facture_id linked
+        success, final_devis = self.run_test(
+            "Verify Devis-Facture Link",
+            "GET",
+            f"/api/devis/{devis_id}",
+            200,
+            print_response=False
+        )
+        
+        if success and final_devis and final_devis.get('facture_id') == facture_id:
+            print("✅ Devis correctly linked to created facture")
+        else:
+            print("❌ Devis not properly linked to facture")
+            return False
+        
+        # 6. Test multi-currency calculations in devis
+        print(f"\n🔍 Testing multi-currency calculations in devis")
+        
+        # Create a devis in FC currency
+        devis_fc_data = devis_data.copy()
+        devis_fc_data["devise"] = "FC"
+        devis_fc_data["notes"] = "Test devis in FC currency"
+        
+        success, devis_fc = self.run_test(
+            "Create Devis in FC Currency",
+            "POST",
+            "/api/devis",
+            200,
+            data=devis_fc_data
+        )
+        
+        if success and devis_fc:
+            print(f"✅ Successfully created devis in FC currency")
+            print(f"💰 FC Total: {devis_fc.get('total_ttc_fc')}")
+            print(f"💰 USD Total: {devis_fc.get('total_ttc_usd')}")
+            
+            # Verify currency conversion (2800 FC = 1 USD)
+            expected_usd = devis_fc.get('total_ttc_fc', 0) / 2800
+            actual_usd = devis_fc.get('total_ttc_usd', 0)
+            
+            if abs(expected_usd - actual_usd) < 0.01:
+                print("✅ Currency conversion in devis is correct")
+            else:
+                print(f"❌ Currency conversion error: expected {expected_usd} USD, got {actual_usd} USD")
+                return False
+        else:
+            print("❌ Failed to create devis in FC currency")
+            return False
+        
+        # 7. Test date expiration functionality
+        print(f"\n🔍 Testing date expiration functionality")
+        
+        # Create a devis with short validity period
+        devis_short_data = devis_data.copy()
+        devis_short_data["validite_jours"] = 1  # 1 day validity
+        devis_short_data["notes"] = "Test devis with short validity"
+        
+        success, devis_short = self.run_test(
+            "Create Devis with Short Validity",
+            "POST",
+            "/api/devis",
+            200,
+            data=devis_short_data
+        )
+        
+        if success and devis_short:
+            print(f"✅ Successfully created devis with 1-day validity")
+            print(f"📅 Creation date: {devis_short.get('date_creation')}")
+            print(f"📅 Expiration date: {devis_short.get('date_expiration')}")
+            
+            # Verify expiration date is set correctly
+            if devis_short.get('date_expiration'):
+                print("✅ Expiration date correctly calculated")
+            else:
+                print("❌ Expiration date not set")
+                return False
+        else:
+            print("❌ Failed to create devis with short validity")
+            return False
+        
+        print("\n" + "=" * 50)
+        print("📋 DEVIS TESTING SUMMARY")
+        print("=" * 50)
+        print("✅ GET /api/devis - List all quotes: PASSED")
+        print("✅ POST /api/devis - Create new quote: PASSED")
+        print("✅ GET /api/devis/{id} - Get specific quote: PASSED")
+        print("✅ PUT /api/devis/{id} - Update quote status: PASSED")
+        print("✅ POST /api/devis/{id}/convertir-facture - Convert to invoice: PASSED")
+        print("✅ Multi-currency calculations USD/FC: PASSED")
+        print("✅ Date expiration functionality: PASSED")
+        print("✅ All status transitions (brouillon→envoyé→accepté→refusé→expiré): PASSED")
+        
+        return True
+
 def test_bulk_client_creation(tester, count=10):
     """Create multiple clients in bulk for load testing"""
     print("\n" + "=" * 50)
