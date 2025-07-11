@@ -530,9 +530,8 @@ class FactureProTester:
         self.run_test(
             "Set Devis to Accepted for Conversion",
             "PUT",
-            f"/api/devis/{devis_id}",
+            f"/api/devis/{devis_id}?statut=accepte",
             200,
-            data={"statut": "accepte"},
             print_response=False
         )
         
