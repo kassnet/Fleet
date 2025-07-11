@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class SalesModuleTester:
-    def __init__(self, base_url="https://122fd5ed-f22e-4bd5-80c6-6f62870e625e.preview.emergentagent.com"):
+    def __init__(self, base_url="https://95547821-5841-47be-addd-8e56e8fb78fd.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
