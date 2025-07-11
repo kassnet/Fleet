@@ -164,15 +164,30 @@ backend:
 
   - task: "Gestion des stocks produits"
     implemented: true
-    working: "unknown"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "unknown"
         agent: "main"
         comment: "Endpoints pour gestion stock existent, besoin de tester fonctionnalité complète."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Gestion des stocks fonctionne parfaitement! Mise à jour des stocks OK, mouvements de stock enregistrés correctement, calculs précis. Test avec produit 'Formation utilisateur': stock initial 50 → 75 unités, mouvement de correction enregistré avec motif."
+
+  - task: "Gestion complète des devis"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Fonctionnalité devis 100% opérationnelle! Tous les endpoints testés avec succès: GET /api/devis (liste), POST /api/devis (création), GET /api/devis/{id} (récupération), PUT /api/devis/{id} (mise à jour statut), POST /api/devis/{id}/convertir-facture (conversion). Transitions de statut: brouillon→envoyé→accepté→refusé→expiré. Calculs multi-devises USD/FC corrects (2800 FC = 1 USD). Dates d'expiration calculées automatiquement. Conversion devis→facture avec montants cohérents et liaison correcte. Authentification admin/manager requise et fonctionnelle."
 
   - task: "Calculs multi-devises USD/FC"
     implemented: true
