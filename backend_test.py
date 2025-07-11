@@ -1406,7 +1406,13 @@ def test_id_corrections(tester=None):
     print("=" * 80)
     
     if tester is None:
-        tester = FactureProTester()
+        # Authenticate if no tester provided
+        auth_success, tester = test_authentication("admin@facturapp.rdc", "admin123")
+        if not auth_success:
+            auth_success, tester = test_authentication("manager@demo.com", "manager123")
+            if not auth_success:
+                print("❌ Authentication failed, stopping ID correction tests")
+                return False
     
     # 1. Test basic API health
     print("\n🔍 STEP 1: Checking API health")
