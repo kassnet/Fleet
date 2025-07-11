@@ -261,10 +261,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Création et gestion des factures"
-    - "Simulation de paiements"
-    - "Marquage factures comme payées"
-    - "Boutons simulation paiement et marquage"
+    - "Gestion complète des devis"
+    - "Gestion des stocks produits"
   stuck_tasks: []
   test_all: true
   test_priority: "completed"
