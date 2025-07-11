@@ -494,12 +494,12 @@ class FactureProTester:
         for new_status, description in status_transitions:
             print(f"\n📝 Testing status change to '{new_status}' ({description})")
             
+            # The API expects status as query parameter, not in body
             success, response = self.run_test(
                 f"Update Devis Status to {new_status}",
                 "PUT",
-                f"/api/devis/{devis_id}",
-                200,
-                data={"statut": new_status}
+                f"/api/devis/{devis_id}?statut={new_status}",
+                200
             )
             
             if success:
