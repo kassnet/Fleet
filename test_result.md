@@ -313,8 +313,8 @@ frontend:
   - task: "Séparation fonctionnalités utilisateur/paramètres"
     implemented: true
     working: false
-    file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    file: "/app/backend/server.py"
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -324,6 +324,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🔍 TESTS BACKEND SÉPARATION UTILISATEUR/PARAMÈTRES (17/07/2025) - PROBLÈMES IDENTIFIÉS: ✅ Support account créé avec succès (support@facturapp.rdc/support123). ✅ Authentification réussie pour tous les rôles: Admin, Support, Manager. ❌ PROBLÈME MAJEUR: Support ne peut PAS accéder à /api/users (403 Permissions insuffisantes) alors qu'il devrait pouvoir selon les spécifications. ❌ PROBLÈME CRITIQUE: Endpoints /api/parametres n'existent pas (404 Not Found) - aucun rôle ne peut y accéder. ❌ Support ne peut pas mettre à jour le taux de change (403). ✅ Admin peut accéder à /api/users. ✅ Manager correctement bloqué pour /api/users. 🚨 CONCLUSION: La séparation n'est PAS implémentée correctement - les endpoints /api/parametres sont manquants et les permissions Support sont incorrectes."
+      - working: false
+        agent: "testing"
+        comment: "🔍 TESTS COMPLETS SÉPARATION UTILISATEUR/PARAMÈTRES (17/07/2025) - RÉSULTATS DÉTAILLÉS: ✅ Authentification: Tous les rôles (Admin, Support, Manager) s'authentifient correctement. ✅ Gestion utilisateurs: Admin et Support peuvent créer des utilisateurs via POST /api/users. ✅ Manager correctement bloqué pour création d'utilisateurs. ✅ Support peut accéder à tous les endpoints /api/parametres/* (GET /api/parametres, POST /api/parametres/taux-change, GET /api/parametres/health, POST /api/parametres/backup, GET /api/parametres/logs). ✅ Manager correctement bloqué pour tous les endpoints /api/parametres/*. ❌ PROBLÈME CRITIQUE: Admin peut accéder aux endpoints /api/parametres/* alors qu'il devrait être bloqué selon les spécifications. La fonction check_permissions() contient 'Admin a tous les droits' qui contourne support_only(). ✅ Endpoints existants /api/taux-change fonctionnent correctement (Admin/Manager peuvent PUT, Support bloqué). ✅ Opérations utilisateur spécifiques: Admin et Support peuvent GET/PUT/DELETE sur /api/users/{id}, Manager bloqué. 🚨 CONCLUSION: Séparation partiellement implémentée mais Admin contourne les restrictions support_only() - nécessite correction de la logique de permissions."
 
 metadata:
   created_by: "main_agent"
