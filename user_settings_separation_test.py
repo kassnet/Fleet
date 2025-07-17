@@ -159,7 +159,7 @@ class UserSettingsSeparationTester:
         # Test endpoints that only Support should access
         settings_endpoints = [
             ("GET", "/api/parametres", "Get system parameters"),
-            ("POST", "/api/parametres/taux-change", "Update exchange rate"),
+            ("POST", "/api/parametres/taux-change", "Update exchange rate via parametres"),
             ("GET", "/api/parametres/health", "System health check"),
             ("POST", "/api/parametres/backup", "System backup"),
             ("GET", "/api/parametres/logs", "System logs"),
@@ -169,19 +169,19 @@ class UserSettingsSeparationTester:
         print(f"\n🛠️ Testing Support access to system settings:")
         for method, endpoint, description in settings_endpoints:
             if method == "POST" and "taux-change" in endpoint:
-                # Test data for updating exchange rate
-                test_data = {"nouveau_taux": 2850.0}
+                # Test data for updating exchange rate via parametres
+                test_data = {"taux": 2850.0}
                 success, response = self.make_request(method, endpoint, "support", 200, test_data)
             else:
                 success, response = self.make_request(method, endpoint, "support", 200)
             
             self.log_test(f"Support {description}", success, str(response)[:100] if not success else "Access granted")
         
-        # Test with Admin (should be denied)
+        # Test with Admin (should be denied according to separation)
         print(f"\n👑 Testing Admin access to system settings (should be denied):")
         for method, endpoint, description in settings_endpoints:
             if method == "POST" and "taux-change" in endpoint:
-                test_data = {"nouveau_taux": 2850.0}
+                test_data = {"taux": 2850.0}
                 success, response = self.make_request(method, endpoint, "admin", 403, test_data)
             else:
                 success, response = self.make_request(method, endpoint, "admin", 403)
@@ -192,7 +192,7 @@ class UserSettingsSeparationTester:
         print(f"\n👔 Testing Manager access to system settings (should be denied):")
         for method, endpoint, description in settings_endpoints:
             if method == "POST" and "taux-change" in endpoint:
-                test_data = {"nouveau_taux": 2850.0}
+                test_data = {"taux": 2850.0}
                 success, response = self.make_request(method, endpoint, "manager", 403, test_data)
             else:
                 success, response = self.make_request(method, endpoint, "manager", 403)
