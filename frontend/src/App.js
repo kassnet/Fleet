@@ -1912,60 +1912,173 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         {activeTab === 'parametres' && (
           <ProtectedRoute requiredRoles={['support']}>
             <div className="space-y-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-                  ⚙️ {t('settings.system')}
-                </h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('config.title')}</h2>
+              
+              {/* Configuration générale */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                {/* Statistiques système */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                {/* Section Logo */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('config.logo')}</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('config.logo.current')}
+                      </label>
+                      <div className="flex items-center space-x-4">
+                        <div className="h-16 w-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
+                          <img 
+                            src={appConfig.logoUrl} 
+                            alt="Logo actuel" 
+                            className="h-14 w-14 object-cover rounded-md"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file) uploadLogo(file);
+                            }}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className={`cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
+                              uploadingLogo 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-purple-600 hover:bg-purple-700'
+                            }`}
+                          >
+                            {uploadingLogo ? t('common.loading') : t('config.logo.change')}
+                          </label>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        Formats acceptés: JPG, PNG, GIF (max 5MB)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section Paramètres application */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('config.app')}</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('config.app.name')}
+                      </label>
+                      <input
+                        type="text"
+                        value={appConfig.appName}
+                        onChange={(e) => setAppConfig(prev => ({...prev, appName: e.target.value}))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('config.app.theme')}
+                      </label>
+                      <select
+                        value={appConfig.theme}
+                        onChange={(e) => setAppConfig(prev => ({...prev, theme: e.target.value}))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="light">Clair</option>
+                        <option value="dark">Sombre</option>
+                        <option value="auto">Automatique</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('config.app.language')}
+                      </label>
+                      <select
+                        value={appConfig.language}
+                        onChange={(e) => setAppConfig(prev => ({...prev, language: e.target.value}))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="fr">Français</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => saveAppConfig(appConfig)}
+                      disabled={configLoading}
+                      className={`w-full px-4 py-2 text-white rounded-lg ${
+                        configLoading 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-green-600 hover:bg-green-700'
+                      }`}
+                    >
+                      {configLoading ? t('common.loading') : t('btn.save')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistiques système */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">📊 Statistiques système</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-blue-700 dark:text-blue-300">👥 Utilisateurs</h3>
+                    <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300">👥 Utilisateurs</h4>
                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{users.length}</p>
                   </div>
                   <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-green-700 dark:text-green-300">👥 Clients</h3>
+                    <h4 className="text-sm font-medium text-green-700 dark:text-green-300">👥 Clients</h4>
                     <p className="text-2xl font-bold text-green-900 dark:text-green-100">{clients.length}</p>
                   </div>
                   <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-purple-700 dark:text-purple-300">📦 Produits</h3>
+                    <h4 className="text-sm font-medium text-purple-700 dark:text-purple-300">📦 Produits</h4>
                     <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{produits.length}</p>
                   </div>
                   <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-orange-700 dark:text-orange-300">🧾 Factures</h3>
+                    <h4 className="text-sm font-medium text-orange-700 dark:text-orange-300">🧾 Factures</h4>
                     <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{factures.length}</p>
                   </div>
                 </div>
+              </div>
 
-                {/* Configuration taux de change */}
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
-                  <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">💱 Taux de change</h3>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Taux USD → FC
-                      </label>
-                      <input
-                        type="number"
-                        value={nouveauTaux}
-                        onChange={(e) => setNouveauTaux(e.target.value)}
-                        className="w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                        placeholder="2800"
-                      />
-                    </div>
-                    <button
-                      onClick={handleUpdateTauxChange}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Mettre à jour
-                    </button>
+              {/* Configuration taux de change */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">💱 {t('config.exchange_rate')}</h3>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('config.new_rate')}
+                    </label>
+                    <input
+                      type="number"
+                      value={nouveauTaux}
+                      onChange={(e) => setNouveauTaux(e.target.value)}
+                      className="w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                      placeholder="2800"
+                    />
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    Taux actuel: 1 USD = {tauxChange.taux_change_actuel} FC
-                  </p>
+                  <button
+                    onClick={handleUpdateTauxChange}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    {t('config.update')}
+                  </button>
                 </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  {t('config.current_rate')}: 1 USD = {tauxChange.taux_change_actuel} FC
+                </p>
+              </div>
 
-                {/* Actions système */}
+              {/* Actions système */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">🔧 Actions système</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <button
                     onClick={() => handleSystemAction('backup')}
