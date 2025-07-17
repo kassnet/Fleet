@@ -1072,7 +1072,8 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 <span className="ml-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs rounded">
                   {user.role === 'admin' ? `👑 ${t('user.role.admin')}` : 
                    user.role === 'manager' ? `👔 ${t('user.role.manager')}` :
-                   user.role === 'comptable' ? `💰 ${t('user.role.comptable')}` : `👤 ${t('user.role.utilisateur')}`}
+                   user.role === 'comptable' ? `💰 ${t('user.role.comptable')}` : 
+                   user.role === 'support' ? `🔧 ${t('user.role.support')}` : `👤 ${t('user.role.utilisateur')}`}
                 </span>
               </div>
               <button
