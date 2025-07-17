@@ -2015,8 +2015,8 @@ async def convertir_montant(montant: float, devise_source: str, devise_cible: st
 # ===== CONFIGURATION ROUTES =====
 
 @app.post("/api/config/logo")
-async def upload_logo(request: dict, current_user: dict = Depends(admin_only())):
-    """Téléverser un nouveau logo - Admin seulement"""
+async def upload_logo(request: dict, current_user: dict = Depends(support_only())):
+    """Téléverser un nouveau logo - Support seulement"""
     try:
         logo_data = request.get("logo")
         filename = request.get("filename", "logo.png")
