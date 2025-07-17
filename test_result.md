@@ -321,6 +321,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🔍 TESTS SÉPARATION UTILISATEUR/PARAMÈTRES - RÉSULTATS MIXTES: ✅ Admin (admin@facturapp.rdc): Login OK, badge 👑 affiché, accès Users tab (👤) confirmé avec interface fonctionnelle (4 utilisateurs, boutons Modifier/Supprimer), PAS d'accès Settings (⚙️) - CORRECT selon code. ❌ Support (support@facturapp.rdc): Login ÉCHEC - credentials 'Email ou mot de passe incorrect', impossible de tester accès exclusif Settings tab. ✅ Manager (manager@demo.com): Login OK, badge 👔, PAS d'accès Users ni Settings - CORRECT. 🚨 PROBLÈME CRITIQUE: Compte support inexistant/credentials incorrects empêchent validation complète de la séparation. Navigation role-based partiellement fonctionnelle mais test incomplet."
+      - working: false
+        agent: "testing"
+        comment: "🔍 TESTS BACKEND SÉPARATION UTILISATEUR/PARAMÈTRES (17/07/2025) - PROBLÈMES IDENTIFIÉS: ✅ Support account créé avec succès (support@facturapp.rdc/support123). ✅ Authentification réussie pour tous les rôles: Admin, Support, Manager. ❌ PROBLÈME MAJEUR: Support ne peut PAS accéder à /api/users (403 Permissions insuffisantes) alors qu'il devrait pouvoir selon les spécifications. ❌ PROBLÈME CRITIQUE: Endpoints /api/parametres n'existent pas (404 Not Found) - aucun rôle ne peut y accéder. ❌ Support ne peut pas mettre à jour le taux de change (403). ✅ Admin peut accéder à /api/users. ✅ Manager correctement bloqué pour /api/users. 🚨 CONCLUSION: La séparation n'est PAS implémentée correctement - les endpoints /api/parametres sont manquants et les permissions Support sont incorrectes."
 
 metadata:
   created_by: "main_agent"
