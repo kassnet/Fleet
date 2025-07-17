@@ -188,6 +188,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTÉ ET CONFIRMÉ - Fonctionnalité devis 100% opérationnelle! Tous les endpoints testés avec succès: GET /api/devis (liste), POST /api/devis (création), GET /api/devis/{id} (récupération), PUT /api/devis/{id} (mise à jour statut), POST /api/devis/{id}/convertir-facture (conversion). Transitions de statut: brouillon→envoyé→accepté→refusé→expiré. Calculs multi-devises USD/FC corrects (2800 FC = 1 USD). Dates d'expiration calculées automatiquement. Conversion devis→facture avec montants cohérents et liaison correcte. Authentification admin/manager requise et fonctionnelle."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TESTÉ ET CONFIRMÉ (17/07/2025) - Tous les tests devis passés avec succès! Authentification admin@facturapp.rdc fonctionnelle. Création devis avec calculs corrects (232 USD / 649600 FC). Toutes transitions de statut testées: brouillon→envoye→accepte→refuse→expire. Conversion devis→facture parfaite avec montants cohérents. Multi-devises USD/FC validé. Dates d'expiration calculées automatiquement. Liaison devis-facture correcte. Aucune erreur détectée."
 
   - task: "Calculs multi-devises USD/FC"
     implemented: true
