@@ -6,7 +6,7 @@ import time
 import random
 
 class FactureProTester:
-    def __init__(self, base_url="https://95547821-5841-47be-addd-8e56e8fb78fd.preview.emergentagent.com"):
+    def __init__(self, base_url="https://be939dd3-4538-4330-b115-17422fd00276.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
