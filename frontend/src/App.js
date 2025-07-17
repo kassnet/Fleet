@@ -259,35 +259,32 @@ const AppContent = () => {
         setVenteStats({});
       }
 
-      // Données utilisateurs pour Admin uniquement
-      if (user.role === 'admin') {
-        console.log('👤 Chargement des données utilisateurs pour Admin');
+      // Données utilisateurs pour Admin et Support uniquement
+      if (user.role === 'admin' || user.role === 'support') {
+        console.log('👤 Chargement des données utilisateurs pour Admin/Support');
         try {
-          const [usersRes, configRes] = await Promise.all([
-            apiCall('GET', '/api/users'),
-            apiCall('GET', '/api/config')
-          ]);
+          const usersRes = await apiCall('GET', '/api/users');
           setUsers(usersRes.data || []);
-          setAppConfig(configRes.data || {
-            appName: 'FacturApp',
-            logoUrl: '/logo.png',
-            theme: 'light',
-            language: 'fr'
-          });
-          console.log('👤 Données utilisateurs chargées - Utilisateurs:', usersRes.data.length);
-          console.log('⚙️ Configuration chargée:', configRes.data);
-        } catch (usersError) {
-          console.warn('⚠️ Erreur chargement données utilisateurs:', usersError.response?.status);
-          setUsers([]);
-          setAppConfig({
-            appName: 'FacturApp',
-            logoUrl: '/logo.png',
-            theme: 'light',
-            language: 'fr'
-          });
+          console.log('👤 Utilisateurs chargés:', usersRes.data?.length || 0);
+        } catch (error) {
+          console.error('❌ Erreur chargement utilisateurs:', error.response?.status, error.response?.data || error.message);
         }
-      } else {
-        // Pas d'accès aux données utilisateurs
+      }
+
+      // Données de configuration pour Support uniquement
+      if (user.role === 'support') {
+        console.log('⚙️ Chargement des paramètres système pour Support');
+        try {
+          const configRes = await apiCall('GET', '/api/parametres');
+          setAppConfig(prev => ({ ...prev, ...configRes.data }));
+          console.log('⚙️ Configuration chargée:', configRes.data);
+        } catch (error) {
+          console.error('❌ Erreur chargement configuration:', error.response?.status, error.response?.data || error.message);
+        }
+      }
+
+      // Initialisation par défaut pour les autres rôles
+      if (user.role !== 'admin' && user.role !== 'support') {
         setUsers([]);
         setAppConfig({
           appName: 'FacturApp',
