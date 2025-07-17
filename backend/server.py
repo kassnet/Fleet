@@ -478,7 +478,15 @@ def comptable_manager_admin():
 
 def all_authenticated():
     """Tous les utilisateurs authentifiés peuvent accéder"""
-    return check_permissions(["admin", "manager", "comptable", "utilisateur"])
+    return check_permissions(["admin", "manager", "comptable", "utilisateur", "support"])
+
+def support_only():
+    """Seul le support peut accéder"""
+    return check_permissions(["support"])
+
+def admin_support():
+    """Admin et support peuvent accéder"""
+    return check_permissions(["admin", "support"])
 
 def calculer_prix_produit(prix_base: float, devise_base: str, devise_cible: str, taux: float = None) -> float:
     """Calcule le prix d'un produit dans la devise cible"""
