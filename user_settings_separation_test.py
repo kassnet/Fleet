@@ -217,11 +217,11 @@ class UserSettingsSeparationTester:
         print(f"\n💱 Testing PUT /api/taux-change (Manager and Admin only):")
         
         for role in ["admin", "manager"]:
-            success, response = self.make_request("PUT", "/api/taux-change", role, 200, {"nouveau_taux": 2800.0})
+            success, response = self.make_request("PUT", "/api/taux-change?nouveau_taux=2800.0", role, 200)
             self.log_test(f"{role.capitalize()} PUT /api/taux-change", success, str(response)[:100] if not success else "Access granted")
         
         # Support should NOT have access to PUT /api/taux-change
-        success, response = self.make_request("PUT", "/api/taux-change", "support", 403, {"nouveau_taux": 2800.0})
+        success, response = self.make_request("PUT", "/api/taux-change?nouveau_taux=2800.0", "support", 403)
         self.log_test("Support PUT /api/taux-change (should be denied)", success, "Access correctly denied" if success else str(response)[:100])
 
     def test_user_specific_operations(self):
