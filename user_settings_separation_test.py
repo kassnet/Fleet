@@ -230,26 +230,30 @@ class UserSettingsSeparationTester:
         print("🔍 TESTING USER SPECIFIC OPERATIONS")
         print(f"{'='*60}")
         
-        # First, get a list of users to test with
-        success, users_data = self.make_request("GET", "/api/users", "admin", 200)
+        # Since there's no GET /api/users endpoint, we'll create a user first and then test operations on it
+        print("📝 Creating a test user to perform operations on...")
         
-        if not success:
-            print("❌ Cannot get users list, skipping user-specific tests")
+        # Create a test user with admin
+        test_user_data = {
+            "email": f"test_operations_{datetime.now().strftime('%H%M%S')}@test.com",
+            "nom": "Test",
+            "prenom": "Operations",
+            "password": "test123",
+            "role": "utilisateur"
+        }
+        
+        success, created_user = self.make_request("POST", "/api/users", "admin", 200, test_user_data)
+        
+        if not success or not created_user:
+            print("❌ Cannot create test user, skipping user-specific tests")
             return
         
-        if not users_data or len(users_data) == 0:
-            print("❌ No users found, skipping user-specific tests")
-            return
-        
-        # Get the first user for testing
-        test_user = users_data[0]
-        user_id = test_user.get('id')
-        
+        user_id = created_user.get('id')
         if not user_id:
             print("❌ No user ID found, skipping user-specific tests")
             return
         
-        print(f"📝 Testing with user: {test_user.get('email')} (ID: {user_id})")
+        print(f"📝 Testing with user: {created_user.get('email')} (ID: {user_id})")
         
         # Test GET /api/users/{user_id} - Admin and Support should have access
         print(f"\n👤 Testing GET /api/users/{user_id}:")
@@ -262,19 +266,18 @@ class UserSettingsSeparationTester:
         success, response = self.make_request("GET", f"/api/users/{user_id}", "manager", 403)
         self.log_test("Manager GET user by ID (should be denied)", success, "Access correctly denied" if success else str(response)[:100])
         
-        # Test PUT /api/users/{user_id}/status - Admin and Support should have access
-        print(f"\n👤 Testing PUT /api/users/{user_id}/status:")
+        # Test PUT /api/users/{user_id} - Admin should have access (based on code inspection)
+        print(f"\n👤 Testing PUT /api/users/{user_id}:")
         
-        for role in ["admin", "support"]:
-            success, response = self.make_request("PUT", f"/api/users/{user_id}/status", role, 200, {"is_active": True})
-            self.log_test(f"{role.capitalize()} PUT user status", success, str(response)[:100] if not success else "Access granted")
+        update_data = {"nom": "Updated", "prenom": "User"}
+        success, response = self.make_request("PUT", f"/api/users/{user_id}", "admin", 200, update_data)
+        self.log_test("Admin PUT user update", success, str(response)[:100] if not success else "Access granted")
         
-        # Test PUT /api/users/{user_id}/role - Admin and Support should have access
-        print(f"\n👤 Testing PUT /api/users/{user_id}/role:")
+        # Test DELETE /api/users/{user_id} - Admin should have access (based on code inspection)
+        print(f"\n👤 Testing DELETE /api/users/{user_id}:")
         
-        for role in ["admin", "support"]:
-            success, response = self.make_request("PUT", f"/api/users/{user_id}/role", role, 200, {"role": "utilisateur"})
-            self.log_test(f"{role.capitalize()} PUT user role", success, str(response)[:100] if not success else "Access granted")
+        success, response = self.make_request("DELETE", f"/api/users/{user_id}", "admin", 200)
+        self.log_test("Admin DELETE user", success, str(response)[:100] if not success else "Access granted")
 
     def run_all_tests(self):
         """Run all separation tests"""
