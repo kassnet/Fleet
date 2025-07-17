@@ -12,8 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('mouvements_stock', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->uuid('produit_id');
+            $table->enum('type_mouvement', ['entree', 'sortie', 'correction']);
+            $table->integer('quantite');
+            $table->integer('stock_avant');
+            $table->integer('stock_apres');
+            $table->text('motif')->nullable();
+            $table->timestamp('date_mouvement');
             $table->timestamps();
+            
+            $table->foreign('produit_id')->references('id')->on('produits')->onDelete('cascade');
+            $table->index('produit_id');
+            $table->index('type_mouvement');
+            $table->index('date_mouvement');
         });
     }
 
