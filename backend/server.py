@@ -480,23 +480,23 @@ def check_permissions_with_admin_override(required_roles: List[str]):
 
 # Fonctions helper pour les permissions spécifiques
 def admin_only():
-    """Seuls les admins peuvent accéder"""
-    return check_permissions(["admin"])
+    """Seul l'admin peut accéder"""
+    return check_permissions_with_admin_override(["admin"])
 
 def manager_and_admin():
     """Managers et admins peuvent accéder"""
-    return check_permissions(["admin", "manager"])
+    return check_permissions_with_admin_override(["admin", "manager"])
 
 def comptable_manager_admin():
     """Comptables, managers et admins peuvent accéder"""
-    return check_permissions(["admin", "manager", "comptable"])
+    return check_permissions_with_admin_override(["admin", "manager", "comptable"])
 
 def all_authenticated():
     """Tous les utilisateurs authentifiés peuvent accéder"""
-    return check_permissions(["admin", "manager", "comptable", "utilisateur", "support"])
+    return check_permissions_with_admin_override(["admin", "manager", "comptable", "utilisateur", "support"])
 
 def support_only():
-    """Seul le support peut accéder"""
+    """Seul le support peut accéder (sans override admin)"""
     return check_permissions(["support"])
 
 def admin_support():
