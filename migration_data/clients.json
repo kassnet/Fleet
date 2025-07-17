@@ -1,0 +1,28 @@
+[
+  {
+    "_id": "6878d4a6465a53de72255c36",
+    "id": "5e8ddf65-91b9-439b-b721-8b735a582e07",
+    "nom": "Entreprise ABC",
+    "email": "contact@abc.com",
+    "telephone": "+243 81 234 5678",
+    "adresse": "Avenue de la Libération 123",
+    "ville": "Kinshasa",
+    "code_postal": "12345",
+    "pays": "RDC",
+    "devise_preferee": "USD",
+    "date_creation": "2025-07-17T10:47:02.204000"
+  },
+  {
+    "_id": "6878d4a6465a53de72255c37",
+    "id": "3036150d-88bb-4ca5-a2e2-fd8177c9b6ff",
+    "nom": "SARL Congo Digital",
+    "email": "info@congodigital.cd",
+    "telephone": "+243 99 876 5432",
+    "adresse": "Boulevard du 30 Juin 456",
+    "ville": "Lubumbashi",
+    "code_postal": "54321",
+    "pays": "RDC",
+    "devise_preferee": "FC",
+    "date_creation": "2025-07-17T10:47:02.204000"
+  }
+]

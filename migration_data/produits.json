@@ -1,0 +1,60 @@
+[
+  {
+    "_id": "6878d4a6465a53de72255c38",
+    "id": "6d94f621-8796-42b5-b663-d977b6d398e7",
+    "nom": "Développement site web",
+    "description": "Création de site web sur mesure",
+    "prix_usd": 2500.0,
+    "prix_fc": 7000000.0,
+    "unite": "projet",
+    "tva": 16.0,
+    "actif": true,
+    "gestion_stock": false,
+    "date_creation": "2025-07-17T10:47:02.204000"
+  },
+  {
+    "_id": "6878d4a6465a53de72255c39",
+    "id": "5311fb17-9e08-4302-abac-141611876f6e",
+    "nom": "Maintenance mensuelle",
+    "description": "Maintenance et mise à jour du site",
+    "prix_usd": 150.0,
+    "prix_fc": 420000.0,
+    "unite": "mois",
+    "tva": 16.0,
+    "actif": true,
+    "gestion_stock": false,
+    "date_creation": "2025-07-17T10:47:02.204000"
+  },
+  {
+    "_id": "6878d4a6465a53de72255c3a",
+    "id": "580bef71-89fa-46d0-b28b-574a7e03b02f",
+    "nom": "Formation utilisateur",
+    "description": "Formation à l'utilisation du site",
+    "prix_usd": 80.0,
+    "prix_fc": 224000.0,
+    "unite": "heure",
+    "tva": 16.0,
+    "actif": true,
+    "gestion_stock": true,
+    "stock_actuel": 50,
+    "stock_minimum": 10,
+    "stock_maximum": 100,
+    "date_creation": "2025-07-17T10:47:02.204000"
+  },
+  {
+    "_id": "6878d4a6465a53de72255c3b",
+    "id": "c77d74c1-c0c9-4fe8-8a63-cf1751411b56",
+    "nom": "Ordinateur portable",
+    "description": "Ordinateur portable Dell Inspiron",
+    "prix_usd": 800.0,
+    "prix_fc": 2240000.0,
+    "unite": "unité",
+    "tva": 16.0,
+    "actif": true,
+    "gestion_stock": true,
+    "stock_actuel": 25,
+    "stock_minimum": 5,
+    "stock_maximum": 50,
+    "date_creation": "2025-07-17T10:47:02.204000"
+  }
+]

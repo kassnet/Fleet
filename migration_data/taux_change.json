@@ -1,0 +1,11 @@
+[
+  {
+    "_id": "6878d4a6465a53de72255c35",
+    "id": "56167289-a1b1-4629-af90-ff6511b5c49a",
+    "devise_base": "USD",
+    "devise_cible": "FC",
+    "taux": 2800.0,
+    "date_creation": "2025-07-17T10:47:02.203000",
+    "actif": true
+  }
+]

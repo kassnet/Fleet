@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "6878d07ad7f9be24e799b266",
+    "id": "1bc2e02d-90e2-41ff-8057-889c6061b7da",
+    "email": "admin@facturapp.rdc",
+    "nom": "Administrateur",
+    "prenom": "Système",
+    "role": "admin",
+    "is_active": true,
+    "hashed_password": "$2b$12$JYzO/ZqlK6dJg4p3yIFSQO7Gb41V6pKjj78O34zDiiRTDRwv38Fke",
+    "date_creation": "2025-07-17T10:29:14.009000",
+    "derniere_connexion": null
+  },
+  {
+    "_id": "6878d07ad7f9be24e799b267",
+    "id": "d7495192-3741-4fb9-b544-7bb89a08dbe1",
+    "email": "manager@demo.com",
+    "nom": "Manager",
+    "prenom": "Demo",
+    "role": "manager",
+    "is_active": true,
+    "hashed_password": "$2b$12$o51Q.DDsCuPl8Md/1s5.y.EzNEHZrFAQNLtv6HdbJ9Hl9aIC1hgKS",
+    "date_creation": "2025-07-17T10:29:14.706000",
+    "derniere_connexion": null
+  },
+  {
+    "_id": "6878d07bd7f9be24e799b268",
+    "id": "2fd77d9e-4e20-432a-84b8-260b895b7b4a",
+    "email": "comptable@demo.com",
+    "nom": "Comptable",
+    "prenom": "Demo",
+    "role": "comptable",
+    "is_active": true,
+    "hashed_password": "$2b$12$/FAvYT0MnMMQ8ZgD5qgrSO3mRtoaZjL7AGFjeARHALIf9pjg0F9P.",
+    "date_creation": "2025-07-17T10:29:15.290000",
+    "derniere_connexion": null
+  },
+  {
+    "_id": "6878d07cd7f9be24e799b269",
+    "id": "4dda1e87-82a5-48de-b591-adb830cbfa70",
+    "email": "user@demo.com",
+    "nom": "Utilisateur",
+    "prenom": "Demo",
+    "role": "utilisateur",
+    "is_active": true,
+    "hashed_password": "$2b$12$nIsJGRvUEALK2uifEqFy0u9F2KeRImHhsDZhpTX1yjltrXvHDYFNC",
+    "date_creation": "2025-07-17T10:29:16.016000",
+    "derniere_connexion": null
+  }
+]
