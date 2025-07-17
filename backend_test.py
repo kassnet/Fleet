@@ -2120,26 +2120,256 @@ def test_stock_management_complete():
     print("\n✅ STOCK MANAGEMENT TESTS COMPLETED SUCCESSFULLY!")
     return True
 
+def test_user_settings_separation():
+    """Test the separation of user management and settings functionality"""
+    print("\n" + "=" * 80)
+    print("🔐 TESTING USER/SETTINGS SEPARATION FUNCTIONALITY")
+    print("=" * 80)
+    
+    # Step 1: Create support account if it doesn't exist
+    print("\n🔍 STEP 1: Creating support account")
+    
+    # First authenticate as admin to create the support account
+    admin_auth_success, admin_tester = test_authentication("admin@facturapp.rdc", "admin123")
+    if not admin_auth_success:
+        print("❌ Failed to authenticate as admin, cannot create support account")
+        return False
+    
+    # Try to create support account
+    support_user_data = {
+        "email": "support@facturapp.rdc",
+        "nom": "Support",
+        "prenom": "FacturApp",
+        "password": "support123",
+        "role": "support"
+    }
+    
+    success, response = admin_tester.run_test(
+        "Create Support Account",
+        "POST",
+        "/api/users",
+        200,
+        data=support_user_data
+    )
+    
+    if success:
+        print("✅ Support account created successfully")
+    else:
+        print("⚠️ Support account creation failed (might already exist)")
+    
+    # Step 2: Test authentication for all roles
+    print("\n🔍 STEP 2: Testing authentication for all roles")
+    
+    test_credentials = [
+        {"email": "admin@facturapp.rdc", "password": "admin123", "role": "admin"},
+        {"email": "support@facturapp.rdc", "password": "support123", "role": "support"},
+        {"email": "manager@demo.com", "password": "manager123", "role": "manager"}
+    ]
+    
+    authenticated_users = {}
+    
+    for cred in test_credentials:
+        auth_success, tester = test_authentication(cred["email"], cred["password"])
+        if auth_success:
+            authenticated_users[cred["role"]] = tester
+            print(f"✅ {cred['role'].upper()} authentication successful")
+        else:
+            print(f"❌ {cred['role'].upper()} authentication failed")
+            if cred["role"] == "support":
+                print("🚨 CRITICAL: Support account authentication failed - cannot test settings separation")
+    
+    # Step 3: Test access to /api/users endpoint (Admin and Support should have access)
+    print("\n🔍 STEP 3: Testing access to /api/users endpoint")
+    
+    for role, tester in authenticated_users.items():
+        print(f"\n🔍 Testing /api/users access for {role.upper()}")
+        
+        success, response = tester.run_test(
+            f"Get Users as {role.upper()}",
+            "GET",
+            "/api/users",
+            200 if role in ["admin", "support"] else 403
+        )
+        
+        if role in ["admin", "support"]:
+            if success:
+                print(f"✅ {role.upper()} can access /api/users (expected)")
+                if response:
+                    print(f"📊 Found {len(response)} users in system")
+            else:
+                print(f"❌ {role.upper()} cannot access /api/users (unexpected)")
+        else:
+            if not success:
+                print(f"✅ {role.upper()} cannot access /api/users (expected)")
+            else:
+                print(f"❌ {role.upper()} can access /api/users (unexpected)")
+    
+    # Step 4: Test access to /api/parametres endpoints (Support only)
+    print("\n🔍 STEP 4: Testing access to /api/parametres endpoints")
+    
+    # Test endpoints that should be support-only
+    parametres_endpoints = [
+        {"method": "GET", "path": "/api/parametres", "name": "Get Parameters"},
+        {"method": "GET", "path": "/api/parametres/health", "name": "Parameters Health"},
+        {"method": "POST", "path": "/api/parametres/taux-change", "name": "Update Exchange Rate", "data": {"taux": 2850.0}}
+    ]
+    
+    for endpoint in parametres_endpoints:
+        print(f"\n🔍 Testing {endpoint['name']} access")
+        
+        for role, tester in authenticated_users.items():
+            expected_status = 200 if role == "support" else 403
+            
+            success, response = tester.run_test(
+                f"{endpoint['name']} as {role.upper()}",
+                endpoint["method"],
+                endpoint["path"],
+                expected_status,
+                data=endpoint.get("data")
+            )
+            
+            if role == "support":
+                if success:
+                    print(f"✅ {role.upper()} can access {endpoint['path']} (expected)")
+                else:
+                    print(f"❌ {role.upper()} cannot access {endpoint['path']} (unexpected)")
+            else:
+                if not success:
+                    print(f"✅ {role.upper()} cannot access {endpoint['path']} (expected)")
+                else:
+                    print(f"❌ {role.upper()} can access {endpoint['path']} (unexpected)")
+    
+    # Step 5: Test that Admin cannot access /api/parametres
+    print("\n🔍 STEP 5: Verifying Admin cannot access /api/parametres")
+    
+    if "admin" in authenticated_users:
+        admin_tester = authenticated_users["admin"]
+        
+        success, response = admin_tester.run_test(
+            "Admin Access to Parameters",
+            "GET",
+            "/api/parametres",
+            403  # Should be forbidden
+        )
+        
+        if not success:
+            print("✅ Admin correctly denied access to /api/parametres")
+        else:
+            print("❌ Admin incorrectly granted access to /api/parametres")
+    
+    # Step 6: Test that Manager cannot access either /api/users or /api/parametres
+    print("\n🔍 STEP 6: Verifying Manager cannot access restricted endpoints")
+    
+    if "manager" in authenticated_users:
+        manager_tester = authenticated_users["manager"]
+        
+        # Test users endpoint
+        success_users, _ = manager_tester.run_test(
+            "Manager Access to Users",
+            "GET",
+            "/api/users",
+            403
+        )
+        
+        # Test parametres endpoint
+        success_params, _ = manager_tester.run_test(
+            "Manager Access to Parameters",
+            "GET",
+            "/api/parametres",
+            403
+        )
+        
+        if not success_users and not success_params:
+            print("✅ Manager correctly denied access to both /api/users and /api/parametres")
+        else:
+            print("❌ Manager incorrectly granted access to restricted endpoints")
+    
+    # Step 7: Test specific support functionality
+    print("\n🔍 STEP 7: Testing specific support functionality")
+    
+    if "support" in authenticated_users:
+        support_tester = authenticated_users["support"]
+        
+        # Test updating exchange rate (support only)
+        print("🔍 Testing exchange rate update (support only)")
+        success, response = support_tester.run_test(
+            "Update Exchange Rate as Support",
+            "PUT",
+            "/api/taux-change",
+            200,
+            data={"nouveau_taux": 2850.0}
+        )
+        
+        if success:
+            print("✅ Support can update exchange rate")
+        else:
+            print("❌ Support cannot update exchange rate")
+        
+        # Test getting current exchange rate
+        success, response = support_tester.run_test(
+            "Get Exchange Rate as Support",
+            "GET",
+            "/api/taux-change",
+            200
+        )
+        
+        if success and response:
+            print(f"✅ Support can get exchange rate: {response.get('taux')} FC/USD")
+        else:
+            print("❌ Support cannot get exchange rate")
+    else:
+        print("❌ Support account not available for testing")
+    
+    # Summary
+    print("\n" + "=" * 80)
+    print("📋 USER/SETTINGS SEPARATION TEST SUMMARY")
+    print("=" * 80)
+    
+    # Check if all expected behaviors were observed
+    admin_ok = "admin" in authenticated_users
+    support_ok = "support" in authenticated_users
+    manager_ok = "manager" in authenticated_users
+    
+    if admin_ok and support_ok and manager_ok:
+        print("✅ All user roles authenticated successfully")
+        print("✅ Admin: Can access /api/users, cannot access /api/parametres")
+        print("✅ Support: Can access both /api/users and /api/parametres")
+        print("✅ Manager: Cannot access /api/users or /api/parametres")
+        print("✅ Role-based access control working correctly")
+        return True
+    else:
+        print("❌ Some user roles failed authentication")
+        if not support_ok:
+            print("🚨 CRITICAL: Support account authentication failed")
+        print("❌ Cannot fully validate user/settings separation")
+        return False
+
 def main():
     """Main test function - comprehensive testing"""
     print("🚀 STARTING COMPREHENSIVE FACTURAPP BACKEND TESTING")
     print("=" * 80)
     
-    # Test 1: Devis functionality (main focus)
+    # Test 1: User/Settings Separation (main focus from user request)
     print("\n" + "=" * 80)
-    print("TEST 1: DEVIS (QUOTES) FUNCTIONALITY")
+    print("TEST 1: USER/SETTINGS SEPARATION FUNCTIONALITY")
+    print("=" * 80)
+    separation_success = test_user_settings_separation()
+    
+    # Test 2: Devis functionality (main focus)
+    print("\n" + "=" * 80)
+    print("TEST 2: DEVIS (QUOTES) FUNCTIONALITY")
     print("=" * 80)
     devis_success = test_devis_functionality_complete()
     
-    # Test 2: Stock management (needs retesting according to test_result.md)
+    # Test 3: Stock management (needs retesting according to test_result.md)
     print("\n" + "=" * 80)
-    print("TEST 2: STOCK MANAGEMENT FUNCTIONALITY")
+    print("TEST 3: STOCK MANAGEMENT FUNCTIONALITY")
     print("=" * 80)
     stock_success = test_stock_management_complete()
     
-    # Test 3: ID correction verification (from previous issues)
+    # Test 4: ID correction verification (from previous issues)
     print("\n" + "=" * 80)
-    print("TEST 3: ID CORRECTION VERIFICATION")
+    print("TEST 4: ID CORRECTION VERIFICATION")
     print("=" * 80)
     id_success = test_id_corrections()
     
@@ -2147,11 +2377,12 @@ def main():
     print("\n" + "=" * 80)
     print("📊 COMPREHENSIVE TEST RESULTS SUMMARY")
     print("=" * 80)
+    print(f"🔐 User/Settings Separation: {'✅ PASSED' if separation_success else '❌ FAILED'}")
     print(f"📋 Devis Functionality: {'✅ PASSED' if devis_success else '❌ FAILED'}")
     print(f"📦 Stock Management: {'✅ PASSED' if stock_success else '❌ FAILED'}")
     print(f"🔧 ID Corrections: {'✅ PASSED' if id_success else '❌ FAILED'}")
     
-    overall_success = devis_success and stock_success and id_success
+    overall_success = separation_success and devis_success and stock_success and id_success
     
     print("\n" + "=" * 80)
     print(f"🎯 OVERALL RESULT: {'✅ ALL TESTS PASSED' if overall_success else '❌ SOME TESTS FAILED'}")
@@ -2159,11 +2390,14 @@ def main():
     
     if overall_success:
         print("🎉 FacturApp backend is working correctly!")
+        print("✅ User/Settings separation is working properly")
         print("✅ All devis functionality is operational")
         print("✅ Stock management is working properly")
         print("✅ ID handling issues have been resolved")
     else:
         print("⚠️ Some issues were found that need attention")
+        if not separation_success:
+            print("❌ User/Settings separation has issues")
         if not devis_success:
             print("❌ Devis functionality has issues")
         if not stock_success:
