@@ -2045,8 +2045,8 @@ async def upload_logo(request: dict, current_user: dict = Depends(support_only()
         raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour du logo: {str(e)}")
 
 @app.put("/api/config/app")
-async def update_app_config(config: dict, current_user: dict = Depends(admin_only())):
-    """Mettre à jour la configuration de l'application - Admin seulement"""
+async def update_app_config(config: dict, current_user: dict = Depends(support_only())):
+    """Mettre à jour la configuration de l'application - Support seulement"""
     try:
         config_update = {
             **config,
