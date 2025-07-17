@@ -2118,9 +2118,92 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           </ProtectedRoute>
         )}
 
+        {/* Section Paramètres système (Support uniquement) */}
+        {activeTab === 'parametres' && (
+          <ProtectedRoute requiredRoles={['support']}>
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
+                  ⚙️ {t('settings.system')}
+                </h2>
+                
+                {/* Statistiques système */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-blue-700 dark:text-blue-300">👥 Utilisateurs</h3>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{users.length}</p>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-green-700 dark:text-green-300">👥 Clients</h3>
+                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">{clients.length}</p>
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-purple-700 dark:text-purple-300">📦 Produits</h3>
+                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{produits.length}</p>
+                  </div>
+                  <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-orange-700 dark:text-orange-300">🧾 Factures</h3>
+                    <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{factures.length}</p>
+                  </div>
+                </div>
+
+                {/* Configuration taux de change */}
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
+                  <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">💱 Taux de change</h3>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Taux USD → FC
+                      </label>
+                      <input
+                        type="number"
+                        value={nouveauTaux}
+                        onChange={(e) => setNouveauTaux(e.target.value)}
+                        className="w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                        placeholder="2800"
+                      />
+                    </div>
+                    <button
+                      onClick={handleUpdateTauxChange}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Mettre à jour
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Taux actuel: 1 USD = {tauxChange.taux_change_actuel} FC
+                  </p>
+                </div>
+
+                {/* Actions système */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <button
+                    onClick={() => handleSystemAction('backup')}
+                    className="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    💾 Sauvegarder BDD
+                  </button>
+                  <button
+                    onClick={() => handleSystemAction('logs')}
+                    className="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    📋 Voir les logs
+                  </button>
+                  <button
+                    onClick={() => handleSystemAction('health')}
+                    className="p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    🔍 Vérifier la santé
+                  </button>
+                </div>
+              </div>
+            </div>
+          </ProtectedRoute>
+        )}
+
         {/* Section Gestion des utilisateurs */}
         {activeTab === 'users' && (
-          <ProtectedRoute requiredRoles={['admin']}>
+          <ProtectedRoute requiredRoles={['admin', 'support']}>
             <UserManagement />
           </ProtectedRoute>
         )}
