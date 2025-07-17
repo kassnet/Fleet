@@ -314,7 +314,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/backend/server.py"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -327,6 +327,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🔍 TESTS COMPLETS SÉPARATION UTILISATEUR/PARAMÈTRES (17/07/2025) - RÉSULTATS DÉTAILLÉS: ✅ Authentification: Tous les rôles (Admin, Support, Manager) s'authentifient correctement. ✅ Gestion utilisateurs: Admin et Support peuvent créer des utilisateurs via POST /api/users. ✅ Manager correctement bloqué pour création d'utilisateurs. ✅ Support peut accéder à tous les endpoints /api/parametres/* (GET /api/parametres, POST /api/parametres/taux-change, GET /api/parametres/health, POST /api/parametres/backup, GET /api/parametres/logs). ✅ Manager correctement bloqué pour tous les endpoints /api/parametres/*. ❌ PROBLÈME CRITIQUE: Admin peut accéder aux endpoints /api/parametres/* alors qu'il devrait être bloqué selon les spécifications. La fonction check_permissions() contient 'Admin a tous les droits' qui contourne support_only(). ✅ Endpoints existants /api/taux-change fonctionnent correctement (Admin/Manager peuvent PUT, Support bloqué). ✅ Opérations utilisateur spécifiques: Admin et Support peuvent GET/PUT/DELETE sur /api/users/{id}, Manager bloqué. 🚨 CONCLUSION: Séparation partiellement implémentée mais Admin contourne les restrictions support_only() - nécessite correction de la logique de permissions."
+      - working: false
+        agent: "testing"
+        comment: "🎯 TESTS FINAUX SÉPARATION UTILISATEUR/PARAMÈTRES (17/07/2025) - DIAGNOSTIC COMPLET: ✅ CORRECTIONS VALIDÉES: Admin correctement bloqué pour /api/parametres (403), Support accès exclusif aux paramètres confirmé (200), Manager correctement restreint (403). ✅ FRONTEND: Admin voit Users tab (👤) mais PAS Settings (⚙️), Support voit BOTH Users (👤) ET Settings (⚙️) avec interface complète (statistiques système, taux de change, actions système), Manager ne voit NI Users NI Settings. ❌ PROBLÈME CRITIQUE IDENTIFIÉ: Endpoint GET /api/users MANQUANT dans le backend! Seuls les endpoints individuels existent (GET /api/users/{id}, POST /api/users, etc.) mais pas de liste complète. Tous les rôles reçoivent 405 Method Not Allowed pour GET /api/users. ✅ Support peut créer des utilisateurs via POST /api/users. 🚨 CONCLUSION: Séparation backend 85% fonctionnelle (Admin bloqué paramètres ✅, Support accès paramètres ✅) mais interface Users non fonctionnelle car endpoint GET /api/users manquant. Nécessite ajout de l'endpoint de liste des utilisateurs avec permissions admin_support()."
 
 metadata:
   created_by: "main_agent"
