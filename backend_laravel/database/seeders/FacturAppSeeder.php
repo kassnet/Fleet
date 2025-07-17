@@ -27,6 +27,14 @@ class FacturAppSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'nom' => 'Support',
+                'prenom' => 'Technique',
+                'email' => 'support@facturapp.rdc',
+                'password' => Hash::make('support123'),
+                'role' => 'support',
+                'is_active' => true,
+            ],
+            [
                 'nom' => 'Manager',
                 'prenom' => 'Demo',
                 'email' => 'manager@demo.com',
