@@ -680,6 +680,13 @@ async def init_admin_user():
             "prenom": "Demo",
             "role": "utilisateur",
             "password": "user123"
+        },
+        {
+            "email": "support@facturapp.rdc",
+            "nom": "Support",
+            "prenom": "Technique",
+            "role": "support",
+            "password": "support123"
         }
     ]
     
