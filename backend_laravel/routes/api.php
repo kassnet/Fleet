@@ -53,6 +53,17 @@ Route::middleware('auth:api')->group(function () {
     Route::post('payments/checkout/session', [PaiementController::class, 'createCheckoutSession']);
     Route::get('payments/checkout/status/{session_id}', [PaiementController::class, 'checkoutStatus']);
     
+    // Routes Utilisateurs (Admin + Support)
+    Route::apiResource('users', UserController::class);
+    Route::post('users/{id}/toggle-active', [UserController::class, 'toggleActive']);
+    
+    // Routes Paramètres (Support uniquement)
+    Route::get('parametres', [ParametreController::class, 'index']);
+    Route::post('parametres/taux-change', [ParametreController::class, 'updateTauxChange']);
+    Route::get('parametres/logs', [ParametreController::class, 'getLogs']);
+    Route::post('parametres/backup', [ParametreController::class, 'backupDatabase']);
+    Route::get('parametres/health', [ParametreController::class, 'healthCheck']);
+    
 });
 
 // Webhook Stripe (non protégé)
