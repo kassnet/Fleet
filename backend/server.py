@@ -2095,7 +2095,7 @@ async def change_user_role(user_id: str, role_data: dict, current_user: dict = D
     """Changer le rôle d'un utilisateur - Admin seulement"""
     try:
         new_role = role_data.get("role")
-        valid_roles = ["admin", "manager", "comptable", "utilisateur"]
+        valid_roles = ["admin", "manager", "comptable", "utilisateur", "support"]
         
         if new_role not in valid_roles:
             raise HTTPException(status_code=400, detail="Rôle invalide")
