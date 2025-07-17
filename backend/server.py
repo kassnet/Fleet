@@ -761,41 +761,26 @@ async def create_user(
     # Retourner l'utilisateur sans le mot de passe
     return User(**{k: v for k, v in user_dict.items() if k != "hashed_password"})
 
-@app.get("/api/users", response_model=List[User])
-async def get_users(current_user: dict = Depends(check_permissions(["admin"]))):
-    """Récupérer tous les utilisateurs (Admin seulement)"""
-    users = []
-    async for user in db.users.find().sort("date_creation", -1):
-        user["id"] = str(user["_id"]) if "_id" in user else user.get("id")
-        if "_id" in user:
-            del user["_id"]
-        # Retirer le mot de passe hashé
-        user_without_password = {k: v for k, v in user.items() if k != "hashed_password"}
-        users.append(User(**user_without_password))
-    return users
-
 @app.get("/api/users/{user_id}", response_model=User)
 async def get_user(
     user_id: str,
-    current_user: dict = Depends(check_permissions(["admin"]))
+    current_user: dict = Depends(admin_support())
 ):
-    """Récupérer un utilisateur par ID (Admin seulement)"""
-    user = await db.users.find_one({"$or": [{"id": user_id}, {"_id": user_id}]})
+    """Récupérer un utilisateur spécifique (Admin et Support seulement)"""
+    try:
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Retourner sans le mot de passe
+        user_without_password = {k: v for k, v in user.items() if k != "hashed_password"}
+        return User(**user_without_password)
     
-    if not user:
-        try:
-            user = await db.users.find_one({"_id": ObjectId(user_id)})
-        except:
-            pass
+    except Exception as e:
+        if "non trouvé" in str(e):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération de l'utilisateur: {str(e)}")
     
-    if not user:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    
-    user["id"] = str(user["_id"]) if "_id" in user else user.get("id")
-    if "_id" in user:
-        del user["_id"]
-    
-    # Retirer le mot de passe hashé
     user_without_password = {k: v for k, v in user.items() if k != "hashed_password"}
     return User(**user_without_password)
 
