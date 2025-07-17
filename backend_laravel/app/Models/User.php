@@ -113,9 +113,19 @@ class User extends Authenticatable implements JWTSubject
         return in_array($this->role, ['admin', 'manager', 'comptable']);
     }
 
+    public function isSupport()
+    {
+        return $this->role === 'support';
+    }
+
+    public function canAccessSettings()
+    {
+        return $this->role === 'support';
+    }
+
     public function canManageUsers()
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'support']);
     }
 
     public function canManageSales()
