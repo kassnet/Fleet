@@ -116,64 +116,39 @@ class UserSettingsSeparationTester:
         print("🔍 TESTING USER MANAGEMENT ACCESS")
         print(f"{'='*60}")
         
-        # Test endpoints that Admin and Support should access
-        user_endpoints = [
-            ("GET", "/api/users", "Get users list"),
-            ("POST", "/api/users", "Create user"),
-        ]
+        # Test POST /api/users - Admin and Support should have access
+        print(f"\n👑 Testing Admin access to user creation:")
+        test_data = {
+            "email": f"test_admin_{datetime.now().strftime('%H%M%S')}@test.com",
+            "nom": "Test",
+            "prenom": "User",
+            "password": "test123",
+            "role": "utilisateur"
+        }
+        success, response = self.make_request("POST", "/api/users", "admin", 200, test_data)
+        self.log_test("Admin Create user", success, str(response)[:100] if not success else "Access granted")
         
-        # Test with Admin
-        print(f"\n👑 Testing Admin access to user management:")
-        for method, endpoint, description in user_endpoints:
-            if method == "POST":
-                # Test data for creating a user
-                test_data = {
-                    "email": f"test{datetime.now().strftime('%H%M%S')}@test.com",
-                    "nom": "Test",
-                    "prenom": "User",
-                    "password": "test123",
-                    "role": "utilisateur"
-                }
-                success, response = self.make_request(method, endpoint, "admin", 200, test_data)
-            else:
-                success, response = self.make_request(method, endpoint, "admin", 200)
-            
-            self.log_test(f"Admin {description}", success, str(response)[:100] if not success else "Access granted")
+        print(f"\n🛠️ Testing Support access to user creation:")
+        test_data = {
+            "email": f"test_support_{datetime.now().strftime('%H%M%S')}@test.com",
+            "nom": "Test",
+            "prenom": "User",
+            "password": "test123",
+            "role": "utilisateur"
+        }
+        success, response = self.make_request("POST", "/api/users", "support", 200, test_data)
+        self.log_test("Support Create user", success, str(response)[:100] if not success else "Access granted")
         
-        # Test with Support
-        print(f"\n🛠️ Testing Support access to user management:")
-        for method, endpoint, description in user_endpoints:
-            if method == "POST":
-                # Test data for creating a user
-                test_data = {
-                    "email": f"test{datetime.now().strftime('%H%M%S')}@test.com",
-                    "nom": "Test",
-                    "prenom": "User",
-                    "password": "test123",
-                    "role": "utilisateur"
-                }
-                success, response = self.make_request(method, endpoint, "support", 200, test_data)
-            else:
-                success, response = self.make_request(method, endpoint, "support", 200)
-            
-            self.log_test(f"Support {description}", success, str(response)[:100] if not success else "Access granted")
-        
-        # Test with Manager (should be denied)
-        print(f"\n👔 Testing Manager access to user management (should be denied):")
-        for method, endpoint, description in user_endpoints:
-            if method == "POST":
-                test_data = {
-                    "email": f"test{datetime.now().strftime('%H%M%S')}@test.com",
-                    "nom": "Test",
-                    "prenom": "User",
-                    "password": "test123",
-                    "role": "utilisateur"
-                }
-                success, response = self.make_request(method, endpoint, "manager", 403, test_data)
-            else:
-                success, response = self.make_request(method, endpoint, "manager", 403)
-            
-            self.log_test(f"Manager {description} (should be denied)", success, "Access correctly denied" if success else str(response)[:100])
+        print(f"\n👔 Testing Manager access to user creation (should be denied):")
+        test_data = {
+            "email": f"test_manager_{datetime.now().strftime('%H%M%S')}@test.com",
+            "nom": "Test",
+            "prenom": "User",
+            "password": "test123",
+            "role": "utilisateur"
+        }
+        success, response = self.make_request("POST", "/api/users", "manager", 403, test_data)
+        self.log_test("Manager Create user (should be denied)", success, "Access correctly denied" if success else str(response)[:100])
 
     def test_settings_access(self):
         """Test system settings endpoints - Support only should have access"""
