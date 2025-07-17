@@ -2067,8 +2067,8 @@ async def update_app_config(config: dict, current_user: dict = Depends(support_o
         raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour de la configuration: {str(e)}")
 
 @app.get("/api/config")
-async def get_app_config(current_user: dict = Depends(admin_only())):
-    """Récupérer la configuration de l'application - Admin seulement"""
+async def get_app_config(current_user: dict = Depends(support_only())):
+    """Récupérer la configuration de l'application - Support seulement"""
     try:
         # Récupérer la configuration générale
         general_config = await db.app_config.find_one({"type": "general"}) or {}
