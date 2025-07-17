@@ -221,7 +221,12 @@ const translations = {
     'config.app': 'Application',
     'config.app.name': 'Nom de l\'application',
     'config.app.theme': 'Thème par défaut',
-    'config.app.language': 'Langue par défaut'
+    'config.app.language': 'Langue par défaut',
+    'config.exchange_rate': 'Taux de change',
+    'config.new_rate': 'Nouveau taux (USD → FC)',
+    'config.current_rate': 'Taux actuel',
+    'config.update': 'Mettre à jour',
+    'config.save': 'Sauvegarder'
   },
   en: {
     // Header
