@@ -160,7 +160,7 @@ class User(BaseModel):
     email: EmailStr
     nom: str
     prenom: str
-    role: str = "utilisateur"  # admin, manager, utilisateur, comptable
+    role: str = "utilisateur"  # admin, manager, utilisateur, comptable, support
     is_active: bool = True
     hashed_password: Optional[str] = None  # Ne sera pas retourné dans les réponses
     date_creation: Optional[datetime] = None
