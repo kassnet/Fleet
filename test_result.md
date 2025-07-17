@@ -310,6 +310,18 @@ frontend:
         agent: "main"
         comment: "✅ PROBLÈME RÉSOLU - Toutes les alertes natives remplacées par le système moderne ET les modals/notifications ajoutés au rendu DOM. Les boutons 'Valider' devraient maintenant fonctionner."
 
+  - task: "Séparation fonctionnalités utilisateur/paramètres"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🔍 TESTS SÉPARATION UTILISATEUR/PARAMÈTRES - RÉSULTATS MIXTES: ✅ Admin (admin@facturapp.rdc): Login OK, badge 👑 affiché, accès Users tab (👤) confirmé avec interface fonctionnelle (4 utilisateurs, boutons Modifier/Supprimer), PAS d'accès Settings (⚙️) - CORRECT selon code. ❌ Support (support@facturapp.rdc): Login ÉCHEC - credentials 'Email ou mot de passe incorrect', impossible de tester accès exclusif Settings tab. ✅ Manager (manager@demo.com): Login OK, badge 👔, PAS d'accès Users ni Settings - CORRECT. 🚨 PROBLÈME CRITIQUE: Compte support inexistant/credentials incorrects empêchent validation complète de la séparation. Navigation role-based partiellement fonctionnelle mais test incomplet."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
