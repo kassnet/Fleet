@@ -860,6 +860,60 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     }
   };
 
+  // ===== FONCTIONS PARAMÈTRES SYSTÈME =====
+  
+  // Fonction pour mettre à jour le taux de change
+  const handleUpdateTauxChange = async () => {
+    try {
+      const response = await apiCall('POST', '/api/parametres/taux-change', {
+        taux: parseFloat(nouveauTaux)
+      });
+      
+      setTauxChange(prev => ({
+        ...prev,
+        taux_change_actuel: parseFloat(nouveauTaux)
+      }));
+      
+      showNotification('Taux de change mis à jour avec succès', 'success');
+      await loadData(); // Recharger les données
+    } catch (error) {
+      console.error('Erreur mise à jour taux:', error);
+      showNotification('Erreur lors de la mise à jour du taux', 'error');
+    }
+  };
+
+  // Fonction pour les actions système
+  const handleSystemAction = async (action) => {
+    try {
+      setLoading(true);
+      let response;
+      
+      switch (action) {
+        case 'backup':
+          response = await apiCall('POST', '/api/parametres/backup');
+          showNotification(`Sauvegarde créée: ${response.data.backup.filename}`, 'success');
+          break;
+        case 'logs':
+          response = await apiCall('GET', '/api/parametres/logs');
+          console.log('Logs système:', response.data.logs);
+          showNotification('Logs système affichés dans la console', 'info');
+          break;
+        case 'health':
+          response = await apiCall('GET', '/api/parametres/health');
+          console.log('Santé système:', response.data.health);
+          showNotification(`Système: ${response.data.health.status}`, 'success');
+          break;
+        default:
+          showNotification('Action non reconnue', 'error');
+      }
+    } catch (error) {
+      console.error(`Erreur action système ${action}:`, error);
+      showNotification(`Erreur lors de l'action ${action}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ===== FONCTIONS DE CONFIGURATION =====
   
   // Fonction pour téléverser un nouveau logo
