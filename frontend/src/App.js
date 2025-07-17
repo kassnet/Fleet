@@ -99,6 +99,16 @@ const AppContent = () => {
     return user && ['admin', 'manager'].includes(user.role);
   };
 
+  // Permission pour accéder aux paramètres (Support uniquement)
+  const canAccessSettings = () => {
+    return user && user.role === 'support';
+  };
+
+  // Permission pour gérer les utilisateurs (Admin et Support)
+  const canManageUsersExtended = () => {
+    return user && ['admin', 'support'].includes(user.role);
+  };
+
   // Helper pour les requêtes authentifiées
   const apiCall = (method, url, data = null) => {
     // Bloquer l'accès aux données restreintes pour les utilisateurs "utilisateur"
