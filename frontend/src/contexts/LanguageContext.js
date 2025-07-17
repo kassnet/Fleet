@@ -437,7 +437,12 @@ const translations = {
     'config.app': 'Application',
     'config.app.name': 'Application Name',
     'config.app.theme': 'Default Theme',
-    'config.app.language': 'Default Language'
+    'config.app.language': 'Default Language',
+    'config.exchange_rate': 'Exchange rate',
+    'config.new_rate': 'New rate (USD → FC)',
+    'config.current_rate': 'Current rate',
+    'config.update': 'Update',
+    'config.save': 'Save'
   }
 };
 
