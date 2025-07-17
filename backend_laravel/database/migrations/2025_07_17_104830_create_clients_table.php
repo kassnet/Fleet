@@ -12,8 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('clients', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->string('nom');
+            $table->string('email');
+            $table->string('telephone')->nullable();
+            $table->text('adresse')->nullable();
+            $table->string('ville')->nullable();
+            $table->string('code_postal')->nullable();
+            $table->string('pays')->default('RDC');
+            $table->enum('devise_preferee', ['USD', 'FC'])->default('USD');
             $table->timestamps();
+            
+            $table->index('email');
+            $table->index('nom');
         });
     }
 

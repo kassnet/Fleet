@@ -12,8 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('paiements', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->uuid('facture_id');
+            $table->string('facture_numero');
+            $table->decimal('montant_usd', 10, 2);
+            $table->decimal('montant_fc', 12, 2);
+            $table->enum('devise_paiement', ['USD', 'FC']);
+            $table->enum('methode_paiement', ['stripe', 'cash', 'bank_transfer', 'manuel'])->default('stripe');
+            $table->enum('statut', ['pending', 'completed', 'failed', 'cancelled'])->default('pending');
+            $table->string('transaction_id')->nullable();
+            $table->timestamp('date_paiement')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
+            
+            $table->foreign('facture_id')->references('id')->on('factures')->onDelete('cascade');
+            $table->index('facture_numero');
+            $table->index('statut');
+            $table->index('date_paiement');
         });
     }
 
