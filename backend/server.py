@@ -449,7 +449,22 @@ def check_permissions(required_roles: List[str]):
     def permission_checker(current_user: dict = Depends(get_current_user)):
         user_role = current_user.get("role", "utilisateur")
         
-        # Admin a tous les droits
+        # Vérifier si le rôle est autorisé
+        if user_role not in required_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Permissions insuffisantes"
+            )
+        
+        return current_user
+    return permission_checker
+
+def check_permissions_with_admin_override(required_roles: List[str]):
+    """Décorateur pour vérifier les permissions avec privilèges admin"""
+    def permission_checker(current_user: dict = Depends(get_current_user)):
+        user_role = current_user.get("role", "utilisateur")
+        
+        # Admin a tous les droits SAUF pour les endpoints support_only
         if user_role == "admin":
             return current_user
             
