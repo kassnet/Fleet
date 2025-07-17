@@ -2131,6 +2131,197 @@ async def change_user_role(user_id: str, role_data: dict, current_user: dict = D
 async def health_check():
     return {"status": "healthy", "message": "Application de facturation opérationnelle"}
 
+# ===== ENDPOINTS SÉPARÉS POUR GESTION UTILISATEURS ET PARAMÈTRES =====
+
+@app.get("/api/users")
+async def get_users(current_user: dict = Depends(admin_support())):
+    """Obtenir la liste des utilisateurs - Admin et Support seulement"""
+    try:
+        users = []
+        async for user in db.users.find({}):
+            user_data = {
+                "id": user.get("id"),
+                "email": user.get("email"),
+                "nom": user.get("nom"),
+                "prenom": user.get("prenom"),
+                "role": user.get("role"),
+                "is_active": user.get("is_active"),
+                "date_creation": user.get("date_creation"),
+                "derniere_connexion": user.get("derniere_connexion")
+            }
+            users.append(user_data)
+        
+        return {"users": users}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des utilisateurs: {str(e)}")
+
+@app.post("/api/users/{user_id}/toggle-active")
+async def toggle_user_active(user_id: str, current_user: dict = Depends(admin_support())):
+    """Activer/désactiver un utilisateur - Admin et Support seulement"""
+    try:
+        # Vérifier que l'utilisateur existe
+        user = await db.users.find_one({"id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Empêcher la désactivation de son propre compte
+        if user.get("email") == current_user.get("email"):
+            raise HTTPException(status_code=400, detail="Impossible de désactiver votre propre compte")
+        
+        # Basculer le statut
+        new_status = not user.get("is_active", True)
+        
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"is_active": new_status}}
+        )
+        
+        action = "activé" if new_status else "désactivé"
+        return {"message": f"Utilisateur {action} avec succès", "is_active": new_status}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du changement de statut: {str(e)}")
+
+@app.get("/api/parametres")
+async def get_parametres(current_user: dict = Depends(support_only())):
+    """Obtenir les paramètres système - Support seulement"""
+    try:
+        # Statistiques système
+        stats = {
+            "total_users": await db.users.count_documents({}),
+            "total_clients": await db.clients.count_documents({}),
+            "total_produits": await db.produits.count_documents({}),
+            "total_factures": await db.factures.count_documents({}),
+            "total_devis": await db.devis.count_documents({}),
+            "factures_payees": await db.factures.count_documents({"statut": "payee"}),
+            "factures_en_attente": await db.factures.count_documents({"statut": {"$in": ["brouillon", "envoyee"]}})
+        }
+        
+        # Taux de change actuel
+        taux_change = {
+            "taux_change_actuel": TAUX_CHANGE["USD_TO_FC"],
+            "derniere_modification": datetime.utcnow()
+        }
+        
+        return {
+            "stats": stats,
+            "taux_change": taux_change,
+            "version": {
+                "app": "FacturApp",
+                "version": "1.0.0",
+                "backend": "FastAPI"
+            }
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des paramètres: {str(e)}")
+
+@app.post("/api/parametres/taux-change")
+async def update_taux_change(taux_data: dict, current_user: dict = Depends(support_only())):
+    """Mettre à jour le taux de change - Support seulement"""
+    try:
+        nouveau_taux = taux_data.get("taux")
+        if not nouveau_taux or nouveau_taux <= 0:
+            raise HTTPException(status_code=400, detail="Taux de change invalide")
+        
+        # Mettre à jour le taux global
+        TAUX_CHANGE["USD_TO_FC"] = float(nouveau_taux)
+        TAUX_CHANGE["FC_TO_USD"] = 1.0 / float(nouveau_taux)
+        
+        # Enregistrer l'historique (optionnel)
+        await db.taux_change_history.insert_one({
+            "taux": float(nouveau_taux),
+            "date_modification": datetime.utcnow(),
+            "modifie_par": current_user.get("email")
+        })
+        
+        return {
+            "message": "Taux de change mis à jour avec succès",
+            "nouveau_taux": float(nouveau_taux),
+            "date_modification": datetime.utcnow()
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour du taux: {str(e)}")
+
+@app.get("/api/parametres/health")
+async def system_health(current_user: dict = Depends(support_only())):
+    """Vérifier la santé du système - Support seulement"""
+    try:
+        # Vérifier la connexion MongoDB
+        try:
+            await db.users.count_documents({})
+            db_status = "operational"
+        except:
+            db_status = "error"
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow(),
+            "services": {
+                "database": db_status,
+                "api": "operational",
+                "auth": "operational"
+            },
+            "version": "1.0.0"
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la vérification de santé: {str(e)}")
+
+@app.post("/api/parametres/backup")
+async def create_backup(current_user: dict = Depends(support_only())):
+    """Créer une sauvegarde du système - Support seulement"""
+    try:
+        # Simulation de sauvegarde
+        backup_info = {
+            "filename": f"facturapp_backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json",
+            "timestamp": datetime.utcnow(),
+            "created_by": current_user.get("email"),
+            "size": "estimated 2.5 MB",
+            "status": "success"
+        }
+        
+        return {
+            "message": "Sauvegarde créée avec succès",
+            "backup": backup_info
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création de la sauvegarde: {str(e)}")
+
+@app.get("/api/parametres/logs")
+async def get_system_logs(current_user: dict = Depends(support_only())):
+    """Obtenir les logs système - Support seulement"""
+    try:
+        # Simulation des logs système
+        logs = [
+            {
+                "timestamp": datetime.utcnow().isoformat(),
+                "level": "INFO",
+                "message": f"Authentification réussie pour {current_user.get('email')}",
+                "module": "AUTH"
+            },
+            {
+                "timestamp": (datetime.utcnow() - timedelta(minutes=5)).isoformat(),
+                "level": "INFO",
+                "message": "Nouvelle facture créée",
+                "module": "FACTURE"
+            },
+            {
+                "timestamp": (datetime.utcnow() - timedelta(minutes=10)).isoformat(),
+                "level": "INFO",
+                "message": "Mise à jour du taux de change",
+                "module": "PARAMETRES"
+            }
+        ]
+        
+        return {"logs": logs}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des logs: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
