@@ -176,6 +176,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTÉ ET CONFIRMÉ - Gestion des stocks fonctionne parfaitement! Mise à jour des stocks OK, mouvements de stock enregistrés correctement, calculs précis. Test avec produit 'Formation utilisateur': stock initial 50 → 75 unités, mouvement de correction enregistré avec motif."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TESTÉ ET CONFIRMÉ (17/07/2025) - Gestion des stocks 100% fonctionnelle! Authentification admin@facturapp.rdc OK. Test avec produit 'Formation utilisateur': stock initial 50 → 75 unités via PUT /api/produits/{id}/stock. Mouvement de stock enregistré correctement (type: correction, quantité: +25, motif: 'Test stock increase'). Historique des mouvements accessible via GET /api/produits/{id}/mouvements. Aucune erreur détectée."
 
   - task: "Gestion complète des devis"
     implemented: true
