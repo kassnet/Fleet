@@ -749,6 +749,19 @@ async def logout(current_user: dict = Depends(get_current_user)):
     return {"message": "Déconnexion réussie"}
 
 # Routes de gestion des utilisateurs (Admin et Support)
+@app.get("/api/users", response_model=List[User])
+async def get_users(current_user: dict = Depends(admin_support())):
+    """Récupérer tous les utilisateurs (Admin et Support seulement)"""
+    users = []
+    async for user in db.users.find().sort("date_creation", -1):
+        user["id"] = str(user["_id"]) if "_id" in user else user.get("id")
+        if "_id" in user:
+            del user["_id"]
+        # Retirer le mot de passe hashé
+        user_without_password = {k: v for k, v in user.items() if k != "hashed_password"}
+        users.append(User(**user_without_password))
+    return users
+
 @app.post("/api/users", response_model=User)
 async def create_user(
     user_data: UserCreate,
