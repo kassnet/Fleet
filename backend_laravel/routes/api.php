@@ -8,6 +8,8 @@ use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\FactureController;
 use App\Http\Controllers\DevisController;
 use App\Http\Controllers\PaiementController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ParametreController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
