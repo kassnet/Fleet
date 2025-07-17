@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Paiement;
 use App\Models\PaymentTransaction;
 use App\Models\Facture;
+use Illuminate\Support\Facades\Process;
 
 class PaiementController extends Controller
 {
@@ -77,8 +78,7 @@ class PaiementController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'facture_id' => 'required|exists:factures,id',
-            'success_url' => 'required|url',
-            'cancel_url' => 'required|url',
+            'origin_url' => 'required|url',
         ]);
 
         if ($validator->fails()) {
@@ -98,38 +98,65 @@ class PaiementController extends Controller
             ], 400);
         }
 
-        // Générer un session_id unique
-        $session_id = 'cs_' . uniqid();
-        
-        // Montant en fonction de la devise de la facture
+        // Préparer les données pour Stripe
         $amount = $facture->devise === 'USD' ? $facture->total_ttc_usd : $facture->total_ttc_fc;
         $currency = strtolower($facture->devise === 'USD' ? 'usd' : 'fc');
+        $origin_url = rtrim($request->origin_url, '/');
         
-        // Créer l'enregistrement de transaction
-        $transaction = PaymentTransaction::create([
-            'session_id' => $session_id,
-            'user_id' => auth()->id(),
-            'user_email' => auth()->user()->email,
-            'amount' => $amount,
+        $stripe_data = [
+            'amount' => (float) $amount,
             'currency' => $currency,
+            'success_url' => $origin_url . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $origin_url . '/payment/cancel',
             'metadata' => [
                 'facture_id' => $facture->id,
                 'facture_numero' => $facture->numero,
-                'source' => 'facture_payment'
-            ],
-            'payment_status' => 'initiated',
-            'status' => 'open',
-        ]);
+                'source' => 'facture_payment',
+                'user_id' => auth()->id(),
+            ]
+        ];
 
-        // Simuler une URL Stripe (en production, utiliser la vraie API Stripe)
-        $checkout_url = "https://checkout.stripe.com/pay/{$session_id}";
+        try {
+            // Appeler le service Python Stripe
+            $python_command = 'python3 ' . base_path('stripe_service.py') . ' create_session ' . escapeshellarg(json_encode($stripe_data));
+            $result = shell_exec($python_command);
+            $stripe_response = json_decode($result, true);
 
-        return response()->json([
-            'session_id' => $session_id,
-            'url' => $checkout_url,
-            'amount' => $amount,
-            'currency' => $currency,
-        ]);
+            if (!$stripe_response || !$stripe_response['success']) {
+                return response()->json([
+                    'error' => 'Stripe error',
+                    'message' => 'Erreur lors de la création de la session Stripe',
+                    'details' => $stripe_response['error'] ?? 'Unknown error'
+                ], 500);
+            }
+
+            // Créer l'enregistrement de transaction
+            $transaction = PaymentTransaction::create([
+                'session_id' => $stripe_response['session_id'],
+                'user_id' => auth()->id(),
+                'user_email' => auth()->user()->email,
+                'amount' => $amount,
+                'currency' => $currency,
+                'metadata' => $stripe_data['metadata'],
+                'payment_status' => 'initiated',
+                'status' => 'open',
+            ]);
+
+            return response()->json([
+                'session_id' => $stripe_response['session_id'],
+                'url' => $stripe_response['url'],
+                'amount' => $amount,
+                'currency' => $currency,
+                'transaction_id' => $transaction->id,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'System error',
+                'message' => 'Erreur système lors de la création du paiement',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -146,82 +173,140 @@ class PaiementController extends Controller
             ], 404);
         }
 
-        // Simulation du statut (en production, vérifier avec Stripe)
-        if ($transaction->payment_status === 'initiated') {
-            // Simuler une progression : 50% de chance de succès
-            $success = rand(0, 1);
-            
-            if ($success) {
-                $transaction->update([
-                    'payment_status' => 'completed',
-                    'status' => 'complete'
-                ]);
-                
-                // Créer l'enregistrement de paiement
-                if ($transaction->metadata && isset($transaction->metadata['facture_id'])) {
-                    $facture = Facture::find($transaction->metadata['facture_id']);
-                    
-                    if ($facture && $facture->statut !== 'payee') {
-                        Paiement::create([
-                            'facture_id' => $facture->id,
-                            'facture_numero' => $facture->numero,
-                            'montant_usd' => $transaction->currency === 'usd' ? $transaction->amount : $transaction->amount / 2800,
-                            'montant_fc' => $transaction->currency === 'fc' ? $transaction->amount : $transaction->amount * 2800,
-                            'devise_paiement' => strtoupper($transaction->currency),
-                            'methode_paiement' => 'stripe',
-                            'statut' => 'completed',
-                            'transaction_id' => $session_id,
-                            'date_paiement' => now(),
-                            'notes' => 'Paiement Stripe'
-                        ]);
-                        
-                        $facture->update([
-                            'statut' => 'payee',
-                            'date_paiement' => now()
-                        ]);
-                    }
-                }
-            }
-        }
+        try {
+            // Vérifier le statut avec Stripe via Python
+            $python_command = 'python3 ' . base_path('stripe_service.py') . ' check_status ' . escapeshellarg($session_id);
+            $result = shell_exec($python_command);
+            $stripe_status = json_decode($result, true);
 
-        return response()->json([
-            'session_id' => $session_id,
-            'status' => $transaction->status,
-            'payment_status' => $transaction->payment_status,
-            'amount_total' => $transaction->amount * 100, // Stripe retourne en centimes
-            'currency' => $transaction->currency,
-            'metadata' => $transaction->metadata,
-        ]);
+            if (!$stripe_status || !$stripe_status['success']) {
+                return response()->json([
+                    'error' => 'Stripe status check failed',
+                    'message' => 'Impossible de vérifier le statut Stripe'
+                ], 500);
+            }
+
+            // Mettre à jour la transaction
+            $transaction->update([
+                'payment_status' => $stripe_status['payment_status'],
+                'status' => $stripe_status['status'],
+            ]);
+
+            // Si le paiement est complété et pas encore traité
+            if ($stripe_status['payment_status'] === 'paid' && $transaction->payment_status !== 'completed') {
+                $this->processSuccessfulPayment($transaction, $stripe_status);
+            }
+
+            return response()->json([
+                'session_id' => $session_id,
+                'status' => $stripe_status['status'],
+                'payment_status' => $stripe_status['payment_status'],
+                'amount_total' => $stripe_status['amount_total'],
+                'currency' => $stripe_status['currency'],
+                'metadata' => $stripe_status['metadata'],
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'System error',
+                'message' => 'Erreur lors de la vérification du statut',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Webhook Stripe (simulation)
+     * Traiter un paiement réussi
+     */
+    private function processSuccessfulPayment($transaction, $stripe_status)
+    {
+        if (!$transaction->metadata || !isset($transaction->metadata['facture_id'])) {
+            return;
+        }
+
+        $facture = Facture::find($transaction->metadata['facture_id']);
+        
+        if (!$facture || $facture->statut === 'payee') {
+            return;
+        }
+
+        // Vérifier qu'on n'a pas déjà traité ce paiement
+        $existing_payment = Paiement::where('transaction_id', $transaction->session_id)->first();
+        if ($existing_payment) {
+            return;
+        }
+
+        // Créer l'enregistrement de paiement
+        Paiement::create([
+            'facture_id' => $facture->id,
+            'facture_numero' => $facture->numero,
+            'montant_usd' => $transaction->currency === 'usd' ? $transaction->amount : $transaction->amount / 2800,
+            'montant_fc' => $transaction->currency === 'fc' ? $transaction->amount : $transaction->amount * 2800,
+            'devise_paiement' => strtoupper($transaction->currency),
+            'methode_paiement' => 'stripe',
+            'statut' => 'completed',
+            'transaction_id' => $transaction->session_id,
+            'date_paiement' => now(),
+            'notes' => 'Paiement Stripe confirmé'
+        ]);
+
+        // Mettre à jour la facture
+        $facture->update([
+            'statut' => 'payee',
+            'date_paiement' => now()
+        ]);
+
+        // Marquer la transaction comme traitée
+        $transaction->update(['payment_status' => 'completed']);
+    }
+
+    /**
+     * Webhook Stripe
      */
     public function stripeWebhook(Request $request)
     {
-        // En production, vérifier la signature Stripe
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
-        
-        // Simulation de traitement webhook
-        $event = json_decode($payload, true);
-        
-        if (isset($event['type']) && $event['type'] === 'checkout.session.completed') {
-            $session_id = $event['data']['object']['id'] ?? null;
-            
-            if ($session_id) {
-                $transaction = PaymentTransaction::where('session_id', $session_id)->first();
-                
-                if ($transaction) {
-                    $transaction->update([
-                        'payment_status' => 'completed',
-                        'status' => 'complete'
-                    ]);
-                }
-            }
+
+        if (!$signature) {
+            return response()->json(['error' => 'No signature'], 400);
         }
 
-        return response()->json(['received' => true]);
+        try {
+            // Traiter le webhook via Python
+            $python_command = 'python3 ' . base_path('stripe_service.py') . ' handle_webhook ' . 
+                             escapeshellarg($payload) . ' ' . escapeshellarg($signature);
+            $result = shell_exec($python_command);
+            $webhook_response = json_decode($result, true);
+
+            if (!$webhook_response || !$webhook_response['success']) {
+                return response()->json(['error' => 'Webhook processing failed'], 400);
+            }
+
+            // Traiter l'événement selon le type
+            if ($webhook_response['event_type'] === 'checkout.session.completed') {
+                $session_id = $webhook_response['session_id'];
+                
+                if ($session_id) {
+                    $transaction = PaymentTransaction::where('session_id', $session_id)->first();
+                    
+                    if ($transaction) {
+                        $transaction->update([
+                            'payment_status' => 'completed',
+                            'status' => 'complete'
+                        ]);
+
+                        // Traiter le paiement réussi
+                        $this->processSuccessfulPayment($transaction, $webhook_response);
+                    }
+                }
+            }
+
+            return response()->json(['received' => true]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Webhook error: ' . $e->getMessage()], 500);
+        }
     }
 
     /**
