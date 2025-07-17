@@ -1001,9 +1001,12 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       tabs.push({ id: 'ventes', label: t('nav.sales'), icon: '💼', roles: ['admin', 'manager'] });
     }
 
-    if (canManageUsers()) {
-      tabs.push({ id: 'configuration', label: t('nav.settings'), icon: '⚙️', roles: ['admin'] });
-      tabs.push({ id: 'users', label: t('nav.users'), icon: '👤', roles: ['admin'] });
+    if (canManageUsersExtended()) {
+      tabs.push({ id: 'users', label: t('nav.users'), icon: '👤', roles: ['admin', 'support'] });
+    }
+
+    if (canAccessSettings()) {
+      tabs.push({ id: 'parametres', label: t('nav.settings'), icon: '⚙️', roles: ['support'] });
     }
 
     return tabs;
