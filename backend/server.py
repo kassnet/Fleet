@@ -733,13 +733,13 @@ async def logout(current_user: dict = Depends(get_current_user)):
     """Déconnexion utilisateur"""
     return {"message": "Déconnexion réussie"}
 
-# Routes de gestion des utilisateurs (Admin seulement)
+# Routes de gestion des utilisateurs (Admin et Support)
 @app.post("/api/users", response_model=User)
 async def create_user(
     user_data: UserCreate,
-    current_user: dict = Depends(check_permissions(["admin"]))
+    current_user: dict = Depends(admin_support())
 ):
-    """Créer un nouvel utilisateur (Admin seulement)"""
+    """Créer un nouvel utilisateur (Admin et Support seulement)"""
     # Vérifier si l'email existe déjà
     existing_user = await get_user_by_email(user_data.email)
     if existing_user:
