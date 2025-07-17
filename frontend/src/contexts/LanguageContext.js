@@ -231,6 +231,7 @@ const translations = {
     'user.role.admin': 'Admin',
     'user.role.manager': 'Manager',
     'user.role.comptable': 'Accountant',
+    'user.role.support': 'Support',
     'user.role.utilisateur': 'User',
     
     // Navigation
