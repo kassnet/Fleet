@@ -2118,56 +2118,7 @@ async def health_check():
 
 # ===== ENDPOINTS SÉPARÉS POUR GESTION UTILISATEURS ET PARAMÈTRES =====
 
-@app.get("/api/users")
-async def get_users(current_user: dict = Depends(admin_support())):
-    """Obtenir la liste des utilisateurs - Admin et Support seulement"""
-    try:
-        users = []
-        async for user in db.users.find({}):
-            user_data = {
-                "id": user.get("id"),
-                "email": user.get("email"),
-                "nom": user.get("nom"),
-                "prenom": user.get("prenom"),
-                "role": user.get("role"),
-                "is_active": user.get("is_active"),
-                "date_creation": user.get("date_creation"),
-                "derniere_connexion": user.get("derniere_connexion")
-            }
-            users.append(user_data)
-        
-        return {"users": users}
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des utilisateurs: {str(e)}")
-
-@app.post("/api/users/{user_id}/toggle-active")
-async def toggle_user_active(user_id: str, current_user: dict = Depends(admin_support())):
-    """Activer/désactiver un utilisateur - Admin et Support seulement"""
-    try:
-        # Vérifier que l'utilisateur existe
-        user = await db.users.find_one({"id": user_id})
-        if not user:
-            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        
-        # Empêcher la désactivation de son propre compte
-        if user.get("email") == current_user.get("email"):
-            raise HTTPException(status_code=400, detail="Impossible de désactiver votre propre compte")
-        
-        # Basculer le statut
-        new_status = not user.get("is_active", True)
-        
-        await db.users.update_one(
-            {"id": user_id},
-            {"$set": {"is_active": new_status}}
-        )
-        
-        action = "activé" if new_status else "désactivé"
-        return {"message": f"Utilisateur {action} avec succès", "is_active": new_status}
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors du changement de statut: {str(e)}")
-
+# Les endpoints /api/users sont maintenant gérés avec les permissions admin_support() ci-dessus
 @app.get("/api/parametres")
 async def get_parametres(current_user: dict = Depends(support_only())):
     """Obtenir les paramètres système - Support seulement"""
