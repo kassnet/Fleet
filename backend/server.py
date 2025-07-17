@@ -2059,8 +2059,8 @@ async def get_app_config(current_user: dict = Depends(admin_only())):
         raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération de la configuration: {str(e)}")
 
 @app.put("/api/users/{user_id}/status")
-async def toggle_user_status(user_id: str, status_data: dict, current_user: dict = Depends(admin_only())):
-    """Activer/désactiver un utilisateur - Admin seulement"""
+async def toggle_user_status(user_id: str, status_data: dict, current_user: dict = Depends(admin_support())):
+    """Activer/désactiver un utilisateur - Admin et Support seulement"""
     try:
         is_active = status_data.get("is_active", True)
         
@@ -2081,11 +2081,11 @@ async def toggle_user_status(user_id: str, status_data: dict, current_user: dict
         return {"message": f"Utilisateur {'activé' if is_active else 'désactivé'} avec succès"}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour du statut: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors du changement de statut: {str(e)}")
 
 @app.put("/api/users/{user_id}/role")
-async def change_user_role(user_id: str, role_data: dict, current_user: dict = Depends(admin_only())):
-    """Changer le rôle d'un utilisateur - Admin seulement"""
+async def change_user_role(user_id: str, role_data: dict, current_user: dict = Depends(admin_support())):
+    """Changer le rôle d'un utilisateur - Admin et Support seulement"""
     try:
         new_role = role_data.get("role")
         valid_roles = ["admin", "manager", "comptable", "utilisateur", "support"]
