@@ -351,11 +351,14 @@ frontend:
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "✅ PHASE 3 TERMINÉE - Gestion des stocks complètement rénovée avec système ajouter/soustraire. Backend: Endpoint PUT /api/produits/{id}/stock redesigné pour accepter 'operation' (ajouter/soustraire) et 'quantite' au lieu de 'nouvelle_quantite'. Motifs obligatoires avec validation stricte. Contrôle des limites (stock négatif, stock maximum, avertissement stock minimum). Enregistrement des mouvements avec utilisateur. Frontend: Modal Stock redesigné avec sélection opération, champ quantité, motif libre avec suggestions. Interface améliorée avec mode sombre, validation UX. Modal mouvements enrichi avec colonne utilisateur et meilleure présentation."
+      - working: true
+        agent: "testing"
+        comment: "✅ PHASE 3 STOCK MANAGEMENT TESTÉ - Backend fonctionnel avec quelques observations: (1) ✅ Opérations ajouter/soustraire fonctionnent correctement avec calculs précis, (2) ✅ Validation des motifs obligatoires active (rejette correctement les motifs vides), (3) ✅ Validation des quantités négatives/zéro active, (4) ✅ Prévention stock négatif fonctionne, (5) ✅ Contrôle stock maximum fonctionne, (6) ✅ Avertissement stock minimum émis correctement, (7) ✅ Mouvements de stock enregistrés avec utilisateur et opération, (8) ✅ Produits sans gestion stock correctement rejetés. Note: Permissions admin/manager fonctionnent mais utilisateur régulier peut accéder (comportement attendu selon code). Système globalement fonctionnel."
 
   - task: "Validation des limites de stock"
     implemented: true
@@ -363,11 +366,14 @@ frontend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "✅ CONTRÔLES DE STOCK COMPLETS - Validation complète des limites implémentée: (1) Stock négatif impossible avec message d'erreur explicite, (2) Stock maximum respecté avec blocage et message d'erreur, (3) Avertissement automatique si stock descend sous le minimum, (4) Vérification que la gestion de stock est activée sur le produit. Messages d'erreur détaillés pour chaque cas."
+      - working: true
+        agent: "testing"
+        comment: "✅ VALIDATION LIMITES STOCK CONFIRMÉE - Tous les contrôles fonctionnent: (1) Stock négatif correctement bloqué avec message 'Impossible de soustraire X unités. Stock actuel: Y. Le stock ne peut pas être négatif.', (2) Stock maximum respecté avec message 'Impossible d'ajouter X unités. Stock maximum autorisé: Y. Le nouveau stock serait: Z', (3) Avertissement minimum émis: 'Attention: Le stock sera en dessous du minimum recommandé (X)', (4) Produits sans gestion stock rejetés avec 'La gestion de stock n'est pas activée pour ce produit'. Toutes les validations opérationnelles."
 
   - task: "Motifs obligatoires pour modifications stock"
     implemented: true
@@ -375,7 +381,7 @@ frontend:
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
@@ -383,6 +389,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ CONTRÔLE DE STOCK - Test échoué: L'API retourne bien l'erreur 400 avec message explicite 'Stock insuffisant pour Test Product. Stock disponible: 50, demandé: 60.0. Vous ne pouvez pas facturer plus que le stock disponible.' mais le test interprète cela comme un échec. Le contrôle de stock fonctionne correctement - c'est la logique de test qui est inversée. CORRECTION NÉCESSAIRE: Le test devrait considérer le rejet (400) comme un succès."
+      - working: true
+        agent: "testing"
+        comment: "✅ MOTIFS OBLIGATOIRES VALIDÉS - Validation stricte des motifs fonctionne parfaitement: (1) Motifs manquants rejetés avec 'Motif requis pour toute modification de stock', (2) Motifs vides rejetés avec même message, (3) Opérations invalides rejetées avec 'Opération doit être ajouter ou soustraire', (4) Quantités négatives/zéro rejetées avec 'La quantité doit être positive'. Système de validation complet et opérationnel."
 
 metadata:
   created_by: "main_agent"
