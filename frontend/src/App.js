@@ -2629,16 +2629,16 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       {/* Modal Stock */}
       {showStockModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium mb-4">Gestion du stock</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">📦 Gestion du stock</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Produit *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produit *</label>
                 <select
                   value={stockForm.produit_id}
                   onChange={(e) => setStockForm(prev => ({...prev, produit_id: e.target.value}))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                   required
                 >
                   <option value="">Sélectionner un produit</option>
@@ -2651,31 +2651,58 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nouvelle quantité *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Opération *</label>
+                <select
+                  value={stockForm.operation}
+                  onChange={(e) => setStockForm(prev => ({...prev, operation: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  required
+                >
+                  <option value="ajouter">➕ Ajouter au stock</option>
+                  <option value="soustraire">➖ Soustraire du stock</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantité *</label>
                 <input
                   type="number"
+                  min="1"
                   required
-                  value={stockForm.nouvelle_quantite}
-                  onChange={(e) => setStockForm(prev => ({...prev, nouvelle_quantite: e.target.value}))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={stockForm.quantite}
+                  onChange={(e) => setStockForm(prev => ({...prev, quantite: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Ex: 50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Motif *</label>
-                <select
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motif *</label>
+                <textarea
                   value={stockForm.motif}
                   onChange={(e) => setStockForm(prev => ({...prev, motif: e.target.value}))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Expliquez la raison de cette modification de stock..."
                   required
-                >
-                  <option value="">Sélectionner un motif</option>
-                  <option value="achat">Achat / Réapprovisionnement</option>
-                  <option value="vente">Vente</option>
-                  <option value="ajustement">Ajustement d'inventaire</option>
-                  <option value="perte">Perte / Casse</option>
-                  <option value="retour">Retour client</option>
-                </select>
+                />
+              </div>
+
+              {/* Suggestions de motifs */}
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="font-medium mb-1">Suggestions de motifs :</p>
+                <div className="flex flex-wrap gap-1">
+                  {['Achat/Réapprovisionnement', 'Ajustement inventaire', 'Perte/Casse', 'Retour client', 'Correction erreur'].map(motif => (
+                    <button
+                      key={motif}
+                      type="button"
+                      onClick={() => setStockForm(prev => ({...prev, motif}))}
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-500"
+                    >
+                      {motif}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -2683,9 +2710,9 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
               <button
                 onClick={() => {
                   setShowStockModal(false);
-                  setStockForm({ produit_id: '', nouvelle_quantite: '', motif: '' });
+                  setStockForm({ produit_id: '', operation: 'ajouter', quantite: '', motif: '' });
                 }}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
               >
                 Annuler
               </button>
@@ -2693,7 +2720,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 onClick={updateStock}
                 className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
               >
-                Mettre à jour
+                📦 Mettre à jour le stock
               </button>
             </div>
           </div>
