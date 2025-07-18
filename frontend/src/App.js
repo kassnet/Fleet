@@ -2086,6 +2086,76 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                     </button>
                   </div>
 
+                  {/* Filtres pour les opportunités */}
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">🔍 Filtres</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client</label>
+                        <select
+                          value={filtresOpportunites.client_id}
+                          onChange={(e) => setFiltresOpportunites(prev => ({ ...prev, client_id: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="">Tous les clients</option>
+                          {(optionsFiltres.clients || []).map(client => (
+                            <option key={client.id} value={client.id}>{client.nom}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Étape</label>
+                        <select
+                          value={filtresOpportunites.etape}
+                          onChange={(e) => setFiltresOpportunites(prev => ({ ...prev, etape: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="">Toutes les étapes</option>
+                          {(optionsFiltres.etapes || []).map(etape => (
+                            <option key={etape} value={etape}>{etape}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priorité</label>
+                        <select
+                          value={filtresOpportunites.priorite}
+                          onChange={(e) => setFiltresOpportunites(prev => ({ ...prev, priorite: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="">Toutes les priorités</option>
+                          {(optionsFiltres.priorites || []).map(priorite => (
+                            <option key={priorite} value={priorite}>{priorite}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recherche</label>
+                        <input
+                          type="text"
+                          value={filtresOpportunites.search}
+                          onChange={(e) => setFiltresOpportunites(prev => ({ ...prev, search: e.target.value }))}
+                          placeholder="Titre, description..."
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+                      <div className="flex items-end space-x-2">
+                        <button
+                          onClick={appliquerFiltresOpportunites}
+                          className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
+                        >
+                          🔍 Filtrer
+                        </button>
+                        <button
+                          onClick={reinitialiserFiltresOpportunites}
+                          className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+                        >
+                          🔄 Reset
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
                     {loading ? (
                       <div className="p-8 text-center">
@@ -2106,6 +2176,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.probability')}</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.stage')}</th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('opportunities.priority')}</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -2123,6 +2194,14 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{opp.priorite}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                                  <button
+                                    onClick={() => lierOpportuniteClient(opp)}
+                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                                  >
+                                    🔗 Lier au client
+                                  </button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
