@@ -2066,15 +2066,100 @@ async def get_vente_stats(current_user: dict = Depends(manager_and_admin())):
     )
 
 @app.get("/api/paiements")
-async def get_paiements(current_user: dict = Depends(comptable_manager_admin())):
-    """Récupérer tous les paiements - Comptable, Manager et Admin"""
+async def get_paiements(page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100), current_user: dict = Depends(comptable_manager_admin())):
+    """Récupérer tous les paiements avec pagination - Comptable, Manager et Admin"""
+    skip = (page - 1) * limit
+    
+    # Compter le total des paiements
+    total_paiements = await db.paiements.count_documents({})
+    
+    # Récupérer les paiements avec pagination
     paiements = []
-    async for paiement in db.paiements.find().sort("date_paiement", -1):
+    async for paiement in db.paiements.find().sort("date_paiement", -1).skip(skip).limit(limit):
         paiement["id"] = str(paiement["_id"]) if "_id" in paiement else paiement.get("id")
         if "_id" in paiement:
             del paiement["_id"]
         paiements.append(paiement)
-    return paiements
+    
+    # Calculer les métadonnées de pagination
+    total_pages = (total_paiements + limit - 1) // limit
+    has_next = page < total_pages
+    has_prev = page > 1
+    
+    return {
+        "paiements": paiements,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total_paiements,
+            "total_pages": total_pages,
+            "has_next": has_next,
+            "has_prev": has_prev
+        }
+    }
+
+@app.delete("/api/paiements/{paiement_id}")
+async def supprimer_paiement(paiement_id: str, motif: str = Query(..., description="Motif de la suppression"), current_user: dict = Depends(comptable_manager_admin())):
+    """Supprimer un paiement - Comptable, Manager et Admin"""
+    print(f"🗑️ SUPPRESSION PAIEMENT - Tentative de suppression pour ID: {paiement_id}, Motif: {motif}")
+    
+    # Vérifier si le paiement existe
+    paiement = await db.paiements.find_one({"$or": [{"id": paiement_id}, {"_id": paiement_id}]})
+    
+    if not paiement:
+        try:
+            from bson import ObjectId
+            paiement = await db.paiements.find_one({"_id": ObjectId(paiement_id)})
+        except:
+            pass
+    
+    if not paiement:
+        raise HTTPException(status_code=404, detail="Paiement non trouvé")
+    
+    # Vérifier le statut du paiement
+    if paiement.get("statut") == "valide":
+        raise HTTPException(status_code=400, detail="Impossible de supprimer un paiement validé")
+    
+    # Sauvegarder le paiement dans un historique de suppression
+    paiement_archive = {
+        "id": str(uuid.uuid4()),
+        "paiement_original": paiement,
+        "motif_suppression": motif,
+        "utilisateur_suppression": current_user.get("email", ""),
+        "date_suppression": datetime.now()
+    }
+    await db.paiements_supprimes.insert_one(paiement_archive)
+    
+    # Remettre la facture associée en état "envoyee" si elle était marquée comme payée
+    if paiement.get("facture_id"):
+        facture = await db.factures.find_one({"$or": [{"id": paiement["facture_id"]}, {"_id": paiement["facture_id"]}]})
+        if facture and facture.get("statut") == "payee":
+            await db.factures.update_one(
+                {"$or": [{"id": paiement["facture_id"]}, {"_id": paiement["facture_id"]}]},
+                {
+                    "$set": {
+                        "statut": "envoyee",
+                        "date_paiement": None
+                    },
+                    "$unset": {
+                        "methode_paiement": "",
+                        "reference_paiement": ""
+                    }
+                }
+            )
+    
+    # Supprimer le paiement
+    if "_id" in paiement and not paiement.get("id"):
+        result = await db.paiements.delete_one({"_id": paiement["_id"]})
+    else:
+        result = await db.paiements.delete_one({"id": paiement["id"]})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Erreur lors de la suppression du paiement")
+    
+    print(f"✅ SUPPRESSION PAIEMENT - Paiement {paiement.get('reference_paiement', 'N/A')} supprimé avec succès")
+    
+    return {"message": "Paiement supprimé avec succès"}
 
 # Simulation des intégrations
 async def simulate_email_send(email: str, numero_facture: str):
