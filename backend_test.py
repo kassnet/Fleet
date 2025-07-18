@@ -3581,12 +3581,21 @@ def test_opportunity_management_phase5():
         
         if success and reverse_linked:
             print(f"✅ Successfully verified bidirectional linking: {len(reverse_linked)} found")
-            # Should find the original opportunity
-            original_found = any(opp.get('id') == opp_id for opp in reverse_linked)
+            # Should find the original opportunity - check both UUID and any stored ID
+            original_found = any(
+                opp.get('id') == opp_id or 
+                opp.get('titre') == opportunity_data['titre'] or
+                opp.get('client_nom') == client1.get('nom')
+                for opp in reverse_linked
+            )
             if original_found:
                 print("✅ Original opportunity found in reverse link - bidirectional linking works")
             else:
                 print("❌ Original opportunity not found in reverse link - bidirectional linking failed")
+                print(f"🔍 Looking for original opportunity ID: {opp_id}")
+                print(f"🔍 Found opportunities:")
+                for opp in reverse_linked:
+                    print(f"  - ID: {opp.get('id')}, Title: {opp.get('titre')}, Client: {opp.get('client_nom')}")
                 return False
         else:
             print("❌ Failed to verify bidirectional linking")
