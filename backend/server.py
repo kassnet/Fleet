@@ -2061,7 +2061,14 @@ async def lier_opportunite_client(opportunite_id: str, request: dict, current_us
         raise HTTPException(status_code=400, detail="client_id requis")
     
     # Vérifier que le client existe
-    client = await db.clients.find_one({"id": nouveau_client_id})
+    client = await db.clients.find_one({"$or": [{"id": nouveau_client_id}, {"_id": nouveau_client_id}]})
+    if not client:
+        try:
+            from bson import ObjectId
+            client = await db.clients.find_one({"_id": ObjectId(nouveau_client_id)})
+        except:
+            pass
+    
     if not client:
         raise HTTPException(status_code=404, detail="Client non trouvé")
     
