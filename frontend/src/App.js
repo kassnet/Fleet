@@ -230,12 +230,15 @@ const AppContent = () => {
         try {
           const [facturesRes, paiementsRes] = await Promise.all([
             apiCall('GET', '/api/factures'),
-            apiCall('GET', '/api/paiements')
+            apiCall('GET', `/api/paiements?page=${paginationPaiements.page}&limit=${paginationPaiements.limit}`)
           ]);
           
           setFactures(facturesRes.data || []);
-          setPaiements(Array.isArray(paiementsRes.data) ? paiementsRes.data : []);
-          console.log('💳 Données restreintes chargées - Factures:', facturesRes.data.length, 'Paiements:', paiementsRes.data.length);
+          if (paiementsRes.data) {
+            setPaiements(paiementsRes.data.paiements || []);
+            setPaginationPaiements(paiementsRes.data.pagination || paginationPaiements);
+          }
+          console.log('💰 Données financières chargées - Factures:', facturesRes.data.length, 'Paiements:', paiementsRes.data?.paiements?.length || 0);
         } catch (restrictedError) {
           console.warn('⚠️ Erreur chargement données restreintes:', restrictedError.response?.status);
           setFactures([]);
