@@ -3187,6 +3187,150 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           </div>
         </div>
       )}
+
+      {/* Modal d'annulation de facture */}
+      {showAnnulerFactureModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              🚫 Annuler la facture
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                Êtes-vous sûr de vouloir annuler la facture <strong>{factureToCancel?.numero}</strong> ?
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Cette action restaurera les stocks et ne peut pas être annulée.
+              </p>
+              
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Motif d'annulation *
+              </label>
+              <textarea
+                value={motifAnnulation}
+                onChange={(e) => setMotifAnnulation(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Expliquez pourquoi vous annulez cette facture..."
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowAnnulerFactureModal(false);
+                  setFactureToCancel(null);
+                  setMotifAnnulation('');
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmerAnnulationFacture}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+              >
+                🚫 Confirmer l'annulation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de suppression de facture */}
+      {showSupprimerFactureModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              🗑️ Supprimer la facture
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                Êtes-vous sûr de vouloir supprimer définitivement la facture <strong>{factureToDelete?.numero}</strong> ?
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                ⚠️ Cette action est irréversible ! La facture sera archivée et ne pourra plus être consultée.
+              </p>
+              
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Motif de suppression *
+              </label>
+              <textarea
+                value={motifSuppression}
+                onChange={(e) => setMotifSuppression(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Expliquez pourquoi vous supprimez cette facture..."
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowSupprimerFactureModal(false);
+                  setFactureToDelete(null);
+                  setMotifSuppression('');
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmerSuppressionFacture}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                🗑️ Confirmer la suppression
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notifications */}
+      {notification && (
+        <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+          notification.type === 'success' ? 'bg-green-500' : 
+          notification.type === 'error' ? 'bg-red-500' : 
+          'bg-blue-500'
+        } text-white`}>
+          {notification.message}
+        </div>
+      )}
+
+      {/* Modal de confirmation */}
+      {confirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Confirmation</h3>
+            <div className="mb-4">
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                {confirmDialog.message}
+              </p>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(null);
+                }}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
