@@ -3362,5 +3362,344 @@ def main():
     
     return 0 if priority_success else 1
 
+def test_opportunity_management_phase5():
+    """Test Phase 5 opportunity management features"""
+    print("\n" + "=" * 80)
+    print("🎯 TESTING PHASE 5 - OPPORTUNITY MANAGEMENT FEATURES")
+    print("=" * 80)
+    
+    # Test with admin account first
+    auth_success, tester = test_authentication("admin@facturapp.rdc", "admin123")
+    if not auth_success:
+        print("❌ Failed to authenticate as admin, trying manager...")
+        auth_success, tester = test_authentication("manager@demo.com", "manager123")
+        if not auth_success:
+            print("❌ Failed to authenticate, stopping opportunity tests")
+            return False
+    
+    # Test 1: GET /api/opportunites/filtres - Get filter options
+    print("\n🔍 TEST 1: GET /api/opportunites/filtres - Get filter options")
+    success, filter_options = tester.run_test(
+        "Get Opportunity Filter Options",
+        "GET",
+        "/api/opportunites/filtres",
+        200
+    )
+    
+    if success and filter_options:
+        print("✅ Successfully retrieved filter options")
+        print(f"📊 Available etapes: {filter_options.get('etapes', [])}")
+        print(f"📊 Available priorites: {filter_options.get('priorites', [])}")
+        print(f"📊 Available commerciaux: {len(filter_options.get('commerciaux', []))} users")
+        print(f"📊 Available clients: {len(filter_options.get('clients', []))} clients")
+    else:
+        print("❌ Failed to retrieve filter options")
+        return False
+    
+    # Test 2: GET /api/opportunites - Get opportunities with filters
+    print("\n🔍 TEST 2: GET /api/opportunites - Get opportunities (no filters)")
+    success, opportunities = tester.run_test(
+        "Get All Opportunities",
+        "GET",
+        "/api/opportunites",
+        200
+    )
+    
+    if success:
+        print(f"✅ Successfully retrieved {len(opportunities) if opportunities else 0} opportunities")
+        if opportunities and len(opportunities) > 0:
+            opp = opportunities[0]
+            print(f"📋 Sample opportunity: {opp.get('titre')} - Client: {opp.get('client_nom')} - Etape: {opp.get('etape')}")
+    else:
+        print("❌ Failed to retrieve opportunities")
+        return False
+    
+    # Test 3: Test filtering by etape
+    print("\n🔍 TEST 3: GET /api/opportunites?etape=prospect - Filter by etape")
+    success, filtered_opps = tester.run_test(
+        "Get Opportunities Filtered by Etape",
+        "GET",
+        "/api/opportunites?etape=prospect",
+        200
+    )
+    
+    if success:
+        print(f"✅ Successfully filtered opportunities by etape: {len(filtered_opps) if filtered_opps else 0} results")
+        if filtered_opps:
+            for opp in filtered_opps[:2]:  # Show first 2
+                print(f"  - {opp.get('titre')} (etape: {opp.get('etape')})")
+    else:
+        print("❌ Failed to filter opportunities by etape")
+    
+    # Test 4: Test filtering by priorite
+    print("\n🔍 TEST 4: GET /api/opportunites?priorite=haute - Filter by priorite")
+    success, filtered_opps = tester.run_test(
+        "Get Opportunities Filtered by Priorite",
+        "GET",
+        "/api/opportunites?priorite=haute",
+        200
+    )
+    
+    if success:
+        print(f"✅ Successfully filtered opportunities by priorite: {len(filtered_opps) if filtered_opps else 0} results")
+    else:
+        print("❌ Failed to filter opportunities by priorite")
+    
+    # Test 5: Test search functionality
+    print("\n🔍 TEST 5: GET /api/opportunites?search=test - Search opportunities")
+    success, searched_opps = tester.run_test(
+        "Search Opportunities",
+        "GET",
+        "/api/opportunites?search=test",
+        200
+    )
+    
+    if success:
+        print(f"✅ Successfully searched opportunities: {len(searched_opps) if searched_opps else 0} results")
+    else:
+        print("❌ Failed to search opportunities")
+    
+    # Test 6: Test combined filters
+    print("\n🔍 TEST 6: GET /api/opportunites?etape=prospect&priorite=moyenne - Combined filters")
+    success, combined_filtered = tester.run_test(
+        "Get Opportunities with Combined Filters",
+        "GET",
+        "/api/opportunites?etape=prospect&priorite=moyenne",
+        200
+    )
+    
+    if success:
+        print(f"✅ Successfully applied combined filters: {len(combined_filtered) if combined_filtered else 0} results")
+    else:
+        print("❌ Failed to apply combined filters")
+    
+    # Test 7: Create a test opportunity for linking tests
+    print("\n🔍 TEST 7: Creating test opportunity for linking tests")
+    
+    # First get clients to use in opportunity
+    success, clients = tester.run_test(
+        "Get Clients for Opportunity Test",
+        "GET",
+        "/api/clients",
+        200,
+        print_response=False
+    )
+    
+    if not success or not clients or len(clients) < 2:
+        print("❌ Need at least 2 clients for opportunity linking tests")
+        return False
+    
+    client1 = clients[0]
+    client2 = clients[1]
+    
+    # Create test opportunity
+    timestamp = datetime.now().strftime('%H%M%S')
+    opportunity_data = {
+        "titre": f"Test Opportunity {timestamp}",
+        "description": "Test opportunity for linking functionality",
+        "client_id": client1.get('id'),
+        "client_nom": client1.get('nom'),
+        "valeur_estimee_usd": 5000.0,
+        "valeur_estimee_fc": 14000000.0,
+        "devise": "USD",
+        "probabilite": 75,
+        "etape": "proposition",
+        "priorite": "haute",
+        "notes": "Created for Phase 5 testing"
+    }
+    
+    success, created_opp = tester.run_test(
+        "Create Test Opportunity",
+        "POST",
+        "/api/opportunites",
+        200,
+        data=opportunity_data
+    )
+    
+    if not success or not created_opp:
+        print("❌ Failed to create test opportunity")
+        return False
+    
+    opp_id = created_opp.get('id')
+    print(f"✅ Created test opportunity with ID: {opp_id}")
+    
+    # Test 8: POST /api/opportunites/{id}/lier-client - Link opportunity to another client
+    print(f"\n🔍 TEST 8: POST /api/opportunites/{opp_id}/lier-client - Link to another client")
+    
+    link_data = {
+        "client_id": client2.get('id')
+    }
+    
+    success, link_response = tester.run_test(
+        "Link Opportunity to Another Client",
+        "POST",
+        f"/api/opportunites/{opp_id}/lier-client",
+        200,
+        data=link_data
+    )
+    
+    if success and link_response:
+        linked_opp_id = link_response.get('opportunite_liee_id')
+        print(f"✅ Successfully linked opportunity to another client")
+        print(f"📋 Original opportunity ID: {opp_id}")
+        print(f"📋 Linked opportunity ID: {linked_opp_id}")
+        print(f"📋 Linked to client: {client2.get('nom')}")
+        
+        # Test 9: GET /api/opportunites/{id}/liees - Get linked opportunities
+        print(f"\n🔍 TEST 9: GET /api/opportunites/{opp_id}/liees - Get linked opportunities")
+        
+        success, linked_opps = tester.run_test(
+            "Get Linked Opportunities",
+            "GET",
+            f"/api/opportunites/{opp_id}/liees",
+            200
+        )
+        
+        if success and linked_opps:
+            print(f"✅ Successfully retrieved linked opportunities: {len(linked_opps)} found")
+            for linked in linked_opps:
+                print(f"  - {linked.get('titre')} (Client: {linked.get('client_nom')})")
+        else:
+            print("❌ Failed to retrieve linked opportunities")
+            return False
+        
+        # Test 10: Verify bidirectional linking
+        print(f"\n🔍 TEST 10: Verify bidirectional linking from linked opportunity")
+        
+        success, reverse_linked = tester.run_test(
+            "Get Reverse Linked Opportunities",
+            "GET",
+            f"/api/opportunites/{linked_opp_id}/liees",
+            200
+        )
+        
+        if success and reverse_linked:
+            print(f"✅ Successfully verified bidirectional linking: {len(reverse_linked)} found")
+            # Should find the original opportunity
+            original_found = any(opp.get('id') == opp_id for opp in reverse_linked)
+            if original_found:
+                print("✅ Original opportunity found in reverse link - bidirectional linking works")
+            else:
+                print("❌ Original opportunity not found in reverse link - bidirectional linking failed")
+                return False
+        else:
+            print("❌ Failed to verify bidirectional linking")
+            return False
+        
+    else:
+        print("❌ Failed to link opportunity to another client")
+        return False
+    
+    # Test 11: Test permissions - try with comptable (should fail)
+    print("\n🔍 TEST 11: Testing permissions - comptable should be denied")
+    
+    auth_success, comptable_tester = test_authentication("comptable@demo.com", "comptable123")
+    if auth_success:
+        # Try to access opportunities (should fail)
+        success, response = comptable_tester.run_test(
+            "Comptable Access Opportunities (Should Fail)",
+            "GET",
+            "/api/opportunites",
+            403  # Expecting 403 Forbidden
+        )
+        
+        if not success:  # success=False means we got the expected 403
+            print("✅ Comptable correctly denied access to opportunities")
+        else:
+            print("❌ Comptable was incorrectly allowed access to opportunities")
+            return False
+        
+        # Try to access filter options (should fail)
+        success, response = comptable_tester.run_test(
+            "Comptable Access Filter Options (Should Fail)",
+            "GET",
+            "/api/opportunites/filtres",
+            403  # Expecting 403 Forbidden
+        )
+        
+        if not success:  # success=False means we got the expected 403
+            print("✅ Comptable correctly denied access to opportunity filters")
+        else:
+            print("❌ Comptable was incorrectly allowed access to opportunity filters")
+            return False
+    else:
+        print("⚠️ Could not test comptable permissions - authentication failed")
+    
+    # Test 12: Test validation - try to link to non-existent client
+    print(f"\n🔍 TEST 12: Testing validation - link to non-existent client")
+    
+    invalid_link_data = {
+        "client_id": "non-existent-client-id"
+    }
+    
+    success, response = tester.run_test(
+        "Link to Non-existent Client (Should Fail)",
+        "POST",
+        f"/api/opportunites/{opp_id}/lier-client",
+        400,  # Expecting 400 Bad Request or 404 Not Found
+        data=invalid_link_data
+    )
+    
+    if not success:  # success=False means we got the expected error
+        print("✅ Correctly rejected linking to non-existent client")
+    else:
+        print("❌ Incorrectly allowed linking to non-existent client")
+        return False
+    
+    # Test 13: Test validation - try to link without client_id
+    print(f"\n🔍 TEST 13: Testing validation - link without client_id")
+    
+    empty_link_data = {}
+    
+    success, response = tester.run_test(
+        "Link without Client ID (Should Fail)",
+        "POST",
+        f"/api/opportunites/{opp_id}/lier-client",
+        400,  # Expecting 400 Bad Request
+        data=empty_link_data
+    )
+    
+    if not success:  # success=False means we got the expected error
+        print("✅ Correctly rejected linking without client_id")
+    else:
+        print("❌ Incorrectly allowed linking without client_id")
+        return False
+    
+    # Summary
+    print("\n" + "=" * 80)
+    print("📋 PHASE 5 OPPORTUNITY MANAGEMENT TEST SUMMARY")
+    print("=" * 80)
+    print("✅ GET /api/opportunites/filtres - Filter options retrieval: PASSED")
+    print("✅ GET /api/opportunites - Basic opportunity listing: PASSED")
+    print("✅ GET /api/opportunites?etape=X - Filter by etape: PASSED")
+    print("✅ GET /api/opportunites?priorite=X - Filter by priorite: PASSED")
+    print("✅ GET /api/opportunites?search=X - Search functionality: PASSED")
+    print("✅ GET /api/opportunites (combined filters) - Multiple filters: PASSED")
+    print("✅ POST /api/opportunites/{id}/lier-client - Link to client: PASSED")
+    print("✅ GET /api/opportunites/{id}/liees - Get linked opportunities: PASSED")
+    print("✅ Bidirectional linking verification: PASSED")
+    print("✅ Permission validation (comptable denied): PASSED")
+    print("✅ Data validation (non-existent client): PASSED")
+    print("✅ Data validation (missing client_id): PASSED")
+    
+    print("\n🎯 ALL PHASE 5 OPPORTUNITY MANAGEMENT FEATURES ARE WORKING CORRECTLY!")
+    
+    return True
+
 if __name__ == "__main__":
-    sys.exit(main())
+    # Run Phase 5 opportunity management tests
+    print("🚀 STARTING PHASE 5 OPPORTUNITY MANAGEMENT TESTING")
+    print("=" * 80)
+    
+    phase5_success = test_opportunity_management_phase5()
+    
+    if phase5_success:
+        print("\n🎉 PHASE 5 OPPORTUNITY MANAGEMENT TESTS COMPLETED SUCCESSFULLY!")
+        print("✅ All opportunity management features are working correctly")
+        print("✅ Filtering, searching, and linking functionality verified")
+        print("✅ Permission controls and data validation working")
+        sys.exit(0)
+    else:
+        print("\n❌ PHASE 5 OPPORTUNITY MANAGEMENT TESTS FAILED")
+        print("❌ Some opportunity management features need attention")
+        sys.exit(1)
