@@ -959,6 +959,55 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     }
   };
 
+  // Fonctions pour les opportunités
+  const lierOpportuniteClient = (opportunite) => {
+    setOpportuniteToLink(opportunite);
+    setShowLierOpportuniteModal(true);
+  };
+
+  const confirmerLiaisonOpportunite = async () => {
+    try {
+      if (!opportuniteForm.client_id) {
+        showNotification('Veuillez sélectionner un client', 'error');
+        return;
+      }
+
+      const response = await apiCall('POST', `/api/opportunites/${opportuniteToLink.id}/lier-client`, {
+        client_id: opportuniteForm.client_id
+      });
+
+      showNotification(
+        `🔗 Opportunité liée au client ${response.data.client_nom} avec succès`,
+        'success'
+      );
+      
+      setShowLierOpportuniteModal(false);
+      setOpportuniteToLink(null);
+      setOpportuniteForm({ 
+        titre: '', description: '', client_id: '', valeur_estimee_usd: '', devise: 'USD', 
+        probabilite: 50, etape: 'prospect', priorite: 'moyenne', notes: '' 
+      });
+      loadData();
+    } catch (error) {
+      console.error('Erreur liaison opportunité:', error);
+      showNotification(`❌ Erreur lors de la liaison: ${error.response?.data?.detail || error.message}`, 'error');
+    }
+  };
+
+  const appliquerFiltresOpportunites = () => {
+    loadData();
+  };
+
+  const reinitialiserFiltresOpportunites = () => {
+    setFiltresOpportunites({
+      client_id: '',
+      etape: '',
+      priorite: '',
+      commercial_id: '',
+      search: ''
+    });
+  };
+
   // Fonction pour créer une opportunité
   const saveOpportunite = async () => {
     try {
