@@ -423,17 +423,29 @@ frontend:
         agent: "main"
         comment: "✅ SUPPRESSION DEVIS IMPLÉMENTÉE - Backend: Endpoint DELETE /api/devis/{id} avec motif obligatoire (query parameter), validation devis converti en facture non supprimable, archivage dans devis_supprimes. Frontend: Bouton suppression dans tableau devis, modal confirmation avec motif obligatoire, intégration avec système notifications. Permissions manager_and_admin respectées."
 
-  - task: "Conversion devis vers facture"
+  - task: "Liaison multiple opportunités à clients"
     implemented: true
     working: true
     file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "✅ CONVERSION DEVIS→FACTURE DÉJÀ FONCTIONNELLE - Endpoint POST /api/devis/{id}/convertir-facture existant et opérationnel. Frontend: Bouton conversion disponible pour devis acceptés, intégration avec loadData() pour actualisation. Fonctionnalité existante validée et maintenue."
+        comment: "✅ LIAISON OPPORTUNITÉS IMPLÉMENTÉE - Backend: Endpoints POST /api/opportunites/{id}/lier-client pour créer opportunité similaire pour autre client avec références bidirectionnelles, GET /api/opportunites/{id}/liees pour récupérer opportunités liées. Frontend: Bouton 'Lier au client' dans tableau opportunités, modal sélection client avec dropdown, fonction confirmerLiaisonOpportunite avec notifications. Système de liaison complet avec traçabilité."
+
+  - task: "Filtres recherche opportunités"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ FILTRES OPPORTUNITÉS IMPLÉMENTÉS - Backend: Endpoint GET /api/opportunites avec parameters optionnels (client_id, etape, priorite, commercial_id, search), GET /api/opportunites/filtres pour options de filtrage. Frontend: Interface filtres avec 5 champs (Client, Étape, Priorité, Recherche, boutons Filtrer/Reset), intégration avec loadData() pour application filtres. Filtrage dynamique complet avec URLSearchParams."
 
 metadata:
   created_by: "main_agent"
