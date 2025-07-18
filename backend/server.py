@@ -1646,7 +1646,7 @@ async def annuler_facture(facture_id: str, motif: str = Query(..., description="
     return {"message": "Facture annulée avec succès"}
 
 @app.delete("/api/factures/{facture_id}")
-async def supprimer_facture(facture_id: str, motif: str, current_user: dict = Depends(comptable_manager_admin())):
+async def supprimer_facture(facture_id: str, motif: str = Query(..., description="Motif de la suppression"), current_user: dict = Depends(comptable_manager_admin())):
     """Supprimer une facture - Comptable, Manager et Admin"""
     print(f"🗑️ SUPPRESSION FACTURE - Tentative de suppression pour ID: {facture_id}, Motif: {motif}")
     
