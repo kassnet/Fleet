@@ -1506,6 +1506,22 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                                     ✅ Marquer payée
                                   </button>
                                 )}
+                                {(facture.statut === 'brouillon' || facture.statut === 'envoyee') && (
+                                  <button
+                                    onClick={() => annulerFacture(facture)}
+                                    className="text-orange-600 hover:text-orange-800"
+                                  >
+                                    🚫 Annuler
+                                  </button>
+                                )}
+                                {(facture.statut === 'brouillon' || facture.statut === 'envoyee' || facture.statut === 'annulee') && (
+                                  <button
+                                    onClick={() => supprimerFacture(facture)}
+                                    className="text-red-600 hover:text-red-800"
+                                  >
+                                    🗑️ Supprimer
+                                  </button>
+                                )}
                               </td>
                             )}
                           </tr>
