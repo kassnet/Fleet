@@ -109,6 +109,22 @@ const AppContent = () => {
   // Sales edition states
   const [editingDevis, setEditingDevis] = useState(null);
   const [editingOpportunite, setEditingOpportunite] = useState(null);
+  const [showLierOpportuniteModal, setShowLierOpportuniteModal] = useState(false);
+  const [opportuniteToLink, setOpportuniteToLink] = useState(null);
+  const [filtresOpportunites, setFiltresOpportunites] = useState({
+    client_id: '',
+    etape: '',
+    priorite: '',
+    commercial_id: '',
+    search: ''
+  });
+  const [optionsFiltres, setOptionsFiltres] = useState({
+    etapes: [],
+    priorites: [],
+    commerciaux: [],
+    clients: []
+  });
+  const [editingOpportunite, setEditingOpportunite] = useState(null);
   const [editingCommande, setEditingCommande] = useState(null);
   const [selectedOpportunite, setSelectedOpportunite] = useState(null);
 
