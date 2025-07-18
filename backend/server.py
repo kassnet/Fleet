@@ -1894,6 +1894,51 @@ async def convertir_devis_facture(devis_id: str, current_user: dict = Depends(ma
     
     return {"message": "Devis converti en facture", "facture_id": facture.id, "facture_numero": facture.numero}
 
+@app.delete("/api/devis/{devis_id}")
+async def supprimer_devis(devis_id: str, motif: str = Query(..., description="Motif de la suppression"), current_user: dict = Depends(manager_and_admin())):
+    """Supprimer un devis - Manager et Admin"""
+    print(f"🗑️ SUPPRESSION DEVIS - Tentative de suppression pour ID: {devis_id}, Motif: {motif}")
+    
+    # Vérifier si le devis existe
+    devis = await db.devis.find_one({"$or": [{"id": devis_id}, {"_id": devis_id}]})
+    
+    if not devis:
+        try:
+            from bson import ObjectId
+            devis = await db.devis.find_one({"_id": ObjectId(devis_id)})
+        except:
+            pass
+    
+    if not devis:
+        raise HTTPException(status_code=404, detail="Devis non trouvé")
+    
+    # Vérifier que le devis peut être supprimé
+    if devis.get("statut") == "accepte" and devis.get("facture_id"):
+        raise HTTPException(status_code=400, detail="Impossible de supprimer un devis déjà converti en facture")
+    
+    # Sauvegarder le devis dans un historique de suppression
+    devis_archive = {
+        "id": str(uuid.uuid4()),
+        "devis_original": devis,
+        "motif_suppression": motif,
+        "utilisateur_suppression": current_user.get("email", ""),
+        "date_suppression": datetime.now()
+    }
+    await db.devis_supprimes.insert_one(devis_archive)
+    
+    # Supprimer le devis
+    if "_id" in devis and not devis.get("id"):
+        result = await db.devis.delete_one({"_id": devis["_id"]})
+    else:
+        result = await db.devis.delete_one({"id": devis["id"]})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Erreur lors de la suppression du devis")
+    
+    print(f"✅ SUPPRESSION DEVIS - Devis {devis.get('numero', 'N/A')} supprimé avec succès")
+    
+    return {"message": "Devis supprimé avec succès"}
+
 # OPPORTUNITÉS Routes
 @app.get("/api/opportunites", response_model=List[Opportunite])
 async def get_opportunites(current_user: dict = Depends(manager_and_admin())):
