@@ -1167,15 +1167,33 @@ async def delete_produit(produit_id: str, current_user: dict = Depends(manager_a
     
     return {"message": "Produit supprimé"}
 
-# Gestion des stocks
+# Gestion des stocks - Version améliorée avec ajouter/soustraire
 @app.put("/api/produits/{produit_id}/stock")
 async def update_stock(produit_id: str, request: dict, current_user: dict = Depends(manager_and_admin())):
-    """Mettre à jour le stock d'un produit - Manager et Admin uniquement"""
-    nouvelle_quantite = request.get("nouvelle_quantite")
-    motif = request.get("motif", "correction")
+    """Mettre à jour le stock d'un produit avec opération ajouter/soustraire - Manager et Admin uniquement"""
+    operation = request.get("operation")  # "ajouter" ou "soustraire"
+    quantite = request.get("quantite")
+    motif = request.get("motif")
     
-    if nouvelle_quantite is None:
-        raise HTTPException(status_code=400, detail="nouvelle_quantite requis")
+    # Validation des paramètres
+    if not operation:
+        raise HTTPException(status_code=400, detail="Opération requise ('ajouter' ou 'soustraire')")
+    
+    if operation not in ["ajouter", "soustraire"]:
+        raise HTTPException(status_code=400, detail="Opération doit être 'ajouter' ou 'soustraire'")
+    
+    if quantite is None:
+        raise HTTPException(status_code=400, detail="Quantité requise")
+    
+    if not motif or not motif.strip():
+        raise HTTPException(status_code=400, detail="Motif requis pour toute modification de stock")
+    
+    try:
+        quantite = int(quantite)
+        if quantite <= 0:
+            raise HTTPException(status_code=400, detail="La quantité doit être positive")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="La quantité doit être un nombre entier")
     
     # Chercher par id ou _id
     produit = await db.produits.find_one({"$or": [{"id": produit_id}, {"_id": produit_id}]})
@@ -1190,19 +1208,51 @@ async def update_stock(produit_id: str, request: dict, current_user: dict = Depe
     if not produit:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
     
+    # Vérifier que la gestion de stock est activée
+    if not produit.get("gestion_stock", False):
+        raise HTTPException(status_code=400, detail="La gestion de stock n'est pas activée pour ce produit")
+    
     stock_avant = produit.get("stock_actuel", 0)
+    stock_minimum = produit.get("stock_minimum", 0)
+    stock_maximum = produit.get("stock_maximum", 1000000)
+    
+    # Calculer le nouveau stock
+    if operation == "ajouter":
+        nouveau_stock = stock_avant + quantite
+        type_mouvement = "entree"
+    else:  # soustraire
+        nouveau_stock = stock_avant - quantite
+        type_mouvement = "sortie"
+    
+    # Vérifier les limites de stock
+    if nouveau_stock < 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Impossible de soustraire {quantite} unités. Stock actuel: {stock_avant}. Le stock ne peut pas être négatif."
+        )
+    
+    if nouveau_stock > stock_maximum:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Impossible d'ajouter {quantite} unités. Stock maximum autorisé: {stock_maximum}. Le nouveau stock serait: {nouveau_stock}"
+        )
+    
+    # Vérifier si le stock sera en dessous du minimum
+    warning_message = None
+    if nouveau_stock < stock_minimum:
+        warning_message = f"Attention: Le stock sera en dessous du minimum recommandé ({stock_minimum})"
     
     # Mettre à jour le stock
     update_result = await db.produits.update_one(
         {"$or": [{"id": produit_id}, {"_id": produit_id}]},
-        {"$set": {"stock_actuel": int(nouvelle_quantite)}}
+        {"$set": {"stock_actuel": nouveau_stock}}
     )
     
     if update_result.matched_count == 0:
         try:
             await db.produits.update_one(
                 {"_id": ObjectId(produit_id)},
-                {"$set": {"stock_actuel": int(nouvelle_quantite)}}
+                {"$set": {"stock_actuel": nouveau_stock}}
             )
         except:
             pass
@@ -1211,17 +1261,30 @@ async def update_stock(produit_id: str, request: dict, current_user: dict = Depe
     mouvement = {
         "id": str(uuid.uuid4()),
         "produit_id": produit_id,  # Utiliser l'ID passé en paramètre
-        "type_mouvement": "correction",
-        "quantite": int(nouvelle_quantite) - stock_avant,
+        "type_mouvement": type_mouvement,
+        "quantite": quantite if operation == "ajouter" else -quantite,
         "stock_avant": stock_avant,
-        "stock_après": int(nouvelle_quantite),
-        "motif": motif,
+        "stock_après": nouveau_stock,
+        "motif": motif.strip(),
+        "operation": operation,
+        "utilisateur": current_user.get("email", ""),
         "date_mouvement": datetime.now()
     }
     
     await db.mouvements_stock.insert_one(mouvement)
     
-    return {"message": "Stock mis à jour", "ancien_stock": stock_avant, "nouveau_stock": int(nouvelle_quantite)}
+    response = {
+        "message": f"Stock mis à jour: {operation} {quantite} unités",
+        "ancien_stock": stock_avant,
+        "nouveau_stock": nouveau_stock,
+        "operation": operation,
+        "quantite": quantite
+    }
+    
+    if warning_message:
+        response["warning"] = warning_message
+    
+    return response
 
 @app.get("/api/produits/{produit_id}/mouvements")
 async def get_mouvements_stock(produit_id: str):
