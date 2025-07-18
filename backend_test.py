@@ -3655,7 +3655,7 @@ def test_opportunity_management_phase5():
         data=invalid_link_data
     )
     
-    if not success:  # success=False means we got the expected error
+    if success:  # success=True means we got the expected error
         print("✅ Correctly rejected linking to non-existent client")
     else:
         print("❌ Incorrectly allowed linking to non-existent client")
