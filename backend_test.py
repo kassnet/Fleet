@@ -3260,15 +3260,21 @@ def main():
     print("🚀 STARTING COMPREHENSIVE FACTURAPP BACKEND TESTING - PHASE 3 FOCUS")
     print("=" * 80)
     
-    # Test 1: Phase 2 Invoice Management (PRIORITY - from review request)
+    # Test 1: Phase 3 Enhanced Stock Management (PRIORITY - from review request)
     print("\n" + "=" * 80)
-    print("TEST 1: PHASE 2 INVOICE MANAGEMENT (PRIORITY)")
+    print("TEST 1: PHASE 3 ENHANCED STOCK MANAGEMENT (PRIORITY)")
+    print("=" * 80)
+    phase3_success = test_enhanced_stock_management()
+    
+    # Test 2: Phase 2 Invoice Management (existing functionality)
+    print("\n" + "=" * 80)
+    print("TEST 2: PHASE 2 INVOICE MANAGEMENT")
     print("=" * 80)
     phase2_success = test_phase2_invoice_management()
     
-    # Test 2: Stock Control During Invoicing (PRIORITY - from review request)
+    # Test 3: Stock Control During Invoicing (existing functionality)
     print("\n" + "=" * 80)
-    print("TEST 2: IMPROVED STOCK CONTROL DURING INVOICING (PRIORITY)")
+    print("TEST 3: IMPROVED STOCK CONTROL DURING INVOICING")
     print("=" * 80)
     stock_control_success = test_stock_control_during_invoicing()
     
