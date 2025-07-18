@@ -455,18 +455,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Suppression paiements avec motifs"
-    - "Pagination historique paiements"
-    - "Suppression champ validité devis"
-    - "Suppression devis avec motifs"
-    - "Conversion devis vers facture"
+    - "Liaison multiple opportunités à clients"
+    - "Filtres recherche opportunités"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "✅ PHASE 4 TERMINÉE AVEC SUCCÈS - Gestion des paiements et devis complètement améliorée. Backend: Endpoints DELETE /api/paiements/{id} et DELETE /api/devis/{id} avec motifs obligatoires, GET /api/paiements avec pagination, archivage des suppressions, restauration état factures. Frontend: Boutons suppression avec modaux confirmation, pagination paiements avec navigation, suppression champ validité devis, intégration notifications. Conversion devis→facture existante maintenue. Prêt pour tests backend puis frontend."
+    message: "✅ PHASE 5 TERMINÉE AVEC SUCCÈS - Toutes les 5 phases terminées ! Gestion des opportunités améliorée avec liaison multiple clients et filtres de recherche. Backend: Endpoints POST /api/opportunites/{id}/lier-client et GET /api/opportunites/{id}/liees pour liaison, GET /api/opportunites avec filtres (client_id, etape, priorite, search) et GET /api/opportunites/filtres pour options. Frontend: Interface filtres complète (5 champs + boutons), modal liaison client, intégration avec loadData(). Système complet de gestion d'opportunités avec filtrage et liaison. TOUTES LES PHASES DÉVELOPPÉES AVEC SUCCÈS!"
   - agent: "testing"
     message: "🔍 TESTS PHASE 2 TERMINÉS - RÉSULTATS MIXTES: ✅ CORRECTIONS QUERY PARAMETERS: Les endpoints POST /api/factures/{id}/annuler?motif={motif} et DELETE /api/factures/{id}?motif={motif} fonctionnent correctement avec admin/manager. Restauration automatique des stocks après annulation confirmée. ❌ PROBLÈMES IDENTIFIÉS: 1) Permissions comptable incomplètes - ne peut pas créer clients/produits pour tester. 2) Utilisateur régulier accède à /api/factures (devrait être bloqué). 3) Contrôle stock fonctionne (retourne 400 avec message explicite) mais test mal configuré. 4) Validation motif obligatoire fonctionne (422) mais test attend échec différent. RECOMMANDATION: Ajuster permissions comptable et corriger logique de test pour contrôle de stock."
   - agent: "testing"
