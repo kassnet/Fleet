@@ -1571,7 +1571,7 @@ async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None, curr
 
 # Nouveaux endpoints pour annuler et supprimer des factures
 @app.post("/api/factures/{facture_id}/annuler")
-async def annuler_facture(facture_id: str, motif: str, current_user: dict = Depends(comptable_manager_admin())):
+async def annuler_facture(facture_id: str, motif: str = Query(..., description="Motif de l'annulation"), current_user: dict = Depends(comptable_manager_admin())):
     """Annuler une facture - Comptable, Manager et Admin"""
     print(f"🚫 ANNULATION FACTURE - Tentative d'annulation pour ID: {facture_id}, Motif: {motif}")
     
