@@ -701,9 +701,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         return;
       }
 
-      await apiCall('DELETE', `/api/factures/${factureToDelete.id}`, {
-        motif: motifSuppression
-      });
+      await apiCall('DELETE', `/api/factures/${factureToDelete.id}?motif=${encodeURIComponent(motifSuppression)}`);
 
       showNotification(`🗑️ Facture ${factureToDelete.numero} supprimée avec succès`, 'success');
       setShowSupprimerFactureModal(false);
