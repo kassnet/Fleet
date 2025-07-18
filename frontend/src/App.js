@@ -47,6 +47,12 @@ const AppContent = () => {
   const [showOpportuniteModal, setShowOpportuniteModal] = useState(false);
   const [showCommandeModal, setShowCommandeModal] = useState(false);
   const [showActiviteModal, setShowActiviteModal] = useState(false);
+  const [showAnnulerFactureModal, setShowAnnulerFactureModal] = useState(false);
+  const [showSupprimerFactureModal, setShowSupprimerFactureModal] = useState(false);
+  const [factureToCancel, setFactureToCancel] = useState(null);
+  const [factureToDelete, setFactureToDelete] = useState(null);
+  const [motifAnnulation, setMotifAnnulation] = useState('');
+  const [motifSuppression, setMotifSuppression] = useState('');
 
   // Configuration states
   const [appConfig, setAppConfig] = useState({
