@@ -225,7 +225,7 @@ class Devis(BaseModel):
     total_ttc_usd: float
     total_ttc_fc: float
     statut: str = "brouillon"  # brouillon, envoye, accepte, refuse, expire
-    validite_jours: int = 30
+    validite_jours: int = 30  # Sera supprimé dans l'interface utilisateur
     date_creation: Optional[datetime] = None
     date_expiration: Optional[datetime] = None
     date_acceptation: Optional[datetime] = None
