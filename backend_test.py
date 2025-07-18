@@ -2779,9 +2779,485 @@ def test_stock_control_during_invoicing():
         print("❌ Invoice creation was not rejected despite insufficient stock")
         return False
 
+def test_enhanced_stock_management():
+    """Test Phase 3 enhanced stock management features"""
+    print("\n" + "=" * 80)
+    print("📦 TESTING PHASE 3 ENHANCED STOCK MANAGEMENT")
+    print("=" * 80)
+    
+    # Test with different user roles
+    test_accounts = [
+        ("admin@facturapp.rdc", "admin123", "admin"),
+        ("manager@demo.com", "manager123", "manager"),
+        ("comptable@demo.com", "comptable123", "comptable"),
+        ("user@demo.com", "user123", "utilisateur")
+    ]
+    
+    admin_tester = None
+    manager_tester = None
+    
+    # Authenticate admin and manager for testing
+    for email, password, role in test_accounts:
+        auth_success, tester = test_authentication(email, password)
+        if auth_success:
+            if role == "admin":
+                admin_tester = tester
+            elif role == "manager":
+                manager_tester = tester
+            print(f"✅ {role.capitalize()} authentication successful")
+        else:
+            print(f"❌ {role.capitalize()} authentication failed")
+    
+    if not admin_tester and not manager_tester:
+        print("❌ No admin or manager authentication available, cannot test stock management")
+        return False
+    
+    # Use admin tester if available, otherwise manager
+    tester = admin_tester if admin_tester else manager_tester
+    user_role = "admin" if admin_tester else "manager"
+    
+    print(f"\n🔍 Using {user_role} account for stock management tests")
+    
+    # Get existing products to test with
+    success, products = tester.run_test(
+        "Get Products for Stock Testing",
+        "GET",
+        "/api/produits",
+        200,
+        print_response=False
+    )
+    
+    if not success or not products:
+        print("❌ Failed to get products for testing")
+        return False
+    
+    # Find a product with stock management enabled
+    stock_product = None
+    for product in products:
+        if product.get('gestion_stock', False):
+            stock_product = product
+            break
+    
+    if not stock_product:
+        print("❌ No products with stock management found")
+        return False
+    
+    product_id = stock_product.get('id')
+    product_name = stock_product.get('nom')
+    initial_stock = stock_product.get('stock_actuel', 0)
+    stock_min = stock_product.get('stock_minimum', 10)
+    stock_max = stock_product.get('stock_maximum', 100)
+    
+    print(f"\n📦 Testing with product: {product_name}")
+    print(f"📊 Initial stock: {initial_stock}, Min: {stock_min}, Max: {stock_max}")
+    
+    # Test results tracking
+    test_results = []
+    
+    # TEST 1: Test permissions - only admin/manager should access
+    print(f"\n🔍 TEST 1: Testing permissions (only admin/manager should access)")
+    
+    # Test with unauthorized user (comptable should fail for stock management)
+    comptable_auth_success, comptable_tester = test_authentication("user@demo.com", "user123")
+    if comptable_auth_success:
+        stock_data = {
+            "operation": "ajouter",
+            "quantite": 5,
+            "motif": "Test unauthorized access"
+        }
+        
+        success, response = comptable_tester.run_test(
+            "Test Unauthorized Stock Update",
+            "PUT",
+            f"/api/produits/{product_id}/stock",
+            403,  # Should fail with 403 Forbidden
+            data=stock_data
+        )
+        
+        if not success:  # We expect this to fail (403)
+            print("✅ Unauthorized user correctly blocked from stock management")
+            test_results.append(("Permissions Test", True))
+        else:
+            print("❌ Unauthorized user was able to access stock management")
+            test_results.append(("Permissions Test", False))
+    else:
+        print("⚠️ Could not test unauthorized access - user authentication failed")
+        test_results.append(("Permissions Test", None))
+    
+    # TEST 2: Test "ajouter" operation with valid motif
+    print(f"\n🔍 TEST 2: Testing 'ajouter' operation with valid motif")
+    
+    add_quantity = 20
+    stock_data = {
+        "operation": "ajouter",
+        "quantite": add_quantity,
+        "motif": "Test stock addition - Phase 3 testing"
+    }
+    
+    success, response = tester.run_test(
+        "Test Add Stock Operation",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        200,
+        data=stock_data
+    )
+    
+    if success and response:
+        new_stock = response.get('nouveau_stock')
+        expected_stock = initial_stock + add_quantity
+        
+        if new_stock == expected_stock:
+            print(f"✅ Stock correctly increased from {initial_stock} to {new_stock}")
+            test_results.append(("Add Operation", True))
+            initial_stock = new_stock  # Update for next tests
+        else:
+            print(f"❌ Stock calculation error: expected {expected_stock}, got {new_stock}")
+            test_results.append(("Add Operation", False))
+    else:
+        print("❌ Add operation failed")
+        test_results.append(("Add Operation", False))
+    
+    # TEST 3: Test "soustraire" operation with valid motif
+    print(f"\n🔍 TEST 3: Testing 'soustraire' operation with valid motif")
+    
+    subtract_quantity = 10
+    stock_data = {
+        "operation": "soustraire",
+        "quantite": subtract_quantity,
+        "motif": "Test stock subtraction - Phase 3 testing"
+    }
+    
+    success, response = tester.run_test(
+        "Test Subtract Stock Operation",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        200,
+        data=stock_data
+    )
+    
+    if success and response:
+        new_stock = response.get('nouveau_stock')
+        expected_stock = initial_stock - subtract_quantity
+        
+        if new_stock == expected_stock:
+            print(f"✅ Stock correctly decreased from {initial_stock} to {new_stock}")
+            test_results.append(("Subtract Operation", True))
+            initial_stock = new_stock  # Update for next tests
+        else:
+            print(f"❌ Stock calculation error: expected {expected_stock}, got {new_stock}")
+            test_results.append(("Subtract Operation", False))
+    else:
+        print("❌ Subtract operation failed")
+        test_results.append(("Subtract Operation", False))
+    
+    # TEST 4: Test mandatory motif validation (should fail without motif)
+    print(f"\n🔍 TEST 4: Testing mandatory motif validation (should fail without motif)")
+    
+    stock_data = {
+        "operation": "ajouter",
+        "quantite": 5
+        # No motif provided
+    }
+    
+    success, response = tester.run_test(
+        "Test Missing Motif Validation",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        400,  # Should fail with 400 Bad Request
+        data=stock_data
+    )
+    
+    if not success:  # We expect this to fail (400)
+        print("✅ Missing motif correctly rejected")
+        test_results.append(("Motif Validation", True))
+    else:
+        print("❌ Missing motif was accepted (should have been rejected)")
+        test_results.append(("Motif Validation", False))
+    
+    # TEST 5: Test empty motif validation
+    print(f"\n🔍 TEST 5: Testing empty motif validation")
+    
+    stock_data = {
+        "operation": "ajouter",
+        "quantite": 5,
+        "motif": ""  # Empty motif
+    }
+    
+    success, response = tester.run_test(
+        "Test Empty Motif Validation",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        400,  # Should fail with 400 Bad Request
+        data=stock_data
+    )
+    
+    if not success:  # We expect this to fail (400)
+        print("✅ Empty motif correctly rejected")
+        test_results.append(("Empty Motif Validation", True))
+    else:
+        print("❌ Empty motif was accepted (should have been rejected)")
+        test_results.append(("Empty Motif Validation", False))
+    
+    # TEST 6: Test quantity validation (negative quantity should fail)
+    print(f"\n🔍 TEST 6: Testing negative quantity validation")
+    
+    stock_data = {
+        "operation": "ajouter",
+        "quantite": -5,  # Negative quantity
+        "motif": "Test negative quantity"
+    }
+    
+    success, response = tester.run_test(
+        "Test Negative Quantity Validation",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        400,  # Should fail with 400 Bad Request
+        data=stock_data
+    )
+    
+    if not success:  # We expect this to fail (400)
+        print("✅ Negative quantity correctly rejected")
+        test_results.append(("Negative Quantity Validation", True))
+    else:
+        print("❌ Negative quantity was accepted (should have been rejected)")
+        test_results.append(("Negative Quantity Validation", False))
+    
+    # TEST 7: Test zero quantity validation
+    print(f"\n🔍 TEST 7: Testing zero quantity validation")
+    
+    stock_data = {
+        "operation": "ajouter",
+        "quantite": 0,  # Zero quantity
+        "motif": "Test zero quantity"
+    }
+    
+    success, response = tester.run_test(
+        "Test Zero Quantity Validation",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        400,  # Should fail with 400 Bad Request
+        data=stock_data
+    )
+    
+    if not success:  # We expect this to fail (400)
+        print("✅ Zero quantity correctly rejected")
+        test_results.append(("Zero Quantity Validation", True))
+    else:
+        print("❌ Zero quantity was accepted (should have been rejected)")
+        test_results.append(("Zero Quantity Validation", False))
+    
+    # TEST 8: Test negative stock prevention
+    print(f"\n🔍 TEST 8: Testing negative stock prevention")
+    
+    # Try to subtract more than available
+    excessive_quantity = initial_stock + 10
+    stock_data = {
+        "operation": "soustraire",
+        "quantite": excessive_quantity,
+        "motif": "Test negative stock prevention"
+    }
+    
+    success, response = tester.run_test(
+        "Test Negative Stock Prevention",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        400,  # Should fail with 400 Bad Request
+        data=stock_data
+    )
+    
+    if not success:  # We expect this to fail (400)
+        print(f"✅ Negative stock correctly prevented (tried to subtract {excessive_quantity} from {initial_stock})")
+        test_results.append(("Negative Stock Prevention", True))
+    else:
+        print(f"❌ Negative stock was allowed (tried to subtract {excessive_quantity} from {initial_stock})")
+        test_results.append(("Negative Stock Prevention", False))
+    
+    # TEST 9: Test maximum stock limit
+    print(f"\n🔍 TEST 9: Testing maximum stock limit")
+    
+    # Try to add beyond maximum
+    excessive_add = stock_max - initial_stock + 10
+    stock_data = {
+        "operation": "ajouter",
+        "quantite": excessive_add,
+        "motif": "Test maximum stock limit"
+    }
+    
+    success, response = tester.run_test(
+        "Test Maximum Stock Limit",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        400,  # Should fail with 400 Bad Request
+        data=stock_data
+    )
+    
+    if not success:  # We expect this to fail (400)
+        print(f"✅ Maximum stock limit correctly enforced (tried to add {excessive_add} to {initial_stock}, max is {stock_max})")
+        test_results.append(("Maximum Stock Limit", True))
+    else:
+        print(f"❌ Maximum stock limit was not enforced (tried to add {excessive_add} to {initial_stock}, max is {stock_max})")
+        test_results.append(("Maximum Stock Limit", False))
+    
+    # TEST 10: Test minimum stock warning
+    print(f"\n🔍 TEST 10: Testing minimum stock warning")
+    
+    # Calculate how much to subtract to go below minimum
+    if initial_stock > stock_min:
+        warning_quantity = initial_stock - stock_min + 2  # Go 2 below minimum
+        stock_data = {
+            "operation": "soustraire",
+            "quantite": warning_quantity,
+            "motif": "Test minimum stock warning"
+        }
+        
+        success, response = tester.run_test(
+            "Test Minimum Stock Warning",
+            "PUT",
+            f"/api/produits/{product_id}/stock",
+            200,  # Should succeed but with warning
+            data=stock_data
+        )
+        
+        if success and response:
+            warning_message = response.get('warning')
+            if warning_message and 'minimum' in warning_message.lower():
+                print(f"✅ Minimum stock warning correctly issued: {warning_message}")
+                test_results.append(("Minimum Stock Warning", True))
+                initial_stock = response.get('nouveau_stock', initial_stock)
+            else:
+                print("❌ Minimum stock warning not issued")
+                test_results.append(("Minimum Stock Warning", False))
+        else:
+            print("❌ Minimum stock warning test failed")
+            test_results.append(("Minimum Stock Warning", False))
+    else:
+        print(f"⚠️ Cannot test minimum stock warning - current stock ({initial_stock}) is already at or below minimum ({stock_min})")
+        test_results.append(("Minimum Stock Warning", None))
+    
+    # TEST 11: Test invalid operation
+    print(f"\n🔍 TEST 11: Testing invalid operation")
+    
+    stock_data = {
+        "operation": "invalid_operation",  # Invalid operation
+        "quantite": 5,
+        "motif": "Test invalid operation"
+    }
+    
+    success, response = tester.run_test(
+        "Test Invalid Operation",
+        "PUT",
+        f"/api/produits/{product_id}/stock",
+        400,  # Should fail with 400 Bad Request
+        data=stock_data
+    )
+    
+    if not success:  # We expect this to fail (400)
+        print("✅ Invalid operation correctly rejected")
+        test_results.append(("Invalid Operation", True))
+    else:
+        print("❌ Invalid operation was accepted (should have been rejected)")
+        test_results.append(("Invalid Operation", False))
+    
+    # TEST 12: Test stock movements endpoint
+    print(f"\n🔍 TEST 12: Testing stock movements endpoint")
+    
+    success, movements = tester.run_test(
+        "Get Stock Movements",
+        "GET",
+        f"/api/produits/{product_id}/mouvements",
+        200
+    )
+    
+    if success and movements:
+        print(f"✅ Successfully retrieved {len(movements)} stock movements")
+        
+        # Check if recent movements have the new fields
+        recent_movements = movements[:3]  # Check last 3 movements
+        has_user_field = any('utilisateur' in movement for movement in recent_movements)
+        has_operation_field = any('operation' in movement for movement in recent_movements)
+        
+        if has_user_field and has_operation_field:
+            print("✅ Stock movements include user and operation fields")
+            test_results.append(("Stock Movements", True))
+        else:
+            print("❌ Stock movements missing user or operation fields")
+            test_results.append(("Stock Movements", False))
+    else:
+        print("❌ Failed to retrieve stock movements")
+        test_results.append(("Stock Movements", False))
+    
+    # TEST 13: Test with product without stock management
+    print(f"\n🔍 TEST 13: Testing with product without stock management")
+    
+    # Find a product without stock management
+    no_stock_product = None
+    for product in products:
+        if not product.get('gestion_stock', False):
+            no_stock_product = product
+            break
+    
+    if no_stock_product:
+        no_stock_product_id = no_stock_product.get('id')
+        stock_data = {
+            "operation": "ajouter",
+            "quantite": 5,
+            "motif": "Test product without stock management"
+        }
+        
+        success, response = tester.run_test(
+            "Test Product Without Stock Management",
+            "PUT",
+            f"/api/produits/{no_stock_product_id}/stock",
+            400,  # Should fail with 400 Bad Request
+            data=stock_data
+        )
+        
+        if not success:  # We expect this to fail (400)
+            print("✅ Product without stock management correctly rejected")
+            test_results.append(("No Stock Management", True))
+        else:
+            print("❌ Product without stock management was accepted (should have been rejected)")
+            test_results.append(("No Stock Management", False))
+    else:
+        print("⚠️ No products without stock management found for testing")
+        test_results.append(("No Stock Management", None))
+    
+    # SUMMARY
+    print("\n" + "=" * 80)
+    print("📋 PHASE 3 ENHANCED STOCK MANAGEMENT TEST SUMMARY")
+    print("=" * 80)
+    
+    passed_tests = sum(1 for _, result in test_results if result is True)
+    failed_tests = sum(1 for _, result in test_results if result is False)
+    skipped_tests = sum(1 for _, result in test_results if result is None)
+    total_tests = len(test_results)
+    
+    print(f"📊 Test Results: {passed_tests}/{total_tests} passed, {failed_tests} failed, {skipped_tests} skipped")
+    
+    for test_name, result in test_results:
+        if result is True:
+            print(f"✅ {test_name}: PASSED")
+        elif result is False:
+            print(f"❌ {test_name}: FAILED")
+        else:
+            print(f"⚠️ {test_name}: SKIPPED")
+    
+    # Overall assessment
+    success_rate = passed_tests / (total_tests - skipped_tests) if (total_tests - skipped_tests) > 0 else 0
+    
+    if success_rate >= 0.9:
+        print(f"\n🎉 EXCELLENT: {success_rate:.1%} success rate - Phase 3 stock management is working excellently!")
+        return True
+    elif success_rate >= 0.7:
+        print(f"\n✅ GOOD: {success_rate:.1%} success rate - Phase 3 stock management is mostly working")
+        return True
+    else:
+        print(f"\n❌ NEEDS WORK: {success_rate:.1%} success rate - Phase 3 stock management has significant issues")
+        return False
+
 def main():
-    """Main test function - comprehensive testing with Phase 2 focus"""
-    print("🚀 STARTING COMPREHENSIVE FACTURAPP BACKEND TESTING - PHASE 2 FOCUS")
+    """Main test function - comprehensive testing with Phase 3 focus"""
+    print("🚀 STARTING COMPREHENSIVE FACTURAPP BACKEND TESTING - PHASE 3 FOCUS")
     print("=" * 80)
     
     # Test 1: Phase 2 Invoice Management (PRIORITY - from review request)
