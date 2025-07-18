@@ -124,7 +124,6 @@ const AppContent = () => {
     commerciaux: [],
     clients: []
   });
-  const [editingOpportunite, setEditingOpportunite] = useState(null);
   const [editingCommande, setEditingCommande] = useState(null);
   const [selectedOpportunite, setSelectedOpportunite] = useState(null);
 
