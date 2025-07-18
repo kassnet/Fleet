@@ -68,7 +68,7 @@ const AppContent = () => {
   const [clientForm, setClientForm] = useState({ nom: '', email: '', telephone: '', adresse: '' });
   const [produitForm, setProduitForm] = useState({ nom: '', description: '', prix_usd: '', prix_fc: '', stock_actuel: '', stock_minimum: '', gestion_stock: true });
   const [factureForm, setFactureForm] = useState({ client_id: '', items: [], devise: 'USD', notes: '', numero: '' });
-  const [stockForm, setStockForm] = useState({ produit_id: '', nouvelle_quantite: '', motif: '' });
+  const [stockForm, setStockForm] = useState({ produit_id: '', operation: 'ajouter', quantite: '', motif: '' });
   const [nouveauTaux, setNouveauTaux] = useState(2800);
 
   // Sales form states
