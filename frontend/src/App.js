@@ -793,6 +793,64 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
   // ===== FONCTIONS VENTES =====
   
+  // Fonctions pour supprimer des paiements et devis
+  const supprimerPaiement = (paiement) => {
+    setPaiementToDelete(paiement);
+    setMotifSuppressionPaiement('');
+    setShowSupprimerPaiementModal(true);
+  };
+
+  const supprimerDevis = (devis) => {
+    setDevisToDelete(devis);
+    setMotifSuppressionDevis('');
+    setShowSupprimerDevisModal(true);
+  };
+
+  const confirmerSuppressionPaiement = async () => {
+    try {
+      if (!motifSuppressionPaiement.trim()) {
+        showNotification('Veuillez indiquer un motif de suppression', 'error');
+        return;
+      }
+
+      await apiCall('DELETE', `/api/paiements/${paiementToDelete.id}?motif=${encodeURIComponent(motifSuppressionPaiement)}`);
+
+      showNotification(`🗑️ Paiement supprimé avec succès`, 'success');
+      setShowSupprimerPaiementModal(false);
+      setPaiementToDelete(null);
+      setMotifSuppressionPaiement('');
+      loadData();
+    } catch (error) {
+      console.error('Erreur suppression paiement:', error);
+      showNotification(`❌ Erreur lors de la suppression: ${error.response?.data?.detail || error.message}`, 'error');
+    }
+  };
+
+  const confirmerSuppressionDevis = async () => {
+    try {
+      if (!motifSuppressionDevis.trim()) {
+        showNotification('Veuillez indiquer un motif de suppression', 'error');
+        return;
+      }
+
+      await apiCall('DELETE', `/api/devis/${devisToDelete.id}?motif=${encodeURIComponent(motifSuppressionDevis)}`);
+
+      showNotification(`🗑️ Devis ${devisToDelete.numero} supprimé avec succès`, 'success');
+      setShowSupprimerDevisModal(false);
+      setDevisToDelete(null);
+      setMotifSuppressionDevis('');
+      loadData();
+    } catch (error) {
+      console.error('Erreur suppression devis:', error);
+      showNotification(`❌ Erreur lors de la suppression: ${error.response?.data?.detail || error.message}`, 'error');
+    }
+  };
+
+  // Fonction pour changer de page dans les paiements
+  const changerPagePaiements = (nouvellePage) => {
+    setPaginationPaiements(prev => ({ ...prev, page: nouvellePage }));
+  };
+
   // Fonction pour convertir un devis en facture
   const convertirDevisEnFacture = async (devisId) => {
     try {
