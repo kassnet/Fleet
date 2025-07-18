@@ -1775,6 +1775,38 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                     </table>
                   </div>
                 )}
+                
+                {/* Pagination pour les paiements */}
+                {paginationPaiements.total_pages > 1 && (
+                  <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                      <span>
+                        Page {paginationPaiements.page} sur {paginationPaiements.total_pages}
+                      </span>
+                      <span className="ml-2">
+                        ({paginationPaiements.total} paiements au total)
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      {paginationPaiements.has_prev && (
+                        <button
+                          onClick={() => changerPagePaiements(paginationPaiements.page - 1)}
+                          className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                        >
+                          ← Précédent
+                        </button>
+                      )}
+                      {paginationPaiements.has_next && (
+                        <button
+                          onClick={() => changerPagePaiements(paginationPaiements.page + 1)}
+                          className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                        >
+                          Suivant →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </ProtectedRoute>
