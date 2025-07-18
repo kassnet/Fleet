@@ -1750,16 +1750,22 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                               {new Date(paiement.date_paiement).toLocaleDateString('fr-FR')}
                             </td>
                             {!canViewOnly() && (
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                {paiement.statut === 'pending' ? (
+                              <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                                {paiement.statut === 'pending' && (
                                   <button
                                     onClick={() => validerPaiement(paiement.id)}
                                     className="text-green-600 hover:text-green-800"
                                   >
                                     ✅ Valider
                                   </button>
-                                ) : (
-                                  <span className="text-green-600">✅ Validé</span>
+                                )}
+                                {paiement.statut !== 'valide' && (
+                                  <button
+                                    onClick={() => supprimerPaiement(paiement)}
+                                    className="text-red-600 hover:text-red-800"
+                                  >
+                                    🗑️ Supprimer
+                                  </button>
                                 )}
                               </td>
                             )}
