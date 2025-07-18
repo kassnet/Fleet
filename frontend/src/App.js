@@ -916,7 +916,10 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         total_tva_usd: totaux.totalUSD - (totaux.totalUSD / 1.16),
         total_tva_fc: totaux.totalFC - (totaux.totalFC / 1.16),
         total_ttc_usd: totaux.totalUSD,
-        total_ttc_fc: totaux.totalFC
+        total_ttc_fc: totaux.totalFC,
+        // Supprimer le champ validite_jours de l'interface utilisateur
+        // mais le conserver pour la compatibilité backend
+        validite_jours: 30
       };
 
       await apiCall('POST', '/api/devis', devisData);
