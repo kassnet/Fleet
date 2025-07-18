@@ -2116,7 +2116,7 @@ async def lier_opportunite_client(opportunite_id: str, request: dict, current_us
     # Mettre à jour la nouvelle opportunité pour ajouter une référence à l'originale
     await db.opportunites.update_one(
         {"id": nouvelle_opportunite.id},
-        {"$set": {"opportunite_source": opportunite_id}}
+        {"$set": {"opportunite_source": opportunite_id, "opportunites_liees": [opportunite_id]}}
     )
     
     return {
