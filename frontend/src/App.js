@@ -2338,6 +2338,108 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
       {/* Modals et autres composants... (garder tous les modals existants) */}
 
+      {/* Modal de suppression de paiement */}
+      {showSupprimerPaiementModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              🗑️ Supprimer le paiement
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                Êtes-vous sûr de vouloir supprimer ce paiement ?
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                ⚠️ Cette action remettra la facture associée en état "envoyée".
+              </p>
+              
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Motif de suppression *
+              </label>
+              <textarea
+                value={motifSuppressionPaiement}
+                onChange={(e) => setMotifSuppressionPaiement(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Expliquez pourquoi vous supprimez ce paiement..."
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowSupprimerPaiementModal(false);
+                  setPaiementToDelete(null);
+                  setMotifSuppressionPaiement('');
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmerSuppressionPaiement}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                🗑️ Confirmer la suppression
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de suppression de devis */}
+      {showSupprimerDevisModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              🗑️ Supprimer le devis
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                Êtes-vous sûr de vouloir supprimer le devis <strong>{devisToDelete?.numero}</strong> ?
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                ⚠️ Cette action est irréversible ! Le devis sera archivé et ne pourra plus être consulté.
+              </p>
+              
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Motif de suppression *
+              </label>
+              <textarea
+                value={motifSuppressionDevis}
+                onChange={(e) => setMotifSuppressionDevis(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Expliquez pourquoi vous supprimez ce devis..."
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowSupprimerDevisModal(false);
+                  setDevisToDelete(null);
+                  setMotifSuppressionDevis('');
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmerSuppressionDevis}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                🗑️ Confirmer la suppression
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Notifications */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg max-w-sm transition-all duration-300 ${
