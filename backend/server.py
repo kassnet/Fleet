@@ -1940,16 +1940,77 @@ async def supprimer_devis(devis_id: str, motif: str = Query(..., description="Mo
     return {"message": "Devis supprimé avec succès"}
 
 # OPPORTUNITÉS Routes
-@app.get("/api/opportunites", response_model=List[Opportunite])
-async def get_opportunites(current_user: dict = Depends(manager_and_admin())):
-    """Récupérer toutes les opportunités - Manager et Admin"""
+@app.get("/api/opportunites")
+async def get_opportunites(
+    client_id: str = Query(None, description="Filtrer par client"),
+    etape: str = Query(None, description="Filtrer par étape"),
+    priorite: str = Query(None, description="Filtrer par priorité"),
+    commercial_id: str = Query(None, description="Filtrer par commercial"),
+    search: str = Query(None, description="Recherche dans titre et description"),
+    current_user: dict = Depends(manager_and_admin())
+):
+    """Récupérer toutes les opportunités avec filtres optionnels - Manager et Admin"""
+    
+    # Construire la query MongoDB
+    query = {}
+    
+    if client_id:
+        query["client_id"] = client_id
+    
+    if etape:
+        query["etape"] = etape
+    
+    if priorite:
+        query["priorite"] = priorite
+    
+    if commercial_id:
+        query["commercial_id"] = commercial_id
+    
+    if search:
+        query["$or"] = [
+            {"titre": {"$regex": search, "$options": "i"}},
+            {"description": {"$regex": search, "$options": "i"}}
+        ]
+    
     opportunites = []
-    async for opp in db.opportunites.find().sort("date_creation", -1):
+    async for opp in db.opportunites.find(query).sort("date_creation", -1):
         opp["id"] = str(opp["_id"]) if "_id" in opp else opp.get("id")
         if "_id" in opp:
             del opp["_id"]
         opportunites.append(opp)
+    
     return opportunites
+
+@app.get("/api/opportunites/filtres")
+async def get_opportunites_filtres(current_user: dict = Depends(manager_and_admin())):
+    """Récupérer les options de filtrage pour les opportunités"""
+    
+    # Récupérer les étapes distinctes
+    etapes = await db.opportunites.distinct("etape")
+    
+    # Récupérer les priorités distinctes
+    priorites = await db.opportunites.distinct("priorite")
+    
+    # Récupérer les commerciaux distinctes
+    commerciaux = await db.opportunites.distinct("commercial_id")
+    
+    # Récupérer les clients qui ont des opportunités
+    clients_avec_opportunites = await db.opportunites.distinct("client_id")
+    clients_info = []
+    for client_id in clients_avec_opportunites:
+        client = await db.clients.find_one({"id": client_id})
+        if client:
+            clients_info.append({
+                "id": client_id,
+                "nom": client.get("nom", "Client inconnu")
+            })
+    
+    return {
+        "etapes": etapes,
+        "priorites": priorites,
+        "commerciaux": commerciaux,
+        "clients": clients_info
+    }
 
 @app.post("/api/opportunites", response_model=Opportunite)
 async def create_opportunite(opportunite: Opportunite, current_user: dict = Depends(manager_and_admin())):
