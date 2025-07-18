@@ -2774,36 +2774,57 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       {/* Modal Mouvements Stock */}
       {showMouvementsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
-            <h3 className="text-lg font-medium mb-4">Mouvements de stock</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
+            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">📊 Mouvements de stock</h3>
             
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantité</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Stock après</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Date</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Opération</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Quantité</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Stock après</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Motif</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Utilisateur</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
                   {(mouvementsStock || []).map((mouvement, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2 text-sm text-gray-600">
-                        {new Date(mouvement.date).toLocaleDateString('fr-FR')}
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
+                        {new Date(mouvement.date_mouvement).toLocaleDateString('fr-FR')}
                       </td>
                       <td className="px-4 py-2 text-sm">
                         <span className={`px-2 py-1 text-xs rounded-full ${
-                          mouvement.type === 'entree' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          mouvement.type_mouvement === 'entree' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 
+                          mouvement.type_mouvement === 'sortie' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                          'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
                         }`}>
-                          {mouvement.type === 'entree' ? '+' : '-'} {mouvement.quantite}
+                          {mouvement.operation ? (
+                            mouvement.operation === 'ajouter' ? '➕ Ajout' : '➖ Retrait'
+                          ) : (
+                            mouvement.type_mouvement === 'entree' ? 'Entrée' : 
+                            mouvement.type_mouvement === 'sortie' ? 'Sortie' : 'Correction'
+                          )}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-sm text-gray-600">{mouvement.quantite}</td>
-                      <td className="px-4 py-2 text-sm text-gray-600">{mouvement.stock_apres}</td>
-                      <td className="px-4 py-2 text-sm text-gray-600">{mouvement.motif}</td>
+                      <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
+                        <span className={`font-medium ${
+                          mouvement.quantite > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {mouvement.quantite > 0 ? '+' : ''}{mouvement.quantite}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
+                        {mouvement.stock_après}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
+                        {mouvement.motif}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
+                        {mouvement.utilisateur || 'Système'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -2813,7 +2834,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
             <div className="flex justify-end mt-6">
               <button
                 onClick={() => setShowMouvementsModal(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
               >
                 Fermer
               </button>
