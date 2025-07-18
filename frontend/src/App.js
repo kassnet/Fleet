@@ -681,9 +681,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         return;
       }
 
-      await apiCall('POST', `/api/factures/${factureToCancel.id}/annuler`, {
-        motif: motifAnnulation
-      });
+      await apiCall('POST', `/api/factures/${factureToCancel.id}/annuler?motif=${encodeURIComponent(motifAnnulation)}`);
 
       showNotification(`🚫 Facture ${factureToCancel.numero} annulée avec succès`, 'success');
       setShowAnnulerFactureModal(false);
