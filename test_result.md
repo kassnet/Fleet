@@ -362,11 +362,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Effet hover sur le dashboard"
+    - "Annulation et suppression de factures"
+    - "Contrôle de stock lors de facturation"
   stuck_tasks: []
   test_all: false
-  test_priority: "completed"
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "✅ PHASE 1 TERMINÉE - Effet hover sur le dashboard vérifié et confirmé comme déjà implémenté. Les cartes statistiques du dashboard ont déjà les effets hover requis (hover:shadow-lg, hover:scale-105, transition-all duration-300, cursor-pointer). Prêt pour la Phase 2 du développement."
+    message: "✅ PHASE 2 TERMINÉE AVEC SUCCÈS - Gestion des factures complètement implémentée avec annulation/suppression + motifs obligatoires + restrictions par rôle + contrôle de stock amélioré. Backend: 2 nouveaux endpoints avec permissions comptable_manager_admin(), restauration automatique des stocks, archivage des suppressions. Frontend: Boutons d'action, 2 modaux avec validation, intégration notifications. Prêt pour les tests backend puis frontend."
