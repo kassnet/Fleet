@@ -2593,6 +2593,63 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         </div>
       )}
 
+      {/* Modal de liaison opportunité à client */}
+      {showLierOpportuniteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              🔗 Lier l'opportunité à un client
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                Créer une opportunité similaire pour un autre client :
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <strong>{opportuniteToLink?.titre}</strong>
+              </p>
+              
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Sélectionner le client *
+              </label>
+              <select
+                value={opportuniteForm.client_id}
+                onChange={(e) => setOpportuniteForm(prev => ({ ...prev, client_id: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                required
+              >
+                <option value="">Sélectionner un client</option>
+                {(clients || []).map(client => (
+                  <option key={client.id} value={client.id}>{client.nom}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowLierOpportuniteModal(false);
+                  setOpportuniteToLink(null);
+                  setOpportuniteForm({ 
+                    titre: '', description: '', client_id: '', valeur_estimee_usd: '', devise: 'USD', 
+                    probabilite: 50, etape: 'prospect', priorite: 'moyenne', notes: '' 
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmerLiaisonOpportunite}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                🔗 Lier au client
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Notifications */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg max-w-sm transition-all duration-300 ${
