@@ -1569,6 +1569,156 @@ async def marquer_payee(facture_id: str, paiement_id: Optional[str] = None, curr
     
     return {"message": "Facture marquée comme payée"}
 
+# Nouveaux endpoints pour annuler et supprimer des factures
+@app.post("/api/factures/{facture_id}/annuler")
+async def annuler_facture(facture_id: str, motif: str, current_user: dict = Depends(comptable_manager_admin())):
+    """Annuler une facture - Comptable, Manager et Admin"""
+    print(f"🚫 ANNULATION FACTURE - Tentative d'annulation pour ID: {facture_id}, Motif: {motif}")
+    
+    # Vérifier si la facture existe
+    facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
+    
+    if not facture:
+        try:
+            from bson import ObjectId
+            facture = await db.factures.find_one({"_id": ObjectId(facture_id)})
+        except:
+            pass
+    
+    if not facture:
+        raise HTTPException(status_code=404, detail="Facture non trouvée")
+    
+    # Vérifier que la facture peut être annulée
+    if facture.get("statut") == "annulee":
+        raise HTTPException(status_code=400, detail="La facture est déjà annulée")
+    
+    if facture.get("statut") == "payee":
+        raise HTTPException(status_code=400, detail="Impossible d'annuler une facture payée")
+    
+    # Restaurer les stocks si nécessaire
+    if facture.get("statut") in ["brouillon", "envoyee"] and facture.get("lignes"):
+        for ligne in facture["lignes"]:
+            produit = await db.produits.find_one({"id": ligne["produit_id"]})
+            if produit and produit.get("gestion_stock", False):
+                nouveau_stock = produit.get("stock_actuel", 0) + int(ligne["quantite"])
+                await db.produits.update_one(
+                    {"id": ligne["produit_id"]},
+                    {"$set": {"stock_actuel": nouveau_stock}}
+                )
+                
+                # Enregistrer le mouvement de stock
+                mouvement = {
+                    "id": str(uuid.uuid4()),
+                    "produit_id": ligne["produit_id"],
+                    "type_mouvement": "entree",
+                    "quantite": int(ligne["quantite"]),
+                    "stock_avant": produit.get("stock_actuel", 0),
+                    "stock_après": nouveau_stock,
+                    "motif": f"Annulation facture {facture.get('numero', 'N/A')} - {motif}",
+                    "date_mouvement": datetime.now()
+                }
+                await db.mouvements_stock.insert_one(mouvement)
+    
+    # Mettre à jour le statut de la facture
+    update_data = {
+        "statut": "annulee",
+        "date_annulation": datetime.now(),
+        "motif_annulation": motif,
+        "utilisateur_annulation": current_user.get("email", "")
+    }
+    
+    if "_id" in facture and not facture.get("id"):
+        result = await db.factures.update_one(
+            {"_id": facture["_id"]},
+            {"$set": update_data}
+        )
+    else:
+        result = await db.factures.update_one(
+            {"id": facture["id"]},
+            {"$set": update_data}
+        )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Erreur lors de l'annulation de la facture")
+    
+    print(f"✅ ANNULATION FACTURE - Facture {facture.get('numero', 'N/A')} annulée avec succès")
+    
+    return {"message": "Facture annulée avec succès"}
+
+@app.delete("/api/factures/{facture_id}")
+async def supprimer_facture(facture_id: str, motif: str, current_user: dict = Depends(comptable_manager_admin())):
+    """Supprimer une facture - Comptable, Manager et Admin"""
+    print(f"🗑️ SUPPRESSION FACTURE - Tentative de suppression pour ID: {facture_id}, Motif: {motif}")
+    
+    # Vérifier si la facture existe
+    facture = await db.factures.find_one({"$or": [{"id": facture_id}, {"_id": facture_id}]})
+    
+    if not facture:
+        try:
+            from bson import ObjectId
+            facture = await db.factures.find_one({"_id": ObjectId(facture_id)})
+        except:
+            pass
+    
+    if not facture:
+        raise HTTPException(status_code=404, detail="Facture non trouvée")
+    
+    # Vérifier que la facture peut être supprimée
+    if facture.get("statut") == "payee":
+        raise HTTPException(status_code=400, detail="Impossible de supprimer une facture payée")
+    
+    # Restaurer les stocks si nécessaire
+    if facture.get("statut") in ["brouillon", "envoyee", "annulee"] and facture.get("lignes"):
+        for ligne in facture["lignes"]:
+            produit = await db.produits.find_one({"id": ligne["produit_id"]})
+            if produit and produit.get("gestion_stock", False):
+                # Seulement restaurer si la facture n'était pas encore annulée
+                if facture.get("statut") != "annulee":
+                    nouveau_stock = produit.get("stock_actuel", 0) + int(ligne["quantite"])
+                    await db.produits.update_one(
+                        {"id": ligne["produit_id"]},
+                        {"$set": {"stock_actuel": nouveau_stock}}
+                    )
+                    
+                    # Enregistrer le mouvement de stock
+                    mouvement = {
+                        "id": str(uuid.uuid4()),
+                        "produit_id": ligne["produit_id"],
+                        "type_mouvement": "entree",
+                        "quantite": int(ligne["quantite"]),
+                        "stock_avant": produit.get("stock_actuel", 0),
+                        "stock_après": nouveau_stock,
+                        "motif": f"Suppression facture {facture.get('numero', 'N/A')} - {motif}",
+                        "date_mouvement": datetime.now()
+                    }
+                    await db.mouvements_stock.insert_one(mouvement)
+    
+    # Sauvegarder la facture dans un historique de suppression
+    facture_archive = {
+        "id": str(uuid.uuid4()),
+        "facture_originale": facture,
+        "motif_suppression": motif,
+        "utilisateur_suppression": current_user.get("email", ""),
+        "date_suppression": datetime.now()
+    }
+    await db.factures_supprimees.insert_one(facture_archive)
+    
+    # Supprimer les paiements associés
+    await db.paiements.delete_many({"facture_id": facture.get("id") or str(facture.get("_id"))})
+    
+    # Supprimer la facture
+    if "_id" in facture and not facture.get("id"):
+        result = await db.factures.delete_one({"_id": facture["_id"]})
+    else:
+        result = await db.factures.delete_one({"id": facture["id"]})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Erreur lors de la suppression de la facture")
+    
+    print(f"✅ SUPPRESSION FACTURE - Facture {facture.get('numero', 'N/A')} supprimée avec succès")
+    
+    return {"message": "Facture supprimée avec succès"}
+
 
 @app.get("/api/devis", response_model=List[Devis])
 async def get_devis(current_user: dict = Depends(manager_and_admin())):
