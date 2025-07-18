@@ -1,82 +1,65 @@
 <analysis>
-The AI engineer's trajectory began with an initial struggle to acquire the correct codebase, eventually successfully cloning the FacturePro RDC application. The work then transitioned into an iterative bug-fixing process, addressing critical issues such as MongoDB ID inconsistencies, non-functional payment simulations, and UI/UX improvements by replacing native alerts with modern components. A significant phase involved implementing a comprehensive user authentication and authorization system with roles (Admin, Manager, Comptable, Utilisateur) and JWT-based protection. Recurring problems involved  errors and data loading issues due to  vs.  mismatches, which were resolved by migrating to a centralized  helper. The final major fix addressed a  error during invoice creation due to data format mismatch. The most recent task involves renaming the application from FacturePro RDC to FleetMaster, which is partially complete.
+The trajectory chronicles the AI engineer's journey with FacturApp. Initially, the focus was on validating devis functionality and providing Windows-specific deployment guidance, culminating in a successful documentation effort. A major pivot occurred when the user requested a full backend migration from FastAPI (Python) to Laravel (PHP) with MySQL. The AI engineer meticulously executed this, including dependency setup, data migration from MongoDB, and comprehensive API re-implementation, validating all functionalities through extensive backend and frontend testing. Post-migration, the user introduced a new requirement: separating user management from system settings, with strict role-based access for 'admin' and a new 'support' role. A critical misstep occurred where the AI engineer began implementing this on the *new* Laravel backend and removed existing frontend configuration, before realizing the active backend was still FastAPI. After user correction, the engineer successfully refactored the *FastAPI backend* and *React frontend* to achieve the precise role-based separation and restored the application configuration. Currently, the AI engineer is addressing a comprehensive list of 16 new UI/UX and feature enhancement requests, starting with login password visibility and footer fixes.
 </analysis>
 
 <product_requirements>
-The primary goal is to deliver a fully functional, demonstration-ready invoicing application for freelancers in the Democratic Republic of Congo (RDC), initially named FacturePro RDC. Key features include comprehensive CRUD for clients, products/services, and invoices; automatic stock management with low stock alerts; a simulated Stripe payment system with manual validation; and multi-currency support (USD/FC at 1 USD = 2800 FC). The application requires a professional, responsive UI with modern notifications and loading indicators, addressing initial issues like MongoDB ID incompatibility, invoice calculation errors, duplicate Mark as Paid buttons, and native pop-ups. It should be ready for real API integrations (Stripe, email). Recently, the user also requested a complete user management system with email/password authentication, admin-only registration, password reset functionality, and specific roles (Admin, Manager, Utilisateur, Comptable) with granular permissions. The latest request is to rename the application to FleetMaster.
+FacturApp is a comprehensive invoice management system, initially developed with a FastAPI backend and React frontend, utilizing MongoDB. Key features include full authentication (Admin, Manager, Comptable, Utilisateur roles), invoice/payment management (with Stripe integration), client/product/stock management, sales module (quotes, opportunities, orders), and a modern UI with dark/light themes. Initial user requests focused on making the devis (quotes) section fully functional and providing detailed instructions for local database import and VPS deployment on Windows.
+
+A major architectural shift, now completed and validated, was the user-requested conversion of the backend from FastAPI to Laravel 11 with MySQL.
+
+The most recent explicit requests are:
+1.  **User Management Separation:** Move user account activation/deactivation exclusively to a Users page, accessible by Admin and a new Support role.
+2.  **Parameters Page Restriction:** Keep system parameters (logo, app name, theme, language, system stats, exchange rate, system actions) on a dedicated Settings page, accessible *only* by the new Support role.
+3.  **Comprehensive Bug/Feature List:** A list of 16 items including password visibility on login, sticky footer, dashboard hover effects, invoice cancellation/deletion (with motifs and role restrictions), stock management adjustments (add/subtract quantities, motif, stock limits during invoicing), payment history deletion (with motifs and role restrictions) and pagination, removal of validity field from new quotes, quote-to-invoice conversion, quote deletion, linking multiple opportunities to a client, and opportunity filtering.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack Architecture**: React frontend, FastAPI backend, MongoDB database.
--   **UUIDs**: Used for IDs to ensure JSON serializability and avoid MongoDB's ObjectIDs.
--   **Supervisor**: Process manager for , , and  services.
--   **Multi-currency**: USD/FC conversion with a configurable exchange rate.
--   **JWT Authentication**: Implemented for user authentication and authorization.
--   **Pydantic**: Data validation for backend models.
--   **Axios**: HTTP client for frontend API calls.
+-   Backend: FastAPI (Python), Laravel (PHP)
+-   Frontend: React.js
+-   Databases: MongoDB, MySQL/MariaDB
+-   Authentication: JWT (FastAPI & Tymon/JWT-Auth for Laravel)
+-   Deployment: Docker, Docker Compose, Supervisor
+-   Payment Integration: Stripe (via )
+-   Scripting: Bash, PowerShell, Python (for DB utilities), PHP (Composer)
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture, comprising a React frontend, a FastAPI backend, and a MongoDB database.
+The application has evolved to support two distinct backend implementations, though the original FastAPI backend is currently active for ongoing feature development.
 
 
 
--   ****:
-    -   **Importance**: Centralizes all backend logic including FastAPI endpoints for clients, products, invoices, payments, stock management, multi-currency conversions, and MongoDB interactions.
-    -   **Changes Made**:
-        -   Replaced initial template with the full FacturePro RDC application logic.
-        -   Modified , , ,  to correctly handle MongoDB  and uid=0(root) gid=0(root) groups=0(root) lookup inconsistencies, primarily using  queries.
-        -   Enhanced  to automatically create payment entries for manually marked invoices.
-        -   Added User, Role, and Token models, JWT authentication, password hashing (bcrypt), and authorization middleware (, ).
-        -   Implemented  event to create a default admin user and protected existing API routes based on user roles (Admin, Manager, Comptable, Utilisateur).
-        -   Updated default admin email domain for application renaming.
--   ****:
-    -   **Importance**: Main React component managing UI, state, and API interactions. It contains routing, conditional rendering, and core application logic.
-    -   **Changes Made**:
-        -   Replaced initial template with the complete professional UI.
-        -   Modified  to correctly capture and utilize invoice uid=0(root) gid=0(root) groups=0(root) from API.
-        -   Replaced native / with modern / system, ensuring their modals are rendered in the DOM.
-        -   Integrated  for global authentication state and user roles.
-        -   Migrated all  API calls to  and then further refined to use a custom  helper to ensure correct  header transmission and conditional data loading based on user roles to prevent  errors for restricted users.
-        -   Fixed  errors by ensuring arrays are initialized or checked for null.
-        -   Restored missing modals for product, invoice, stock, exchange rate, and movements.
-        -   Modified  to transform frontend  data into the backend's expected  format to resolve  errors.
-        -   Changed application name display from FacturePro RDC to FleetMaster.
--   ****:
-    -   **Importance**: Lists Python dependencies for the FastAPI backend.
-    -   **Changes Made**: Updated with , , , , , , , .
--   ****:
-    -   **Importance**: Defines Node.js dependencies and scripts for the React frontend.
-    -   **Changes Made**: Updated to include , , , , , , , etc.
--   ** and **:
-    -   **Importance**: Contain critical environment variables.
-    -   **Changes Made**: No direct modifications to content, as per strict instructions. Their correct usage was ensured throughout the development.
+-   : This is the core FastAPI application. It defines data models and API endpoints for CRUD operations across the system (devis, invoices, clients, products, etc.), handles JWT authentication, multi-currency conversions, and Stripe integration.
+    -   *Changes:* Significantly modified to incorporate the support role, implement granular permission functions (, ), and create dedicated API endpoints for user management () and system parameters (). Existing configuration endpoints (, ) were updated to use  permissions.
+-   : The main React component managing the application's UI, state, and client-side logic.
+    -   *Changes:* Heavily modified to adapt to the new role-based navigation and access for Users and Settings pages. This includes updates to the  logic, conditional rendering of UI elements, and restoration of application configuration options (logo, app name, theme, language) within the Settings page. Recent changes include adding a password visibility toggle on the login screen and fixing the sticky footer layout.
+-   : This file contains the translation keys and values for the application's multi-language support.
+    -   *Changes:* Updated to include translations for the new support role and various keys related to application configuration and exchange rate settings, ensuring UI consistency after the feature separation.
+-   : This directory houses the entirely new Laravel 11 backend, complete with MySQL database migrations, Eloquent models, controllers, API routes, and JWT authentication. It was created as part of the backend migration from FastAPI to Laravel and successfully passed all backend and frontend tests. Although fully functional, it is not the active backend currently being modified.
+    -   *Importance:* Represents a successful, comprehensive architectural shift that is ready for deployment as an alternative to the FastAPI backend.
+-   : A Python script used to extract all data from the MongoDB database (used by FastAPI) into JSON files, serving as an intermediate step during the Laravel/MySQL migration for data transfer.
+-   : A Python script specifically created and executed to add the new  user and assign the support role within the *FastAPI's MongoDB database*. This was crucial for testing the new role-based access controls.
 </code_architecture>
 
 <pending_tasks>
--   Continue renaming application assets and content from Facturation/Facture related terms to FleetMaster terminology, especially in the backend logic, if a complete refactoring for a fleet management system is desired. (Currently, only the display name and some UI elements have been changed).
+-   **Dashboard:** Add hover effect on the grid.
+-   **Invoices:** Implement cancellation and deletion (with motif, restricted to manager, comptable, admin). Enforce stock control (cannot invoice more than stock).
+-   **Stock Management:** Replace direct quantity input with add/subtract options, require motif for updates.
+-   **Payments History:** Add deletion (with motif, restricted to manager, comptable, admin). Implement pagination.
+-   **Quotes:** Remove validity field from new quotes. Add convert to invoice and delete functionalities.
+-   **Opportunities:** Allow linking multiple opportunities to a client. Add filtering for searches.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer was addressing a user request to rename the application from FacturePro RDC to FleetMaster. The engineer had initiated this task by performing a search for FacturePro in the frontend and FacturePro in the backend.
+Immediately before this summary request, the previous AI engineer was working on a list of 16 new bug fixes and feature enhancements provided by the user. The engineer organized these tasks into phases and commenced work on Phase 1: Interface et UX.
 
-Specific modifications involved:
--   **Frontend ()**: The application display name was changed.
--   **Frontend ()**: The application name in the login component was updated.
--   **Backend ()**: The default admin user's email domain for the initial creation was updated to reflect the  domain as a technical consistency, but not the display name.
+The specific tasks currently being addressed, all within the frontend  file, include:
+1.  **Password Visibility on Login:** The functionality to toggle password visibility during user login has been successfully implemented.
+2.  **Sticky Footer:** The footer has been fixed to remain at the bottom of every page, enhancing the overall layout and user experience.
+3.  **Dashboard Hover Effect:** The engineer is currently poised to implement the hover effect on the dashboard grid.
 
-The AI engineer acknowledged that a full transition from facturation concepts to fleet management would be a significant refactoring and opted to prioritize the visible name change first. The last action was to update the HTML page title, which was the continuation of the renaming process.
-
-The application is currently considered 100% functional by the AI engineer, having successfully resolved:
--   All MongoDB ID inconsistency issues in backend CRUD operations.
--   Corrected invoice payment simulation and manual marking.
--   Replaced all native UI alerts and confirms with a modern notification system.
--   Implemented a robust JWT-based authentication system with four distinct roles (Admin, Manager, Comptable, Utilisateur) and granular route-level permissions.
--   Resolved frontend data loading issues ( errors) by migrating all API calls to an authenticated Axios helper and implementing conditional data fetching based on user roles.
--   Fixed  error during invoice creation by correctly formatting the data sent from frontend to backend.
-The current state is that the core application functionality and the authentication system are fully operational, and the application's display name is being updated.
+This ongoing work is being performed on the existing application structure, where the FastAPI backend is the active backend interacting with the React frontend. This follows a previous correction where the engineer pivoted from modifying a newly migrated Laravel backend to the currently active FastAPI backend to fulfill user requests related to role-based access and UI separation.
 </current_work>
 
 <optional_next_step>
-Continue changing the application name from FacturePro RDC to FleetMaster in the frontend HTML title.
+Implement the hover effect on the dashboard grid as part of Phase 1: Interface et UX.
 </optional_next_step>
