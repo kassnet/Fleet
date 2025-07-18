@@ -661,6 +661,63 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     );
   };
 
+  // Fonctions pour annuler et supprimer des factures
+  const annulerFacture = (facture) => {
+    setFactureToCancel(facture);
+    setMotifAnnulation('');
+    setShowAnnulerFactureModal(true);
+  };
+
+  const supprimerFacture = (facture) => {
+    setFactureToDelete(facture);
+    setMotifSuppression('');
+    setShowSupprimerFactureModal(true);
+  };
+
+  const confirmerAnnulationFacture = async () => {
+    try {
+      if (!motifAnnulation.trim()) {
+        showNotification('Veuillez indiquer un motif d\'annulation', 'error');
+        return;
+      }
+
+      await apiCall('POST', `/api/factures/${factureToCancel.id}/annuler`, {
+        motif: motifAnnulation
+      });
+
+      showNotification(`🚫 Facture ${factureToCancel.numero} annulée avec succès`, 'success');
+      setShowAnnulerFactureModal(false);
+      setFactureToCancel(null);
+      setMotifAnnulation('');
+      loadData();
+    } catch (error) {
+      console.error('Erreur annulation facture:', error);
+      showNotification(`❌ Erreur lors de l'annulation: ${error.response?.data?.detail || error.message}`, 'error');
+    }
+  };
+
+  const confirmerSuppressionFacture = async () => {
+    try {
+      if (!motifSuppression.trim()) {
+        showNotification('Veuillez indiquer un motif de suppression', 'error');
+        return;
+      }
+
+      await apiCall('DELETE', `/api/factures/${factureToDelete.id}`, {
+        motif: motifSuppression
+      });
+
+      showNotification(`🗑️ Facture ${factureToDelete.numero} supprimée avec succès`, 'success');
+      setShowSupprimerFactureModal(false);
+      setFactureToDelete(null);
+      setMotifSuppression('');
+      loadData();
+    } catch (error) {
+      console.error('Erreur suppression facture:', error);
+      showNotification(`❌ Erreur lors de la suppression: ${error.response?.data?.detail || error.message}`, 'error');
+    }
+  };
+
   // Gestion des stocks
   const updateStock = async () => {
     try {
