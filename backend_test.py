@@ -3487,10 +3487,16 @@ def test_opportunity_management_phase5():
     
     if not success or not clients or len(clients) < 2:
         print("❌ Need at least 2 clients for opportunity linking tests")
+        print(f"📊 Found {len(clients) if clients else 0} clients")
+        if clients:
+            for i, client in enumerate(clients):
+                print(f"  - Client {i+1}: {client.get('nom')} (ID: {client.get('id')})")
         return False
     
     client1 = clients[0]
     client2 = clients[1]
+    print(f"📋 Using Client 1: {client1.get('nom')} (ID: {client1.get('id')})")
+    print(f"📋 Using Client 2: {client2.get('nom')} (ID: {client2.get('id')})")
     
     # Create test opportunity
     timestamp = datetime.now().strftime('%H%M%S')
