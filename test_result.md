@@ -443,16 +443,18 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Gestion des stocks améliorée"
-    - "Validation des limites de stock"
-    - "Motifs obligatoires pour modifications stock"
+    - "Suppression paiements avec motifs"
+    - "Pagination historique paiements"
+    - "Suppression champ validité devis"
+    - "Suppression devis avec motifs"
+    - "Conversion devis vers facture"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "✅ PHASE 3 TERMINÉE AVEC SUCCÈS - Gestion des stocks complètement rénovée avec système ajouter/soustraire au lieu de saisie directe. Backend: Endpoint redesigné avec validation stricte des motifs obligatoires, contrôle des limites (stock négatif, maximum, avertissement minimum), enregistrement des mouvements avec utilisateur. Frontend: Modal Stock redesigné avec sélection opération, champ quantité, motif libre avec suggestions UX. Modal mouvements enrichi avec colonne utilisateur et mode sombre. Prêt pour tests backend puis frontend."
+    message: "✅ PHASE 4 TERMINÉE AVEC SUCCÈS - Gestion des paiements et devis complètement améliorée. Backend: Endpoints DELETE /api/paiements/{id} et DELETE /api/devis/{id} avec motifs obligatoires, GET /api/paiements avec pagination, archivage des suppressions, restauration état factures. Frontend: Boutons suppression avec modaux confirmation, pagination paiements avec navigation, suppression champ validité devis, intégration notifications. Conversion devis→facture existante maintenue. Prêt pour tests backend puis frontend."
   - agent: "testing"
     message: "🔍 TESTS PHASE 2 TERMINÉS - RÉSULTATS MIXTES: ✅ CORRECTIONS QUERY PARAMETERS: Les endpoints POST /api/factures/{id}/annuler?motif={motif} et DELETE /api/factures/{id}?motif={motif} fonctionnent correctement avec admin/manager. Restauration automatique des stocks après annulation confirmée. ❌ PROBLÈMES IDENTIFIÉS: 1) Permissions comptable incomplètes - ne peut pas créer clients/produits pour tester. 2) Utilisateur régulier accède à /api/factures (devrait être bloqué). 3) Contrôle stock fonctionne (retourne 400 avec message explicite) mais test mal configuré. 4) Validation motif obligatoire fonctionne (422) mais test attend échec différent. RECOMMANDATION: Ajuster permissions comptable et corriger logique de test pour contrôle de stock."
   - agent: "testing"
