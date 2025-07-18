@@ -345,17 +345,41 @@ frontend:
         agent: "testing"
         comment: "🔍 TESTS PHASE 2 - RÉSULTATS MIXTES: ✅ Admin/Manager: Authentification OK, annulation avec paramètre query OK, suppression avec paramètre query OK, restauration stock OK. ❌ PROBLÈMES IDENTIFIÉS: 1) Comptable ne peut pas créer clients/produits (403 Permissions insuffisantes) - empêche test complet. 2) Utilisateur régulier peut accéder à /api/factures (devrait être 403). 3) Tests validation sans motif échouent - endpoints retournent 422 mais test attend échec. 4) Prévention annulation/suppression factures payées ne fonctionne pas correctement. ✅ Corrections query parameters fonctionnent. ❌ Permissions et validations nécessitent ajustements."
 
-  - task: "Contrôle de stock lors de facturation"
+  - task: "Gestion des stocks améliorée"
     implemented: true
-    working: false
-    file: "/app/backend/server.py"
-    stuck_count: 1
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "✅ CONTRÔLE DE STOCK AMÉLIORÉ - Message d'erreur explicite ajouté lors de la création de facture: 'Stock insuffisant pour {produit}. Stock disponible: {stock_actuel}, demandé: {quantite}. Vous ne pouvez pas facturer plus que le stock disponible.' Contrôle existant renforcé avec validation stricte et annulation des mises à jour partielles en cas d'erreur."
+        comment: "✅ PHASE 3 TERMINÉE - Gestion des stocks complètement rénovée avec système ajouter/soustraire. Backend: Endpoint PUT /api/produits/{id}/stock redesigné pour accepter 'operation' (ajouter/soustraire) et 'quantite' au lieu de 'nouvelle_quantite'. Motifs obligatoires avec validation stricte. Contrôle des limites (stock négatif, stock maximum, avertissement stock minimum). Enregistrement des mouvements avec utilisateur. Frontend: Modal Stock redesigné avec sélection opération, champ quantité, motif libre avec suggestions. Interface améliorée avec mode sombre, validation UX. Modal mouvements enrichi avec colonne utilisateur et meilleure présentation."
+
+  - task: "Validation des limites de stock"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ CONTRÔLES DE STOCK COMPLETS - Validation complète des limites implémentée: (1) Stock négatif impossible avec message d'erreur explicite, (2) Stock maximum respecté avec blocage et message d'erreur, (3) Avertissement automatique si stock descend sous le minimum, (4) Vérification que la gestion de stock est activée sur le produit. Messages d'erreur détaillés pour chaque cas."
+
+  - task: "Motifs obligatoires pour modifications stock"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ MOTIFS OBLIGATOIRES IMPLÉMENTÉS - Backend: Validation stricte du motif requis avec message d'erreur si vide ou manquant. Frontend: Champ motif obligatoire avec suggestions prédéfinies (Achat/Réapprovisionnement, Ajustement inventaire, Perte/Casse, Retour client, Correction erreur) et possibilité de saisie libre. Validation UX avec message d'erreur si champ vide."
       - working: false
         agent: "testing"
         comment: "❌ CONTRÔLE DE STOCK - Test échoué: L'API retourne bien l'erreur 400 avec message explicite 'Stock insuffisant pour Test Product. Stock disponible: 50, demandé: 60.0. Vous ne pouvez pas facturer plus que le stock disponible.' mais le test interprète cela comme un échec. Le contrôle de stock fonctionne correctement - c'est la logique de test qui est inversée. CORRECTION NÉCESSAIRE: Le test devrait considérer le rejet (400) comme un succès."
