@@ -1308,7 +1308,7 @@ async def create_facture(facture: Facture, current_user: dict = Depends(comptabl
                         )
                     raise HTTPException(
                         status_code=400, 
-                        detail=f"Stock insuffisant pour {produit['nom']}. Stock disponible: {stock_actuel}, demandé: {ligne.quantite}"
+                        detail=f"Stock insuffisant pour {produit['nom']}. Stock disponible: {stock_actuel}, demandé: {ligne.quantite}. Vous ne pouvez pas facturer plus que le stock disponible."
                     )
                 
                 # Mettre à jour le stock
