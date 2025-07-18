@@ -49,10 +49,24 @@ const AppContent = () => {
   const [showActiviteModal, setShowActiviteModal] = useState(false);
   const [showAnnulerFactureModal, setShowAnnulerFactureModal] = useState(false);
   const [showSupprimerFactureModal, setShowSupprimerFactureModal] = useState(false);
+  const [showSupprimerPaiementModal, setShowSupprimerPaiementModal] = useState(false);
+  const [showSupprimerDevisModal, setShowSupprimerDevisModal] = useState(false);
   const [factureToCancel, setFactureToCancel] = useState(null);
   const [factureToDelete, setFactureToDelete] = useState(null);
+  const [paiementToDelete, setPaiementToDelete] = useState(null);
+  const [devisToDelete, setDevisToDelete] = useState(null);
   const [motifAnnulation, setMotifAnnulation] = useState('');
   const [motifSuppression, setMotifSuppression] = useState('');
+  const [motifSuppressionPaiement, setMotifSuppressionPaiement] = useState('');
+  const [motifSuppressionDevis, setMotifSuppressionDevis] = useState('');
+  const [paginationPaiements, setPaginationPaiements] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    total_pages: 0,
+    has_next: false,
+    has_prev: false
+  });
 
   // Configuration states
   const [appConfig, setAppConfig] = useState({
