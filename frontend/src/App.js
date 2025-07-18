@@ -1982,6 +1982,12 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                                       {t('quotes.convert')}
                                     </button>
                                   )}
+                                  <button
+                                    onClick={() => supprimerDevis(d)}
+                                    className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                                  >
+                                    🗑️ Supprimer
+                                  </button>
                                 </td>
                               </tr>
                             ))}
