@@ -270,17 +270,27 @@ const AppContent = () => {
       if (user.role === 'admin' || user.role === 'manager') {
         console.log('💼 Chargement des données de vente pour rôle:', user.role);
         try {
-          const [devisRes, opportunitesRes, commandesRes, venteStatsRes] = await Promise.all([
+          // Construire les paramètres de filtre pour les opportunités
+          const filtresParams = new URLSearchParams();
+          Object.entries(filtresOpportunites).forEach(([key, value]) => {
+            if (value) {
+              filtresParams.append(key, value);
+            }
+          });
+          
+          const [devisRes, opportunitesRes, commandesRes, venteStatsRes, filtresRes] = await Promise.all([
             apiCall('GET', '/api/devis'),
-            apiCall('GET', '/api/opportunites'),
+            apiCall('GET', `/api/opportunites?${filtresParams.toString()}`),
             apiCall('GET', '/api/commandes'),
-            apiCall('GET', '/api/vente/stats')
+            apiCall('GET', '/api/vente/stats'),
+            apiCall('GET', '/api/opportunites/filtres')
           ]);
           
           setDevis(devisRes.data || []);
           setOpportunites(opportunitesRes.data || []);
           setCommandes(commandesRes.data || []);
           setVenteStats(venteStatsRes.data || {});
+          setOptionsFiltres(filtresRes.data || {});
           console.log('💼 Données de vente chargées - Devis:', devisRes.data.length, 'Opportunités:', opportunitesRes.data.length, 'Commandes:', commandesRes.data.length);
         } catch (salesError) {
           console.warn('⚠️ Erreur chargement données de vente:', salesError.response?.status);
