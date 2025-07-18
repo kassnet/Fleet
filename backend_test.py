@@ -3545,7 +3545,7 @@ def test_opportunity_management_phase5():
     )
     
     if success and link_response:
-        linked_opp_id = link_response.get('opportunite_liee_id')
+        linked_opp_id = link_response.get('nouvelle_opportunite_id')
         print(f"✅ Successfully linked opportunity to another client")
         print(f"📋 Original opportunity ID: {opp_id}")
         print(f"📋 Linked opportunity ID: {linked_opp_id}")
