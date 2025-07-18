@@ -330,17 +330,29 @@ frontend:
       - working: false
         agent: "testing"
         comment: "🎯 TESTS FINAUX SÉPARATION UTILISATEUR/PARAMÈTRES (17/07/2025) - DIAGNOSTIC COMPLET: ✅ CORRECTIONS VALIDÉES: Admin correctement bloqué pour /api/parametres (403), Support accès exclusif aux paramètres confirmé (200), Manager correctement restreint (403). ✅ FRONTEND: Admin voit Users tab (👤) mais PAS Settings (⚙️), Support voit BOTH Users (👤) ET Settings (⚙️) avec interface complète (statistiques système, taux de change, actions système), Manager ne voit NI Users NI Settings. ❌ PROBLÈME CRITIQUE IDENTIFIÉ: Endpoint GET /api/users MANQUANT dans le backend! Seuls les endpoints individuels existent (GET /api/users/{id}, POST /api/users, etc.) mais pas de liste complète. Tous les rôles reçoivent 405 Method Not Allowed pour GET /api/users. ✅ Support peut créer des utilisateurs via POST /api/users. 🚨 CONCLUSION: Séparation backend 85% fonctionnelle (Admin bloqué paramètres ✅, Support accès paramètres ✅) mais interface Users non fonctionnelle car endpoint GET /api/users manquant. Nécessite ajout de l'endpoint de liste des utilisateurs avec permissions admin_support()."
-  - task: "Effet hover sur le dashboard"
+  - task: "Annulation et suppression de factures"
     implemented: true
     working: true
-    file: "/app/frontend/src/App.js"
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "✅ EFFET HOVER DASHBOARD DÉJÀ IMPLÉMENTÉ - Analyse du code révèle que l'effet hover est déjà présent sur toutes les cartes statistiques (lignes 1188, 1198, 1208, 1218). Classes appliquées: hover:shadow-lg (ombre agrandie), hover:scale-105 (mise à l'échelle 105%), transition-all duration-300 (transition fluide), cursor-pointer (curseur pointeur). Fonctionnalité complète et conforme aux attentes."
+        comment: "✅ PHASE 2 TERMINÉE - Implémentation complète de l'annulation et suppression des factures avec motifs. Backend: Ajout des endpoints POST /api/factures/{id}/annuler et DELETE /api/factures/{id} avec permissions comptable_manager_admin(), restauration automatique des stocks, archivage des factures supprimées. Frontend: Ajout des boutons d'annulation et suppression dans le tableau des factures, modaux avec validation des motifs obligatoires, intégration avec le système de notifications. Contrôle de stock amélioré avec message d'erreur explicite. Restrictions par rôle appliquées (manager, comptable, admin uniquement)."
+
+  - task: "Contrôle de stock lors de facturation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ CONTRÔLE DE STOCK AMÉLIORÉ - Message d'erreur explicite ajouté lors de la création de facture: 'Stock insuffisant pour {produit}. Stock disponible: {stock_actuel}, demandé: {quantite}. Vous ne pouvez pas facturer plus que le stock disponible.' Contrôle existant renforcé avec validation stricte et annulation des mises à jour partielles en cas d'erreur."
 
 metadata:
   created_by: "main_agent"
