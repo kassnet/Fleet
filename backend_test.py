@@ -3632,7 +3632,7 @@ def test_opportunity_management_phase5():
             403  # Expecting 403 Forbidden
         )
         
-        if not success:  # success=False means we got the expected 403
+        if success:  # success=True means we got the expected 403
             print("✅ Comptable correctly denied access to opportunity filters")
         else:
             print("❌ Comptable was incorrectly allowed access to opportunity filters")
