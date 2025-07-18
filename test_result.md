@@ -460,9 +460,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Liaison multiple opportunités à clients"
-    - "Filtres recherche opportunités"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -474,3 +472,5 @@ agent_communication:
     message: "🔍 TESTS PHASE 2 TERMINÉS - RÉSULTATS MIXTES: ✅ CORRECTIONS QUERY PARAMETERS: Les endpoints POST /api/factures/{id}/annuler?motif={motif} et DELETE /api/factures/{id}?motif={motif} fonctionnent correctement avec admin/manager. Restauration automatique des stocks après annulation confirmée. ❌ PROBLÈMES IDENTIFIÉS: 1) Permissions comptable incomplètes - ne peut pas créer clients/produits pour tester. 2) Utilisateur régulier accède à /api/factures (devrait être bloqué). 3) Contrôle stock fonctionne (retourne 400 avec message explicite) mais test mal configuré. 4) Validation motif obligatoire fonctionne (422) mais test attend échec différent. RECOMMANDATION: Ajuster permissions comptable et corriger logique de test pour contrôle de stock."
   - agent: "testing"
     message: "✅ PHASE 3 TESTS TERMINÉS - GESTION STOCKS AMÉLIORÉE FONCTIONNELLE: Système ajouter/soustraire opérationnel avec validation complète. (1) ✅ Opérations ajouter/soustraire: calculs corrects, stock 50→70→60. (2) ✅ Motifs obligatoires: rejette motifs vides avec 'Motif requis pour toute modification de stock'. (3) ✅ Validations quantités: rejette négatives/zéro avec 'La quantité doit être positive'. (4) ✅ Limites stock: prévient négatif, respecte maximum, avertit minimum. (5) ✅ Mouvements enrichis: utilisateur et opération enregistrés. (6) ✅ Produits sans gestion stock rejetés. Système globalement fonctionnel - quelques tests mal configurés mais API répond correctement."
+  - agent: "testing"
+    message: "🎯 PHASE 5 TESTS TERMINÉS AVEC SUCCÈS - GESTION OPPORTUNITÉS 100% FONCTIONNELLE: ✅ Tous les nouveaux endpoints testés et validés: GET /api/opportunites/filtres (options de filtrage), GET /api/opportunites avec filtres (etape, priorite, search, combinés), POST /api/opportunites/{id}/lier-client (liaison à autre client), GET /api/opportunites/{id}/liees (récupération opportunités liées). ✅ Fonctionnalités avancées: Liaison bidirectionnelle confirmée, permissions admin/manager OK (comptable bloqué 403), validation données (client inexistant 404, client_id manquant 400). ✅ Correction appliquée: client lookup avec $or et ObjectId pour compatibilité. TOUTES LES FONCTIONNALITÉS PHASE 5 OPÉRATIONNELLES!"
