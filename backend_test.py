@@ -3651,7 +3651,7 @@ def test_opportunity_management_phase5():
         "Link to Non-existent Client (Should Fail)",
         "POST",
         f"/api/opportunites/{opp_id}/lier-client",
-        400,  # Expecting 400 Bad Request or 404 Not Found
+        404,  # Expecting 404 Not Found for non-existent client
         data=invalid_link_data
     )
     
