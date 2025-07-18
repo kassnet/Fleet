@@ -3306,6 +3306,7 @@ def main():
     print("\n" + "=" * 80)
     print("📊 COMPREHENSIVE TEST RESULTS SUMMARY")
     print("=" * 80)
+    print(f"🎯 Phase 3 Enhanced Stock Management: {'✅ PASSED' if phase3_success else '❌ FAILED'}")
     print(f"🎯 Phase 2 Invoice Management: {'✅ PASSED' if phase2_success else '❌ FAILED'}")
     print(f"📦 Improved Stock Control: {'✅ PASSED' if stock_control_success else '❌ FAILED'}")
     print(f"🔐 User/Settings Separation: {'✅ PASSED' if separation_success else '❌ FAILED'}")
@@ -3313,24 +3314,34 @@ def main():
     print(f"📦 Stock Management: {'✅ PASSED' if stock_success else '❌ FAILED'}")
     print(f"🔧 ID Corrections: {'✅ PASSED' if id_success else '❌ FAILED'}")
     
-    # Priority tests (Phase 2 focus)
-    priority_success = phase2_success and stock_control_success
-    overall_success = priority_success and separation_success and devis_success and stock_success and id_success
+    # Priority tests (Phase 3 focus)
+    priority_success = phase3_success
+    overall_success = priority_success and phase2_success and stock_control_success and separation_success and devis_success and stock_success and id_success
     
     print("\n" + "=" * 80)
-    print(f"🎯 PRIORITY TESTS (Phase 2): {'✅ ALL PASSED' if priority_success else '❌ SOME FAILED'}")
+    print(f"🎯 PRIORITY TESTS (Phase 3): {'✅ ALL PASSED' if priority_success else '❌ SOME FAILED'}")
     print(f"🎯 OVERALL RESULT: {'✅ ALL TESTS PASSED' if overall_success else '❌ SOME TESTS FAILED'}")
     print("=" * 80)
     
     if priority_success:
-        print("🎉 Phase 2 corrections are working correctly!")
+        print("🎉 Phase 3 enhanced stock management is working correctly!")
+        print("✅ Add/subtract operations with mandatory motifs working")
+        print("✅ Stock limit validations (negative, maximum, minimum warnings) working")
+        print("✅ Permission controls (admin/manager only) working")
+        print("✅ Enhanced stock movements with user tracking working")
+        print("✅ All validation scenarios working correctly")
+    else:
+        print("⚠️ Phase 3 enhanced stock management has issues that need attention")
+        print("❌ Some stock management features are not working correctly")
+    
+    if phase2_success and stock_control_success:
+        print("✅ Phase 2 corrections are also working correctly!")
         print("✅ Invoice cancellation with query parameters working")
         print("✅ Invoice deletion with query parameters working")
         print("✅ Stock restoration after cancellation working")
         print("✅ Improved stock control error messages working")
-        print("✅ Role-based permissions working correctly")
     else:
-        print("⚠️ Phase 2 corrections have issues that need attention")
+        print("⚠️ Phase 2 corrections have some issues")
         if not phase2_success:
             print("❌ Invoice management corrections have issues")
         if not stock_control_success:
