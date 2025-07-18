@@ -717,18 +717,35 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   // Gestion des stocks
   const updateStock = async () => {
     try {
-      await apiCall('PUT', `/api/produits/${stockForm.produit_id}/stock`, {
-        nouvelle_quantite: parseInt(stockForm.nouvelle_quantite),
+      if (!stockForm.produit_id || !stockForm.operation || !stockForm.quantite || !stockForm.motif) {
+        showNotification('Veuillez remplir tous les champs', 'error');
+        return;
+      }
+
+      const quantite = parseInt(stockForm.quantite);
+      if (isNaN(quantite) || quantite <= 0) {
+        showNotification('La quantité doit être un nombre positif', 'error');
+        return;
+      }
+
+      const response = await apiCall('PUT', `/api/produits/${stockForm.produit_id}/stock`, {
+        operation: stockForm.operation,
+        quantite: quantite,
         motif: stockForm.motif
       });
 
+      // Vérifier s'il y a un avertissement
+      if (response.data.warning) {
+        showNotification(`⚠️ ${response.data.warning}`, 'warning');
+      }
+
       loadData();
       setShowStockModal(false);
-      setStockForm({ produit_id: '', nouvelle_quantite: '', motif: '' });
-      showNotification('Stock mis à jour avec succès', 'success');
+      setStockForm({ produit_id: '', operation: 'ajouter', quantite: '', motif: '' });
+      showNotification(`✅ ${response.data.message}`, 'success');
     } catch (error) {
       console.error('Erreur mise à jour stock:', error);
-      showNotification('Erreur lors de la mise à jour du stock', 'error');
+      showNotification(`❌ ${error.response?.data?.detail || 'Erreur lors de la mise à jour du stock'}`, 'error');
     }
   };
 
