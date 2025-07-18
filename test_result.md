@@ -375,7 +375,55 @@ frontend:
         agent: "testing"
         comment: "✅ VALIDATION LIMITES STOCK CONFIRMÉE - Tous les contrôles fonctionnent: (1) Stock négatif correctement bloqué avec message 'Impossible de soustraire X unités. Stock actuel: Y. Le stock ne peut pas être négatif.', (2) Stock maximum respecté avec message 'Impossible d'ajouter X unités. Stock maximum autorisé: Y. Le nouveau stock serait: Z', (3) Avertissement minimum émis: 'Attention: Le stock sera en dessous du minimum recommandé (X)', (4) Produits sans gestion stock rejetés avec 'La gestion de stock n'est pas activée pour ce produit'. Toutes les validations opérationnelles."
 
-  - task: "Motifs obligatoires pour modifications stock"
+  - task: "Suppression paiements avec motifs"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ SUPPRESSION PAIEMENTS IMPLÉMENTÉE - Backend: Endpoint DELETE /api/paiements/{id} avec motif obligatoire (query parameter), validation statut 'valide' non supprimable, archivage dans paiements_supprimes, restauration facture associée en statut 'envoyée'. Frontend: Bouton suppression dans tableau paiements, modal confirmation avec motif obligatoire, intégration avec pagination et notifications. Permissions comptable_manager_admin respectées."
+
+  - task: "Pagination historique paiements"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ PAGINATION PAIEMENTS IMPLÉMENTÉE - Backend: Endpoint GET /api/paiements modifié pour accepter parameters page/limit, retourne structure {paiements: [], pagination: {page, limit, total, total_pages, has_next, has_prev}}. Frontend: Intégration pagination avec contrôles navigation (Précédent/Suivant), affichage page actuelle/total, compteur paiements. Fonction changerPagePaiements pour navigation."
+
+  - task: "Suppression champ validité devis"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ CHAMP VALIDITÉ SUPPRIMÉ DE L'INTERFACE - Backend: Champ validite_jours conservé avec commentaire pour compatibilité. Frontend: Suppression référence devisForm.validite_jours, hardcodé à 30 jours avec commentaire explicatif. Interface utilisateur nettoyée sans impact sur fonctionnalité backend."
+
+  - task: "Suppression devis avec motifs"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ SUPPRESSION DEVIS IMPLÉMENTÉE - Backend: Endpoint DELETE /api/devis/{id} avec motif obligatoire (query parameter), validation devis converti en facture non supprimable, archivage dans devis_supprimes. Frontend: Bouton suppression dans tableau devis, modal confirmation avec motif obligatoire, intégration avec système notifications. Permissions manager_and_admin respectées."
+
+  - task: "Conversion devis vers facture"
     implemented: true
     working: true
     file: "/app/backend/server.py, /app/frontend/src/App.js"
@@ -385,13 +433,7 @@ frontend:
     status_history:
       - working: true
         agent: "main"
-        comment: "✅ MOTIFS OBLIGATOIRES IMPLÉMENTÉS - Backend: Validation stricte du motif requis avec message d'erreur si vide ou manquant. Frontend: Champ motif obligatoire avec suggestions prédéfinies (Achat/Réapprovisionnement, Ajustement inventaire, Perte/Casse, Retour client, Correction erreur) et possibilité de saisie libre. Validation UX avec message d'erreur si champ vide."
-      - working: false
-        agent: "testing"
-        comment: "❌ CONTRÔLE DE STOCK - Test échoué: L'API retourne bien l'erreur 400 avec message explicite 'Stock insuffisant pour Test Product. Stock disponible: 50, demandé: 60.0. Vous ne pouvez pas facturer plus que le stock disponible.' mais le test interprète cela comme un échec. Le contrôle de stock fonctionne correctement - c'est la logique de test qui est inversée. CORRECTION NÉCESSAIRE: Le test devrait considérer le rejet (400) comme un succès."
-      - working: true
-        agent: "testing"
-        comment: "✅ MOTIFS OBLIGATOIRES VALIDÉS - Validation stricte des motifs fonctionne parfaitement: (1) Motifs manquants rejetés avec 'Motif requis pour toute modification de stock', (2) Motifs vides rejetés avec même message, (3) Opérations invalides rejetées avec 'Opération doit être ajouter ou soustraire', (4) Quantités négatives/zéro rejetées avec 'La quantité doit être positive'. Système de validation complet et opérationnel."
+        comment: "✅ CONVERSION DEVIS→FACTURE DÉJÀ FONCTIONNELLE - Endpoint POST /api/devis/{id}/convertir-facture existant et opérationnel. Frontend: Bouton conversion disponible pour devis acceptés, intégration avec loadData() pour actualisation. Fonctionnalité existante validée et maintenue."
 
 metadata:
   created_by: "main_agent"
