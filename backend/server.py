@@ -2052,7 +2052,93 @@ async def update_opportunite(opportunite_id: str, opportunite_update: dict, curr
         except:
             pass
     
-    return {"message": "Opportunité mise à jour"}
+@app.post("/api/opportunites/{opportunite_id}/lier-client")
+async def lier_opportunite_client(opportunite_id: str, request: dict, current_user: dict = Depends(manager_and_admin())):
+    """Lier une opportunité à un client supplémentaire - Manager et Admin"""
+    nouveau_client_id = request.get("client_id")
+    
+    if not nouveau_client_id:
+        raise HTTPException(status_code=400, detail="client_id requis")
+    
+    # Vérifier que le client existe
+    client = await db.clients.find_one({"id": nouveau_client_id})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client non trouvé")
+    
+    # Vérifier que l'opportunité existe
+    opportunite = await db.opportunites.find_one({"$or": [{"id": opportunite_id}, {"_id": opportunite_id}]})
+    if not opportunite:
+        try:
+            from bson import ObjectId
+            opportunite = await db.opportunites.find_one({"_id": ObjectId(opportunite_id)})
+        except:
+            pass
+    
+    if not opportunite:
+        raise HTTPException(status_code=404, detail="Opportunité non trouvée")
+    
+    # Créer une nouvelle opportunité liée au nouveau client
+    nouvelle_opportunite = Opportunite(
+        id=str(uuid.uuid4()),
+        titre=f"{opportunite['titre']} - {client['nom']}",
+        description=f"Opportunité liée - {opportunite.get('description', '')}",
+        client_id=nouveau_client_id,
+        client_nom=client["nom"],
+        valeur_estimee_usd=opportunite["valeur_estimee_usd"],
+        valeur_estimee_fc=opportunite["valeur_estimee_fc"],
+        devise=opportunite["devise"],
+        probabilite=opportunite["probabilite"],
+        etape=opportunite["etape"],
+        priorite=opportunite["priorite"],
+        date_creation=datetime.now(),
+        date_cloture_prevue=opportunite.get("date_cloture_prevue"),
+        notes=f"Opportunité liée à {opportunite.get('titre', '')} (ID: {opportunite_id})",
+        commercial_id=current_user["id"]
+    )
+    
+    # Insérer la nouvelle opportunité
+    nouvelle_opportunite_dict = nouvelle_opportunite.dict()
+    await db.opportunites.insert_one(nouvelle_opportunite_dict)
+    
+    # Mettre à jour l'opportunité originale pour ajouter une référence
+    await db.opportunites.update_one(
+        {"$or": [{"id": opportunite_id}, {"_id": opportunite_id}]},
+        {"$addToSet": {"opportunites_liees": nouvelle_opportunite.id}}
+    )
+    
+    # Mettre à jour la nouvelle opportunité pour ajouter une référence à l'originale
+    await db.opportunites.update_one(
+        {"id": nouvelle_opportunite.id},
+        {"$set": {"opportunite_source": opportunite_id}}
+    )
+    
+    return {
+        "message": "Opportunité liée avec succès",
+        "nouvelle_opportunite_id": nouvelle_opportunite.id,
+        "client_nom": client["nom"]
+    }
+
+@app.get("/api/opportunites/{opportunite_id}/liees")
+async def get_opportunites_liees(opportunite_id: str, current_user: dict = Depends(manager_and_admin())):
+    """Récupérer les opportunités liées à une opportunité - Manager et Admin"""
+    
+    # Chercher les opportunités liées (celles qui ont cette opportunité comme source)
+    opportunites_liees = []
+    async for opp in db.opportunites.find({"opportunite_source": opportunite_id}):
+        opp["id"] = str(opp["_id"]) if "_id" in opp else opp.get("id")
+        if "_id" in opp:
+            del opp["_id"]
+        opportunites_liees.append(opp)
+    
+    # Chercher aussi les opportunités qui ont cette opportunité dans leurs opportunites_liees
+    async for opp in db.opportunites.find({"opportunites_liees": opportunite_id}):
+        opp["id"] = str(opp["_id"]) if "_id" in opp else opp.get("id")
+        if "_id" in opp:
+            del opp["_id"]
+        if opp not in opportunites_liees:
+            opportunites_liees.append(opp)
+    
+    return opportunites_liees
 
 # COMMANDES Routes
 @app.get("/api/commandes", response_model=List[Commande])
