@@ -1478,17 +1478,6 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h2>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Taux USD/FC: <span className="font-medium">{tauxChange.taux_change_actuel?.toLocaleString()}</span>
-                {canManageProducts() && (
-                  <button 
-                    onClick={() => setShowTauxModal(true)}
-                    className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                  >
-                    Modifier
-                  </button>
-                )}
-              </div>
             </div>
 
             {/* Statistiques */}
