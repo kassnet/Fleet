@@ -440,15 +440,18 @@ frontend:
 
   - task: "Mise à jour taux de change avec rafraîchissement UI"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Test demandé par l'utilisateur - Problème rapporté: quand on modifie le taux de change, l'affichage dans le dashboard ne se met pas à jour visuellement même si la modification est réussie sur le backend. Test requis: Login admin@facturapp.rdc/admin123, vérifier taux actuel (2800 FC), modifier vers 3000 FC, vérifier mise à jour immédiate de l'affichage."
+      - working: false
+        agent: "testing"
+        comment: "❌ PROBLÈME CONFIRMÉ - Test complet effectué avec succès. RÉSULTATS: ✅ Connexion admin OK, ✅ Taux initial 2800 FC affiché, ✅ Modal ouverture OK, ✅ Modification vers 3000 effectuée, ✅ Backend API PUT /api/taux-change?nouveau_taux=3000 réussi (retourne taux: 3000), ✅ Backend GET /api/taux-change confirme nouveau taux (taux: 3000), ❌ UI PAS MISE À JOUR: affiche toujours 2,800 FC au lieu de 3,000 FC, ❌ Après refresh page: toujours 2,800 FC. CAUSE RACINE IDENTIFIÉE: Mismatch structure de données - Backend retourne {taux: 3000} mais frontend attend {taux_change_actuel: 3000}. La fonction setTauxChange(tauxRes.data) ne met pas à jour l'état car la propriété attendue n'existe pas dans la réponse backend."
 
 metadata:
   created_by: "main_agent"
