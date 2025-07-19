@@ -3225,7 +3225,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
                   {(mouvementsStock || []).map((mouvement, index) => (
-                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr key={`mouvement-${mouvement.id || index}`} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
                         {new Date(mouvement.date_mouvement).toLocaleDateString('fr-FR')}
                       </td>
