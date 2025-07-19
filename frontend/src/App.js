@@ -215,6 +215,47 @@ const AppContent = () => {
     return montant;
   };
 
+  const getRoleBadge = (role) => {
+    const styles = {
+      admin: 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
+      manager: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+      comptable: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+      utilisateur: 'bg-gradient-to-r from-gray-500 to-slate-500 text-white',
+      support: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white'
+    };
+    return styles[role] || styles.utilisateur;
+  };
+
+  const getRoleEmoji = (role) => {
+    const emojis = {
+      admin: '👑',
+      manager: '👔',
+      comptable: '💰',
+      utilisateur: '👤',
+      support: '🔧'
+    };
+    return emojis[role] || '👤';
+  };
+
+  const getStatutBadge = (statut) => {
+    const styles = {
+      brouillon: 'bg-gradient-to-r from-gray-500 to-slate-500 text-white',
+      envoyee: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+      payee: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+      annulee: 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
+      accepte: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+      refuse: 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
+      expire: 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white',
+      prospect: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white',
+      qualification: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+      proposition: 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white',
+      negociation: 'bg-gradient-to-r from-orange-500 to-red-500 text-white',
+      gagne: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+      perdue: 'bg-gradient-to-r from-red-500 to-pink-500 text-white'
+    };
+    return styles[statut] || styles.brouillon;
+  };
+
   const loadData = async () => {
     if (!user || !accessToken) {
       console.log('❌ Pas d\'utilisateur ou de token, abandon du chargement');
