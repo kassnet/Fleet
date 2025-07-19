@@ -1006,7 +1006,8 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   };
 
   const appliquerFiltresOpportunites = () => {
-    loadData();
+    // Pas besoin d'appeler loadData() ici, c'est géré par useEffect
+    console.log('🔍 Filtres appliqués:', filtresOpportunites);
   };
 
   const reinitialiserFiltresOpportunites = () => {
@@ -1017,6 +1018,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       commercial_id: '',
       search: ''
     });
+    // loadData() sera appelé automatiquement par useEffect
   };
 
   // Fonction pour créer une opportunité
