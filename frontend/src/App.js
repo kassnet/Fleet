@@ -242,6 +242,12 @@ const AppContent = () => {
       console.log('❌ Pas d\'utilisateur ou de token, abandon du chargement');
       return;
     }
+
+    // Éviter les appels multiples simultanés
+    if (loading) {
+      console.log('⚠️ Chargement déjà en cours, skip loadData');
+      return;
+    }
     
     setLoading(true);
     try {
