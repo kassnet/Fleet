@@ -840,13 +840,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     try {
       const response = await apiCall('PUT', `/api/taux-change?nouveau_taux=${nouveauTaux}`);
       
-      // Mettre à jour immédiatement l'état local
-      setTauxChange(prev => ({
-        ...prev,
-        taux_change_actuel: parseFloat(nouveauTaux)
-      }));
-      
-      // Recharger toutes les données pour être sûr
+      // Au lieu de mettre à jour immédiatement + loadData(), on fait seulement loadData()
       await loadData();
       
       setShowTauxModal(false);
