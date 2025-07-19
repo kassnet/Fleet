@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class FacturAppComprehensiveTester:
-    def __init__(self, base_url="https://1eb6e865-e154-4b9b-9317-b97328ca1637.preview.emergentagent.com"):
+    def __init__(self, base_url="https://d49f146a-1c74-4ae7-997f-d63e95bc382e.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
