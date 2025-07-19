@@ -1125,6 +1125,35 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
   // ===== FONCTIONS PARAMÈTRES SYSTÈME =====
   
+  // Fonctions pour la gestion des paramètres
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) uploadLogo(file);
+  };
+
+  const updateLogo = async () => {
+    // Cette fonction est appelée automatiquement par uploadLogo
+    showNotification('Logo mis à jour avec succès', 'success');
+  };
+
+  const updateConfig = async () => {
+    try {
+      await saveAppConfig(appConfig);
+    } catch (error) {
+      console.error('Erreur mise à jour config:', error);
+      showNotification('Erreur lors de la mise à jour', 'error');
+    }
+  };
+
+  const updateTaux = async () => {
+    try {
+      await handleUpdateTauxChange();
+    } catch (error) {
+      console.error('Erreur mise à jour taux:', error);
+      showNotification('Erreur lors de la mise à jour du taux', 'error');
+    }
+  };
+  
   // Fonction pour mettre à jour le taux de change
   const handleUpdateTauxChange = async () => {
     try {
