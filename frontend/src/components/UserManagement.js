@@ -173,6 +173,17 @@ const UserManagement = () => {
         return emojis[role] || '👤';
     };
 
+    const getRoleAvatarBg = (role) => {
+        const backgrounds = {
+            admin: 'bg-gradient-to-r from-red-500 to-pink-500',
+            manager: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+            comptable: 'bg-gradient-to-r from-green-500 to-emerald-500',
+            utilisateur: 'bg-gradient-to-r from-gray-500 to-slate-500',
+            support: 'bg-gradient-to-r from-purple-500 to-indigo-500'
+        };
+        return backgrounds[role] || backgrounds.utilisateur;
+    };
+
     if (user?.role !== 'admin') {
         return (
             <div className="text-center py-8">
