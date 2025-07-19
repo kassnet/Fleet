@@ -1161,14 +1161,10 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     try {
       const response = await apiCall('PUT', `/api/taux-change?nouveau_taux=${nouveauTaux}`);
       
-      // Mettre à jour immédiatement l'état local
-      setTauxChange(prev => ({
-        ...prev,
-        taux_change_actuel: parseFloat(nouveauTaux)
-      }));
+      // Seulement recharger les données, pas de double mise à jour
+      await loadData();
       
       showNotification('Taux de change mis à jour avec succès', 'success');
-      await loadData(); // Recharger les données
     } catch (error) {
       console.error('Erreur mise à jour taux:', error);
       showNotification('Erreur lors de la mise à jour du taux', 'error');
