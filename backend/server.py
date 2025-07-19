@@ -951,8 +951,8 @@ async def get_taux_change():
     return TauxChange(**taux)
 
 @app.put("/api/taux-change", response_model=TauxChange)
-async def update_taux_change(nouveau_taux: float, current_user: dict = Depends(support_only())):
-    """Mettre à jour le taux de change - Support uniquement"""
+async def update_taux_change(nouveau_taux: float, current_user: dict = Depends(admin_support())):
+    """Mettre à jour le taux de change - Admin et Support uniquement"""
     # Désactiver l'ancien taux
     await db.taux_change.update_many({"actif": True}, {"$set": {"actif": False}})
     
