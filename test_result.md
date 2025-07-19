@@ -438,20 +438,17 @@ frontend:
         agent: "testing"
         comment: "✅ TESTÉ ET CONFIRMÉ - Liaison multiple d'opportunités à clients 100% fonctionnelle! Authentification admin@facturapp.rdc OK. Tests complets: POST /api/opportunites/{id}/lier-client crée correctement une nouvelle opportunité liée avec références bidirectionnelles, GET /api/opportunites/{id}/liees récupère les opportunités liées, vérification bidirectionnelle confirmée. Permissions correctes (admin/manager OK, comptable bloqué 403). Validation des données: client inexistant rejeté (404), client_id manquant rejeté (400). Correction appliquée: client lookup avec $or et ObjectId pour compatibilité ID. Toutes les fonctionnalités de liaison opérationnelles."
 
-  - task: "Filtres recherche opportunités"
+  - task: "Mise à jour taux de change avec rafraîchissement UI"
     implemented: true
-    working: true
-    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    working: "NA"
+    file: "/app/frontend/src/App.js, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: true
-        agent: "main"
-        comment: "✅ FILTRES OPPORTUNITÉS IMPLÉMENTÉS - Backend: Endpoint GET /api/opportunites avec parameters optionnels (client_id, etape, priorite, commercial_id, search), GET /api/opportunites/filtres pour options de filtrage. Frontend: Interface filtres avec 5 champs (Client, Étape, Priorité, Recherche, boutons Filtrer/Reset), intégration avec loadData() pour application filtres. Filtrage dynamique complet avec URLSearchParams."
-      - working: true
+      - working: "NA"
         agent: "testing"
-        comment: "✅ TESTÉ ET CONFIRMÉ - Filtres de recherche d'opportunités 100% fonctionnels! Authentification admin@facturapp.rdc OK. Tests complets: GET /api/opportunites/filtres retourne options (etapes: negociation/proposition/qualification, priorites: haute/moyenne, commerciaux: 1 user). Filtrage par etape, priorite, search et filtres combinés fonctionnent parfaitement. GET /api/opportunites avec paramètres optionnels opérationnel. Permissions correctes (admin/manager OK, comptable bloqué 403). Toutes les fonctionnalités de filtrage et recherche opérationnelles."
+        comment: "Test demandé par l'utilisateur - Problème rapporté: quand on modifie le taux de change, l'affichage dans le dashboard ne se met pas à jour visuellement même si la modification est réussie sur le backend. Test requis: Login admin@facturapp.rdc/admin123, vérifier taux actuel (2800 FC), modifier vers 3000 FC, vérifier mise à jour immédiate de l'affichage."
 
 metadata:
   created_by: "main_agent"
