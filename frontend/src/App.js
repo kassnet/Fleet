@@ -859,7 +859,10 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       const tauxRes = await apiCall('GET', '/api/taux-change');
       console.log('💱 Nouveau taux récupéré:', tauxRes.data);
       
-      setTauxChange(tauxRes.data || { taux_change_actuel: 2800 });
+      // Adapter la structure de données du backend (taux) vers le format attendu par le frontend (taux_change_actuel)
+      const newTauxData = tauxRes.data ? { taux_change_actuel: tauxRes.data.taux } : { taux_change_actuel: 2800 };
+      console.log('💱 Structure mise à jour adaptée pour le frontend:', newTauxData);
+      setTauxChange(newTauxData);
       
       setShowTauxModal(false);
       showNotification('Taux de change mis à jour', 'success');
