@@ -265,7 +265,10 @@ const AppContent = () => {
       setClients(clientsRes.data || []);
       setProduits(produitsRes.data || []);
       setStats(statsRes.data || {});
-      setTauxChange(tauxRes.data || { taux_change_actuel: 2800 });
+      // Adapter la structure de données du backend (taux) vers le format attendu par le frontend (taux_change_actuel)
+      const newTauxData = tauxRes.data ? { taux_change_actuel: tauxRes.data.taux } : { taux_change_actuel: 2800 };
+      console.log('💱 Structure adaptée pour le frontend:', newTauxData);
+      setTauxChange(newTauxData);
 
       // Données restreintes seulement pour certains rôles
       if (user.role === 'admin' || user.role === 'manager' || user.role === 'comptable') {
