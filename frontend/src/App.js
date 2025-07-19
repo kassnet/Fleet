@@ -844,10 +844,19 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
   // Gestion du taux de change
   const updateTauxChange = async () => {
     try {
-      const response = await apiCall('PUT', `/api/taux-change?nouveau_taux=${nouveauTaux}`);
+      console.log('💱 Mise à jour du taux de change vers:', nouveauTaux);
       
-      // Au lieu de mettre à jour immédiatement + loadData(), on fait seulement loadData()
-      await loadData();
+      const response = await apiCall('PUT', `/api/taux-change?nouveau_taux=${nouveauTaux}`);
+      console.log('💱 Réponse API taux de change:', response.data);
+      
+      // Attendre un moment pour s'assurer que la base de données est mise à jour
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Recharger spécifiquement le taux de change
+      const tauxRes = await apiCall('GET', '/api/taux-change');
+      console.log('💱 Nouveau taux récupéré:', tauxRes.data);
+      
+      setTauxChange(tauxRes.data || { taux_change_actuel: 2800 });
       
       setShowTauxModal(false);
       showNotification('Taux de change mis à jour', 'success');
