@@ -365,6 +365,17 @@ const AppContent = () => {
     }
   }, [user?.id, accessToken]); // Utiliser user.id au lieu de user complet
 
+  // Effect séparé pour recharger quand les filtres changent
+  useEffect(() => {
+    if (user && accessToken && activeTab === 'ventes' && activeSalesTab === 'opportunites') {
+      // Débounce pour éviter trop d'appels API
+      const timer = setTimeout(() => {
+        loadData();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [filtresOpportunites, user?.id, accessToken, activeTab, activeSalesTab]);
+
   // Fonctions CRUD Clients
   const saveClient = async () => {
     try {
