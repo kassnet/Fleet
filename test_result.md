@@ -460,7 +460,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Mise à jour taux de change avec rafraîchissement UI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
