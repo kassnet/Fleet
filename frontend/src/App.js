@@ -363,7 +363,7 @@ const AppContent = () => {
       console.log('👤 Utilisateur connecté, chargement des données...');
       loadData();
     }
-  }, [user, accessToken]); // Dépendre aussi du accessToken
+  }, [user?.id, accessToken]); // Utiliser user.id au lieu de user complet
 
   // Fonctions CRUD Clients
   const saveClient = async () => {
