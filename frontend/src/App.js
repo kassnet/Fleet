@@ -2949,7 +2949,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 
                 <div className="space-y-2">
                   {factureForm.items.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded">
+                    <div key={`facture-item-${index}`} className="grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded">
                       <div className="col-span-4">
                         <select
                           value={item.produit_id}
