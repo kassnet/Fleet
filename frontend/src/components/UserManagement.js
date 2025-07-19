@@ -140,24 +140,37 @@ const UserManagement = () => {
 
     const getRoleBadge = (role) => {
         const styles = {
-            admin: 'bg-red-100 text-red-800',
-            manager: 'bg-blue-100 text-blue-800',
-            comptable: 'bg-green-100 text-green-800',
-            utilisateur: 'bg-gray-100 text-gray-800'
+            admin: 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
+            manager: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+            comptable: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+            utilisateur: 'bg-gradient-to-r from-gray-500 to-slate-500 text-white',
+            support: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white'
         };
         
         const labels = {
             admin: '👑 Admin',
             manager: '👔 Manager',
             comptable: '💰 Comptable',
-            utilisateur: '👤 Utilisateur'
+            utilisateur: '👤 Utilisateur',
+            support: '🔧 Support'
         };
 
         return (
-            <span className={`px-2 py-1 text-xs rounded-full ${styles[role]}`}>
-                {labels[role]}
+            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${styles[role] || styles.utilisateur}`}>
+                {labels[role] || labels.utilisateur}
             </span>
         );
+    };
+
+    const getRoleEmoji = (role) => {
+        const emojis = {
+            admin: '👑',
+            manager: '👔',
+            comptable: '💰',
+            utilisateur: '👤',
+            support: '🔧'
+        };
+        return emojis[role] || '👤';
     };
 
     if (user?.role !== 'admin') {
