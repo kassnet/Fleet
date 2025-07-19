@@ -3354,7 +3354,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 </div>
 
                 {devisForm.items.map((item, index) => (
-                  <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-3">
+                  <div key={`devis-item-${index}`} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-3">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produit</label>
