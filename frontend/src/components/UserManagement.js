@@ -249,11 +249,7 @@ const UserManagement = () => {
                                     <tr key={userItem.id} className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900 dark:hover:to-pink-900 transition-all duration-300">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                             <div className="flex items-center space-x-3">
-                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${getRoleBadge(userItem.role).props.className.includes('from-red') ? 'bg-gradient-to-r from-red-500 to-pink-500' : 
-                                                    getRoleBadge(userItem.role).props.className.includes('from-blue') ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
-                                                    getRoleBadge(userItem.role).props.className.includes('from-green') ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
-                                                    getRoleBadge(userItem.role).props.className.includes('from-purple') ? 'bg-gradient-to-r from-purple-500 to-indigo-500' :
-                                                    'bg-gradient-to-r from-gray-500 to-slate-500'} text-white font-bold`}>
+                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${getRoleAvatarBg(userItem.role)} text-white font-bold`}>
                                                     {getRoleEmoji(userItem.role)}
                                                 </div>
                                                 <span>{userItem.prenom} {userItem.nom}</span>
