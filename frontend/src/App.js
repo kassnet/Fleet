@@ -2124,8 +2124,8 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                         >
                           <option value="">Toutes les priorités</option>
-                          {(optionsFiltres.priorites || []).map(priorite => (
-                            <option key={priorite} value={priorite}>{priorite}</option>
+                          {(optionsFiltres.priorites || []).map((priorite, index) => (
+                            <option key={`priorite-${index}`} value={priorite}>{priorite}</option>
                           ))}
                         </select>
                       </div>
