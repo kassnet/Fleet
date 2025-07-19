@@ -1350,24 +1350,40 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
 
   const getStatutBadge = (statut) => {
     const styles = {
-      'brouillon': 'bg-gray-100 text-gray-600',
-      'envoyee': 'bg-blue-100 text-blue-600',
-      'payee': 'bg-green-100 text-green-600',
-      'overdue': 'bg-red-100 text-red-600'
+      'brouillon': 'bg-gradient-to-r from-gray-500 to-slate-500 text-white',
+      'envoyee': 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+      'payee': 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+      'overdue': 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
+      'annulee': 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
+      'accepte': 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+      'refuse': 'bg-gradient-to-r from-red-500 to-pink-500 text-white',
+      'expire': 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white',
+      'prospect': 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white',
+      'qualification': 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+      'proposition': 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white',
+      'negociation': 'bg-gradient-to-r from-orange-500 to-red-500 text-white',
+      'gagne': 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
+      'perdue': 'bg-gradient-to-r from-red-500 to-pink-500 text-white'
     };
 
     const labels = {
-      'brouillon': 'Brouillon',
-      'envoyee': 'Envoyée',
-      'payee': 'Payée',
-      'overdue': 'En retard'
+      'brouillon': '📝 Brouillon',
+      'envoyee': '📤 Envoyée',
+      'payee': '💰 Payée',
+      'overdue': '⏰ En retard',
+      'annulee': '❌ Annulée',
+      'accepte': '✅ Accepté',
+      'refuse': '❌ Refusé',
+      'expire': '⏱️ Expiré',
+      'prospect': '👀 Prospect',
+      'qualification': '🎯 Qualification',
+      'proposition': '💡 Proposition',
+      'negociation': '🤝 Négociation',
+      'gagne': '🏆 Gagné',
+      'perdue': '😞 Perdue'
     };
 
-    return (
-      <span className={`px-2 py-1 text-xs rounded-full ${styles[statut] || 'bg-gray-100 text-gray-600'}`}>
-        {labels[statut] || statut}
-      </span>
-    );
+    return styles[statut] || styles.brouillon;
   };
 
   if (!user) {
