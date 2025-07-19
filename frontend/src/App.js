@@ -1532,6 +1532,16 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                   <span className="text-3xl">💰</span>
                 </div>
               </div>
+
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Taux USD/FC</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{(tauxChange.taux_change_actuel || 2800).toLocaleString()} FC</p>
+                  </div>
+                  <span className="text-3xl">💱</span>
+                </div>
+              </div>
             </div>
 
             {/* Actions rapides */}
