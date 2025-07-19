@@ -2361,244 +2361,167 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('config.title')}</h2>
               
-              {/* Configuration générale avec le même style que le dashboard */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Configuration - Style identique au dashboard */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 
-                {/* Section Logo - Style dashboard */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                  <div className="flex items-center mb-6">
-                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-xl">
-                      🖼️
-                    </div>
-                    <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">{t('config.logo')}</h3>
+                {/* Logo */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('config.logo')}</h3>
+                    <span className="text-2xl">🖼️</span>
                   </div>
                   
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('config.logo.current')}
-                      </label>
-                      <div className="flex items-center space-x-4">
-                        <div className="h-20 w-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl flex items-center justify-center overflow-hidden shadow-inner">
-                          <img 
-                            src={appConfig.logoUrl} 
-                            alt="Logo actuel" 
-                            className="h-16 w-16 object-cover rounded-lg"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files[0];
-                              if (file) uploadLogo(file);
-                            }}
-                            className="hidden"
-                            id="logo-upload"
-                          />
-                          <label
-                            htmlFor="logo-upload"
-                            className={`cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white ${
-                              uploadingLogo 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg'
-                            }`}
-                          >
-                            📸 {uploadingLogo ? t('common.loading') : t('config.logo.change')}
-                          </label>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        Formats acceptés: JPG, PNG, GIF (max 5MB)
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section Configuration Application - Style dashboard */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                  <div className="flex items-center mb-6">
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-xl">
-                      ⚙️
-                    </div>
-                    <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">{t('config.app')}</h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('config.app.name')}
-                      </label>
-                      <input
-                        type="text"
-                        value={appConfig.appName}
-                        onChange={(e) => setAppConfig(prev => ({...prev, appName: e.target.value}))}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                        placeholder="Nom de l'application"
+                  <div className="space-y-3">
+                    <div className="h-16 w-16 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden mx-auto">
+                      <img 
+                        src={appConfig.logoUrl} 
+                        alt="Logo" 
+                        className="h-14 w-14 object-cover rounded-md"
                       />
                     </div>
                     
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('config.app.theme')}
-                      </label>
-                      <select
-                        value={appConfig.theme}
-                        onChange={(e) => setAppConfig(prev => ({...prev, theme: e.target.value}))}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      >
-                        <option value="light">🌞 Clair</option>
-                        <option value="dark">🌙 Sombre</option>
-                        <option value="auto">🔄 Automatique</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('config.app.language')}
-                      </label>
-                      <select
-                        value={appConfig.language}
-                        onChange={(e) => setAppConfig(prev => ({...prev, language: e.target.value}))}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      >
-                        <option value="fr">🇫🇷 Français</option>
-                        <option value="en">🇺🇸 English</option>
-                      </select>
-                    </div>
-
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="w-full text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-50 file:text-blue-700"
+                    />
+                    
                     <button
-                      onClick={() => saveAppConfig(appConfig)}
-                      disabled={configLoading}
-                      className={`w-full px-6 py-3 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg ${
-                        configLoading 
-                          ? 'bg-gray-400 cursor-not-allowed' 
-                          : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-                      }`}
+                      onClick={updateLogo}
+                      className="w-full bg-blue-500 text-white py-1 px-2 rounded text-xs hover:bg-blue-600"
                     >
-                      💾 {configLoading ? t('common.loading') : t('btn.save')}
+                      {t('config.logo.change')}
                     </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Statistiques système - Style dashboard */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                <div className="flex items-center mb-6">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-3 rounded-xl">
-                    📊
-                  </div>
-                  <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">Statistiques système</h3>
-                </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 p-4 rounded-xl border border-blue-200 dark:border-blue-700">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{users.length}</div>
-                      <div className="text-sm text-blue-500 dark:text-blue-300 mt-1">👥 Utilisateurs</div>
-                    </div>
+                {/* Configuration App */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('config.app')}</h3>
+                    <span className="text-2xl">⚙️</span>
                   </div>
                   
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 p-4 rounded-xl border border-green-200 dark:border-green-700">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">{clients.length}</div>
-                      <div className="text-sm text-green-500 dark:text-green-300 mt-1">🏢 Clients</div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 p-4 rounded-xl border border-purple-200 dark:border-purple-700">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{produits.length}</div>
-                      <div className="text-sm text-purple-500 dark:text-purple-300 mt-1">📦 Produits</div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 p-4 rounded-xl border border-orange-200 dark:border-orange-700">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{factures.length}</div>
-                      <div className="text-sm text-orange-500 dark:text-orange-300 mt-1">🧾 Factures</div>
-                    </div>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={appConfig.appName}
+                      onChange={(e) => setAppConfig(prev => ({ ...prev, appName: e.target.value }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Nom de l'app"
+                    />
+                    
+                    <select
+                      value={appConfig.theme}
+                      onChange={(e) => setAppConfig(prev => ({ ...prev, theme: e.target.value }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="light">🌞 Clair</option>
+                      <option value="dark">🌙 Sombre</option>
+                    </select>
+                    
+                    <select
+                      value={appConfig.language}
+                      onChange={(e) => setAppConfig(prev => ({ ...prev, language: e.target.value }))}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="fr">🇫🇷 Français</option>
+                      <option value="en">🇺🇸 English</option>
+                    </select>
+                    
+                    <button
+                      onClick={updateConfig}
+                      className="w-full bg-blue-500 text-white py-1 px-2 rounded text-xs hover:bg-blue-600"
+                    >
+                      💾 {t('config.save')}
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              {/* Taux de change - Style dashboard */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                <div className="flex items-center mb-6">
-                  <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-3 rounded-xl">
-                    💱
+                {/* Statistiques */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('config.stats')}</h3>
+                    <span className="text-2xl">📊</span>
                   </div>
-                  <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">{t('config.exchange_rate')}</h3>
+                  
+                  <div className="space-y-2 text-center">
+                    <div>
+                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{stats.total_users || 0}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">👥 {t('config.stats.users')}</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-green-600 dark:text-green-400">{stats.total_clients || 0}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">🏢 {t('config.stats.clients')}</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{stats.total_produits || 0}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">📦 {t('config.stats.products')}</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{stats.total_factures || 0}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">🧾 {t('config.stats.invoices')}</p>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('config.new_rate')} (USD → FC)
-                    </label>
-                    <div className="relative">
+
+                {/* Taux de change */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('config.exchange')}</h3>
+                    <span className="text-2xl">💱</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">USD → FC</p>
                       <input
                         type="number"
                         value={nouveauTaux}
                         onChange={(e) => setNouveauTaux(e.target.value)}
-                        className="w-full px-4 py-3 pl-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white"
+                        className="w-full px-2 py-1 text-sm text-center border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white"
                         placeholder="2800"
                       />
-                      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-yellow-500 font-bold">
-                        FC
-                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={updateTaux}
+                      className="w-full bg-yellow-500 text-white py-1 px-2 rounded text-xs hover:bg-yellow-600"
+                    >
+                      💱 {t('config.exchange.update')}
+                    </button>
+                    
+                    <div className="text-center">
+                      <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                        Actuel: {tauxChange.taux_change_actuel || 2800} FC
+                      </p>
                     </div>
                   </div>
-                  
-                  <button
-                    onClick={handleUpdateTauxChange}
-                    className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
-                  >
-                    💱 {t('config.update')}
-                  </button>
-                </div>
-                
-                <div className="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900 dark:to-orange-900 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    💡 {t('config.current_rate')}: 1 USD = {tauxChange.taux_change_actuel} FC
-                  </p>
                 </div>
               </div>
 
-              {/* Actions système - Style dashboard */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300">
-                <div className="flex items-center mb-6">
-                  <div className="bg-gradient-to-r from-red-500 to-pink-500 p-3 rounded-xl">
-                    🔧
+              {/* Actions système - Style simple */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <div className="text-center">
+                    <span className="text-2xl">💾</span>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">{t('config.system.backup')}</p>
                   </div>
-                  <h3 className="text-xl font-bold ml-4 text-gray-900 dark:text-white">Actions système</h3>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <button
-                    onClick={() => handleSystemAction('backup')}
-                    className="bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
-                  >
-                    <span>💾</span>
-                    <span>Sauvegarder BDD</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleSystemAction('logs')}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
-                  >
-                    <span>📋</span>
-                    <span>Voir les logs</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleSystemAction('health')}
-                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
-                  >
-                    <span>🏥</span>
-                    <span>Vérifier la santé</span>
-                  </button>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <div className="text-center">
+                    <span className="text-2xl">📋</span>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">{t('config.system.logs')}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <div className="text-center">
+                    <span className="text-2xl">🏥</span>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">{t('config.system.health')}</p>
+                  </div>
                 </div>
               </div>
             </div>
