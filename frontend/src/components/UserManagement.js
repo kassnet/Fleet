@@ -183,13 +183,19 @@ const UserManagement = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Gestion des utilisateurs</h2>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-xl">
+                        👥
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Gestion des utilisateurs</h2>
+                </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition"
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
                 >
-                    + Nouvel utilisateur
+                    <span>➕</span>
+                    <span>Nouvel utilisateur</span>
                 </button>
             </div>
 
@@ -203,66 +209,79 @@ const UserManagement = () => {
             )}
 
             {/* Liste des utilisateurs */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
                 {loading ? (
-                    <div className="p-8 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+                    <div className="p-12 text-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-500 mx-auto mb-4"></div>
+                        <div className="text-gray-500 dark:text-gray-400 text-lg">Chargement...</div>
+                    </div>
+                ) : users.length === 0 ? (
+                    <div className="p-12 text-center">
+                        <div className="text-gray-400 text-6xl mb-4">👤</div>
+                        <div className="text-gray-500 dark:text-gray-400 text-lg">Aucun utilisateur trouvé. Créez votre premier utilisateur !</div>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900 dark:to-pink-900">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilisateur</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rôle</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dernière connexion</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">👤 Utilisateur</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">📧 Email</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">🏷️ Rôle</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">🔄 Statut</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">📅 Dernière connexion</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">⚡ Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 {users.map((userItem) => (
-                                    <tr key={userItem.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="font-medium text-gray-900">
-                                                {userItem.prenom} {userItem.nom}
+                                    <tr key={userItem.id} className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900 dark:hover:to-pink-900 transition-all duration-300">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                            <div className="flex items-center space-x-3">
+                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${getRoleBadge(userItem.role).props.className.includes('from-red') ? 'bg-gradient-to-r from-red-500 to-pink-500' : 
+                                                    getRoleBadge(userItem.role).props.className.includes('from-blue') ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
+                                                    getRoleBadge(userItem.role).props.className.includes('from-green') ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                                                    getRoleBadge(userItem.role).props.className.includes('from-purple') ? 'bg-gradient-to-r from-purple-500 to-indigo-500' :
+                                                    'bg-gradient-to-r from-gray-500 to-slate-500'} text-white font-bold`}>
+                                                    {getRoleEmoji(userItem.role)}
+                                                </div>
+                                                <span>{userItem.prenom} {userItem.nom}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">
                                             {userItem.email}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {getRoleBadge(userItem.role)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 py-1 text-xs rounded-full ${
+                                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
                                                 userItem.is_active 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-red-100 text-red-800'
+                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
+                                                    : 'bg-gradient-to-r from-red-500 to-pink-500 text-white'
                                             }`}>
-                                                {userItem.is_active ? 'Actif' : 'Inactif'}
+                                                {userItem.is_active ? '✅ Actif' : '❌ Inactif'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                             {userItem.derniere_connexion 
                                                 ? new Date(userItem.derniere_connexion).toLocaleDateString('fr-FR')
                                                 : 'Jamais'
                                             }
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm space-x-3">
                                             <button
                                                 onClick={() => handleEdit(userItem)}
-                                                className="text-blue-600 hover:text-blue-800"
+                                                className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105 shadow-md text-xs"
                                             >
-                                                Modifier
+                                                ✏️ Modifier
                                             </button>
                                             {userItem.id !== user.id && (
                                                 <button
                                                     onClick={() => handleDelete(userItem.id)}
-                                                    className="text-red-600 hover:text-red-800"
+                                                    className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-lg font-semibold hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-md text-xs"
                                                 >
-                                                    Supprimer
+                                                    🗑️ Supprimer
                                                 </button>
                                             )}
                                         </td>
