@@ -3701,20 +3701,233 @@ def test_opportunity_management_phase5():
     
     return True
 
-if __name__ == "__main__":
-    # Run Phase 5 opportunity management tests
-    print("🚀 STARTING PHASE 5 OPPORTUNITY MANAGEMENT TESTING")
+def test_tool_provisioning_fix():
+    """Test the specific tool provisioning synchronization fix"""
+    print("\n" + "=" * 80)
+    print("🔧 TESTING TOOL PROVISIONING SYNCHRONIZATION FIX")
     print("=" * 80)
     
-    phase5_success = test_opportunity_management_phase5()
+    # Authenticate as admin
+    auth_success, tester = test_authentication("admin@facturapp.rdc", "admin123")
+    if not auth_success:
+        print("❌ Authentication failed, stopping tool provisioning tests")
+        return False
     
-    if phase5_success:
-        print("\n🎉 PHASE 5 OPPORTUNITY MANAGEMENT TESTS COMPLETED SUCCESSFULLY!")
-        print("✅ All opportunity management features are working correctly")
-        print("✅ Filtering, searching, and linking functionality verified")
-        print("✅ Permission controls and data validation working")
+    # Step 1: Create a test tool with initial stock
+    print("\n🔍 STEP 1: Creating test tool with initial stock (10 units)")
+    
+    tool_data = {
+        "nom": f"Test Tool {datetime.now().strftime('%H%M%S')}",
+        "description": "Tool for testing provisioning synchronization",
+        "reference": f"REF-{datetime.now().strftime('%H%M%S')}",
+        "quantite_stock": 10,
+        "prix_unitaire_usd": 150.0,
+        "fournisseur": "Test Supplier",
+        "etat": "neuf",
+        "localisation": "Warehouse A",
+        "numero_serie": f"SN-{datetime.now().strftime('%H%M%S')}"
+    }
+    
+    success, created_tool = tester.run_test(
+        "Create Test Tool",
+        "POST",
+        "/api/outils",
+        200,
+        data=tool_data
+    )
+    
+    if not success or not created_tool:
+        print("❌ Failed to create test tool")
+        return False
+    
+    tool_id = created_tool.get('id')
+    initial_stock = created_tool.get('quantite_stock', 0)
+    initial_available = created_tool.get('quantite_disponible', 0)
+    
+    print(f"✅ Created test tool with ID: {tool_id}")
+    print(f"📦 Initial stock: {initial_stock}")
+    print(f"📦 Initial available: {initial_available}")
+    
+    # Step 2: Verify initial tool state
+    print(f"\n🔍 STEP 2: Verifying initial tool state via GET /api/outils/{tool_id}")
+    
+    success, initial_tool = tester.run_test(
+        "Get Initial Tool State",
+        "GET",
+        f"/api/outils/{tool_id}",
+        200
+    )
+    
+    if not success or not initial_tool:
+        print("❌ Failed to retrieve initial tool state")
+        return False
+    
+    print(f"✅ Retrieved initial tool state")
+    print(f"📦 Stock: {initial_tool.get('quantite_stock')}")
+    print(f"📦 Available: {initial_tool.get('quantite_disponible')}")
+    
+    # Step 3: Provision the tool (+5 units)
+    print(f"\n🔍 STEP 3: Provisioning tool (+5 units) via POST /api/outils/{tool_id}/approvisionner")
+    
+    provision_data = {
+        "quantite_ajoutee": 5,
+        "prix_unitaire_usd": 150.0,
+        "fournisseur": "Test Supplier",
+        "notes": "Test provisioning for synchronization fix"
+    }
+    
+    success, provision_response = tester.run_test(
+        "Provision Tool (+5 units)",
+        "POST",
+        f"/api/outils/{tool_id}/approvisionner",
+        200,
+        data=provision_data
+    )
+    
+    if not success or not provision_response:
+        print("❌ Failed to provision tool")
+        return False
+    
+    print(f"✅ Tool provisioning successful")
+    print(f"📦 Response: {provision_response}")
+    
+    # Step 4: CRITICAL TEST - Immediately verify updated stock via GET
+    print(f"\n🔍 STEP 4: CRITICAL TEST - Immediately verifying updated stock via GET /api/outils/{tool_id}")
+    print("This is the core test for the synchronization fix!")
+    
+    success, updated_tool = tester.run_test(
+        "Get Tool After Provisioning",
+        "GET",
+        f"/api/outils/{tool_id}",
+        200
+    )
+    
+    if not success or not updated_tool:
+        print("❌ Failed to retrieve tool after provisioning")
+        return False
+    
+    updated_stock = updated_tool.get('quantite_stock', 0)
+    updated_available = updated_tool.get('quantite_disponible', 0)
+    expected_stock = initial_stock + 5
+    expected_available = initial_available + 5
+    
+    print(f"📊 SYNCHRONIZATION TEST RESULTS:")
+    print(f"   Initial stock: {initial_stock} → Expected: {expected_stock} → Actual: {updated_stock}")
+    print(f"   Initial available: {initial_available} → Expected: {expected_available} → Actual: {updated_available}")
+    
+    # Check if synchronization is working
+    stock_synchronized = (updated_stock == expected_stock)
+    available_synchronized = (updated_available == expected_available)
+    
+    if stock_synchronized and available_synchronized:
+        print("✅ SYNCHRONIZATION FIX SUCCESSFUL!")
+        print("✅ Stock and availability are properly updated after provisioning")
+        sync_success = True
+    else:
+        print("❌ SYNCHRONIZATION PROBLEM PERSISTS!")
+        if not stock_synchronized:
+            print(f"❌ Stock not synchronized: expected {expected_stock}, got {updated_stock}")
+        if not available_synchronized:
+            print(f"❌ Availability not synchronized: expected {expected_available}, got {updated_available}")
+        sync_success = False
+    
+    # Step 5: Verify movement history
+    print(f"\n🔍 STEP 5: Verifying provisioning movement in history")
+    
+    success, movements = tester.run_test(
+        "Get Tool Movements",
+        "GET",
+        f"/api/outils/{tool_id}/mouvements",
+        200
+    )
+    
+    if success and movements:
+        print(f"✅ Retrieved {len(movements)} movement(s)")
+        
+        # Look for the provisioning movement
+        provision_movement = None
+        for movement in movements:
+            if movement.get('type') == 'approvisionnement' and movement.get('quantite') == 5:
+                provision_movement = movement
+                break
+        
+        if provision_movement:
+            print("✅ Provisioning movement found in history")
+            print(f"📝 Movement details: {provision_movement}")
+        else:
+            print("❌ Provisioning movement not found in history")
+            sync_success = False
+    else:
+        print("❌ Failed to retrieve tool movements")
+        sync_success = False
+    
+    # Step 6: Test data consistency
+    print(f"\n🔍 STEP 6: Testing data consistency")
+    
+    # Verify that stock total = quantite_stock
+    # Verify that availability = quantite_disponible  
+    # Verify that movement is recorded
+    
+    consistency_checks = []
+    
+    # Check 1: Stock consistency
+    if updated_tool.get('quantite_stock') == expected_stock:
+        consistency_checks.append("✅ Stock total matches expected value")
+    else:
+        consistency_checks.append(f"❌ Stock total mismatch: {updated_tool.get('quantite_stock')} != {expected_stock}")
+    
+    # Check 2: Availability consistency
+    if updated_tool.get('quantite_disponible') == expected_available:
+        consistency_checks.append("✅ Availability matches expected value")
+    else:
+        consistency_checks.append(f"❌ Availability mismatch: {updated_tool.get('quantite_disponible')} != {expected_available}")
+    
+    # Check 3: Movement recorded
+    if provision_movement:
+        consistency_checks.append("✅ Provisioning movement recorded in history")
+    else:
+        consistency_checks.append("❌ Provisioning movement not recorded")
+    
+    print("📊 DATA CONSISTENCY RESULTS:")
+    for check in consistency_checks:
+        print(f"   {check}")
+    
+    # Final assessment
+    all_checks_passed = all("✅" in check for check in consistency_checks)
+    
+    print("\n" + "=" * 80)
+    print("📋 TOOL PROVISIONING TEST SUMMARY")
+    print("=" * 80)
+    
+    if sync_success and all_checks_passed:
+        print("🎉 TOOL PROVISIONING SYNCHRONIZATION FIX: SUCCESS!")
+        print("✅ Tool creation: PASSED")
+        print("✅ Tool provisioning: PASSED")
+        print("✅ Immediate stock synchronization: PASSED")
+        print("✅ Data consistency: PASSED")
+        print("✅ Movement history: PASSED")
+        print("\n🎯 The synchronization problem has been RESOLVED!")
+        print("🎯 Tool management functionality is now 100% operational!")
+        return True
+    else:
+        print("❌ TOOL PROVISIONING SYNCHRONIZATION FIX: FAILED!")
+        print("❌ The synchronization problem still exists")
+        print("❌ Further investigation and fixes are needed")
+        return False
+
+if __name__ == "__main__":
+    # Run tool provisioning test as requested in the review
+    print("🚀 STARTING TOOL PROVISIONING SYNCHRONIZATION TEST")
+    print("=" * 80)
+    
+    tool_success = test_tool_provisioning_fix()
+    
+    if tool_success:
+        print("\n🎉 TOOL PROVISIONING SYNCHRONIZATION TEST COMPLETED SUCCESSFULLY!")
+        print("✅ The synchronization fix is working correctly")
+        print("✅ Tool management functionality is 100% operational")
         sys.exit(0)
     else:
-        print("\n❌ PHASE 5 OPPORTUNITY MANAGEMENT TESTS FAILED")
-        print("❌ Some opportunity management features need attention")
+        print("\n❌ TOOL PROVISIONING SYNCHRONIZATION TEST FAILED")
+        print("❌ The synchronization problem still needs to be fixed")
         sys.exit(1)
