@@ -113,6 +113,21 @@ const AppContent = () => {
     duree_minutes: '', resultat: '', prochaine_action: '', date_prochaine_action: ''
   });
 
+  // Tool forms
+  const [outilForm, setOutilForm] = useState({
+    nom: '', description: '', reference: '', quantite_stock: 0, prix_unitaire_usd: '',
+    fournisseur: '', date_achat: '', etat: 'neuf', localisation: '', numero_serie: ''
+  });
+  const [approvisionnementForm, setApprovisionnementForm] = useState({
+    quantite_ajoutee: 0, prix_unitaire_usd: '', fournisseur: '', date_achat: '', notes: ''
+  });
+  const [affectationForm, setAffectationForm] = useState({
+    technicien_id: '', quantite_affectee: 1, date_retour_prevue: '', notes_affectation: ''
+  });
+  const [retourForm, setRetourForm] = useState({
+    quantite_retournee: 1, etat_retour: 'bon', notes_retour: ''
+  });
+
   // Edition states
   const [editingClient, setEditingClient] = useState(null);
   const [editingProduit, setEditingProduit] = useState(null);
