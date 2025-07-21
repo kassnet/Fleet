@@ -8,6 +8,7 @@ const UserManagement = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [notification, setNotification] = useState(null);
+    const [errorModal, setErrorModal] = useState({ show: false, title: '', message: '', type: 'error' });
     
     const [userForm, setUserForm] = useState({
         email: '',
