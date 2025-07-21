@@ -2912,8 +2912,17 @@ async def create_outil(outil: OutilCreate, current_user: dict = Depends(manager_
     """Créer un nouvel outil - Manager et Admin uniquement"""
     try:
         nouveau_outil = outil.dict()
+        
+        # Récupérer le nom de l'entrepôt si un entrepôt est spécifié
+        entrepot_nom = None
+        if nouveau_outil.get("entrepot_id"):
+            entrepot = await db.entrepots.find_one({"$or": [{"id": nouveau_outil["entrepot_id"]}, {"_id": nouveau_outil["entrepot_id"]}]})
+            if entrepot:
+                entrepot_nom = entrepot["nom"]
+        
         nouveau_outil.update({
             "id": str(uuid.uuid4()),
+            "entrepot_nom": entrepot_nom,
             "quantite_disponible": nouveau_outil["quantite_stock"],
             "date_creation": datetime.now(),
             "date_modification": datetime.now()
