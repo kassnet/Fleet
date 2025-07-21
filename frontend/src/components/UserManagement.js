@@ -445,6 +445,50 @@ const UserManagement = () => {
                     </div>
                 </div>
             )}
+
+            {/* Modal d'erreur professionnel */}
+            {errorModal.show && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+                        {/* Header du modal */}
+                        <div className={`px-6 py-4 ${
+                            errorModal.type === 'warning' 
+                                ? 'bg-gradient-to-r from-orange-500 to-yellow-500' 
+                                : 'bg-gradient-to-r from-red-500 to-pink-500'
+                        }`}>
+                            <div className="flex items-center space-x-3 text-white">
+                                <span className="text-2xl">
+                                    {errorModal.type === 'warning' ? '⚠️' : '❌'}
+                                </span>
+                                <h3 className="text-lg font-bold">
+                                    {errorModal.title}
+                                </h3>
+                            </div>
+                        </div>
+
+                        {/* Contenu du modal */}
+                        <div className="px-6 py-6">
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {errorModal.message}
+                            </p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex justify-end">
+                            <button
+                                onClick={closeErrorModal}
+                                className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-md ${
+                                    errorModal.type === 'warning'
+                                        ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white'
+                                        : 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white'
+                                }`}
+                            >
+                                ✓ Compris
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
