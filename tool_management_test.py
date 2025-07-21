@@ -318,6 +318,7 @@ class ToolManagementTester:
         print(f"\n🔍 Testing POST /api/outils/{tool_id}/affecter - Assign tool to technician")
         
         assignment_data = {
+            "outil_id": tool_id,
             "technicien_id": technicien_id,
             "quantite_affectee": 2,
             "date_retour_prevue": (datetime.now() + timedelta(days=7)).isoformat(),
