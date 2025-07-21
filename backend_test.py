@@ -4386,7 +4386,7 @@ def test_permissions_et_validation(tester):
             else:
                 print(f"❌ {user_info['role']} should be able to create entrepôts but cannot")
         else:
-            if not success:
+            if success:  # success=True means we got the expected 403
                 print(f"✅ {user_info['role']} correctly blocked from creating entrepôts")
             else:
                 print(f"❌ {user_info['role']} should not be able to create entrepôts but can")
