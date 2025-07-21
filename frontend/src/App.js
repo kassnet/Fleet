@@ -2710,30 +2710,6 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                   </div>
                 </div>
               </div>
-
-              {/* Actions système - Style simple */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                  <div className="text-center">
-                    <span className="text-2xl">💾</span>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">{t('config.system.backup')}</p>
-                  </div>
-                </div>
-                
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                  <div className="text-center">
-                    <span className="text-2xl">📋</span>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">{t('config.system.logs')}</p>
-                  </div>
-                </div>
-                
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                  <div className="text-center">
-                    <span className="text-2xl">🏥</span>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">{t('config.system.health')}</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </ProtectedRoute>
         )}
