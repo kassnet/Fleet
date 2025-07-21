@@ -4100,7 +4100,7 @@ def test_entrepots_crud_complet(tester):
         print_response=True
     )
     
-    if not success:  # success=False means we got the expected 400 error
+    if success:  # success=True means we got the expected 400 error
         print("✅ Correctly prevented deletion of entrepôt with existing tools")
     else:
         print("❌ Failed: Entrepôt deletion was allowed despite having tools")
