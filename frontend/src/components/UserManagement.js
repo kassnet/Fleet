@@ -144,6 +144,7 @@ const UserManagement = () => {
             manager: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
             comptable: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white',
             utilisateur: 'bg-gradient-to-r from-gray-500 to-slate-500 text-white',
+            technicien: 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white',
             support: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white'
         };
         
@@ -152,6 +153,7 @@ const UserManagement = () => {
             manager: '👔 Manager',
             comptable: '💰 Comptable',
             utilisateur: '👤 Utilisateur',
+            technicien: '🔧 Technicien',
             support: '🔧 Support'
         };
 
