@@ -91,10 +91,20 @@ const UserManagement = () => {
             resetForm();
         } catch (error) {
             console.error('Erreur sauvegarde utilisateur:', error);
-            showNotification(
-                'Erreur lors de la sauvegarde',
-                'error'
-            );
+            
+            // Gestion d'erreur améliorée pour afficher le message spécifique du backend
+            let errorMessage = 'Erreur lors de la sauvegarde';
+            
+            if (error.response?.status === 400 && error.response?.data?.detail) {
+                // Erreur 400 avec un message spécifique (comme email déjà existant)
+                errorMessage = error.response.data.detail;
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            showNotification(errorMessage, 'error');
         }
     };
 
