@@ -596,6 +596,18 @@ test_plan:
         agent: "testing"
         comment: "✅ CORRECTION VALIDÉE (21/01/2025) - Tests finaux confirment que l'ajout du champ 'outil_id' dans le payload (ligne 1488 App.js) a résolu l'erreur 422. RÉSULTATS: ✅ Connexion admin@facturapp.rdc réussie, ✅ Navigation section Outils fonctionnelle, ✅ Modal d'affectation opérationnel avec sélection technicien 'Israël Kanda', ✅ Formulaire complet (quantité 2-3, notes 'Test affectation corrigée'), ✅ Soumission réussie avec fermeture automatique du modal (indicateur de succès), ✅ 18 lignes d'affectations détectées dans la section. PROBLÈME 422 COMPLÈTEMENT RÉSOLU!"
 
+  - task: "Gestion d'erreur email améliorée"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ TESTS GESTION ERREUR EMAIL (21/01/2025) - RÉSULTATS PARTIELS: ✅ Interface utilisateur accessible: Navigation vers section '👤 Users' fonctionnelle, modal 'Nouvel utilisateur' opérationnel, formulaire complet avec champs email/prénom/nom/mot de passe. ✅ Tests effectués: Saisie email existant 'admin@facturapp.rdc', remplissage formulaire complet, soumission réussie. ❌ PROBLÈME: Messages d'erreur spécifiques non détectés visuellement par les sélecteurs automatisés (.notification, .alert, .toast, .error, [role='alert'], .text-red-500, .text-red-600). ⚠️ CONCLUSION: La fonctionnalité peut être implémentée mais nécessite vérification manuelle ou ajustement des sélecteurs de notification pour confirmer l'affichage des messages d'erreur spécifiques comme 'Un utilisateur avec cet email existe déjà'."
+
 agent_communication:
   - agent: "main"
     message: "✅ PHASE 5 TERMINÉE AVEC SUCCÈS - Toutes les 5 phases terminées ! Gestion des opportunités améliorée avec liaison multiple clients et filtres de recherche. Backend: Endpoints POST /api/outils/{id}/affecter et GET /api/opportunites/{id}/liees pour liaison, GET /api/opportunites avec filtres (client_id, etape, priorite, search) et GET /api/opportunites/filtres pour options. Frontend: Interface filtres complète (5 champs + boutons), modal liaison client, intégration avec loadData(). Système complet de gestion d'opportunités avec filtrage et liaison. TOUTES LES PHASES DÉVELOPPÉES AVEC SUCCÈS!"
