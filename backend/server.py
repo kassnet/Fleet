@@ -355,13 +355,15 @@ class Outil(BaseModel):
     nom: str
     description: Optional[str] = None
     reference: Optional[str] = None
+    entrepot_id: Optional[str] = None
+    entrepot_nom: Optional[str] = None
     quantite_stock: int = 0
     quantite_disponible: int = 0
     prix_unitaire_usd: Optional[float] = None
     fournisseur: Optional[str] = None
     date_achat: Optional[datetime] = None
     etat: str = "neuf"  # neuf, bon, use, defaillant
-    localisation: Optional[str] = None
+    localisation: Optional[str] = None  # Localisation spécifique dans l'entrepôt
     numero_serie: Optional[str] = None
     date_creation: Optional[datetime] = None
     date_modification: Optional[datetime] = None
@@ -370,6 +372,7 @@ class OutilCreate(BaseModel):
     nom: str
     description: Optional[str] = None
     reference: Optional[str] = None
+    entrepot_id: Optional[str] = None
     quantite_stock: int = 0
     prix_unitaire_usd: Optional[float] = None
     fournisseur: Optional[str] = None
