@@ -566,6 +566,20 @@ def admin_support():
     """Admin et support peuvent accéder"""
     return check_permissions(["admin", "support"])
 
+def manager_admin():
+    """Manager et admin peuvent accéder"""
+    return check_permissions(["manager", "admin"])
+
+def technicien_manager_admin():
+    """Technicien, manager et admin peuvent accéder"""
+    return check_permissions(["technicien", "manager", "admin"])
+
+def current_user_or_admin():
+    """L'utilisateur actuel ou admin peut accéder"""
+    def wrapper(current_user: dict = Depends(get_current_user)):
+        return current_user
+    return wrapper
+
 def calculer_prix_produit(prix_base: float, devise_base: str, devise_cible: str, taux: float = None) -> float:
     """Calcule le prix d'un produit dans la devise cible"""
     return convertir_devise(prix_base, devise_base, devise_cible, taux)
