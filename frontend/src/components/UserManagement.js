@@ -170,7 +170,8 @@ const UserManagement = () => {
             manager: '👔',
             comptable: '💰',
             utilisateur: '👤',
-            support: '🔧'
+            technicien: '🔧',
+            support: '⚙️'
         };
         return emojis[role] || '👤';
     };
