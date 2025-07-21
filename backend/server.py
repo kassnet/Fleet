@@ -2867,6 +2867,448 @@ async def get_system_logs(current_user: dict = Depends(support_only())):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des logs: {str(e)}")
 
+# ===== ROUTES GESTION D'OUTILS =====
+
+@app.get("/api/outils", response_model=List[Outil])
+async def get_outils(current_user: dict = Depends(technicien_manager_admin())):
+    """Récupérer tous les outils - Technicien, Manager et Admin"""
+    try:
+        outils = []
+        cursor = db.outils.find({})
+        async for outil in cursor:
+            outil["id"] = str(outil["_id"]) if "_id" in outil else outil.get("id")
+            if "_id" in outil:
+                del outil["_id"]
+            outils.append(Outil(**outil))
+        return outils
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des outils: {str(e)}")
+
+@app.post("/api/outils", response_model=Outil)
+async def create_outil(outil: OutilCreate, current_user: dict = Depends(manager_admin())):
+    """Créer un nouvel outil - Manager et Admin uniquement"""
+    try:
+        nouveau_outil = outil.dict()
+        nouveau_outil.update({
+            "id": str(uuid.uuid4()),
+            "quantite_disponible": nouveau_outil["quantite_stock"],
+            "date_creation": datetime.now(),
+            "date_modification": datetime.now()
+        })
+        
+        await db.outils.insert_one(nouveau_outil)
+        
+        # Enregistrer un mouvement de stock initial si quantité > 0
+        if nouveau_outil["quantite_stock"] > 0:
+            mouvement = {
+                "id": str(uuid.uuid4()),
+                "outil_id": nouveau_outil["id"],
+                "type_mouvement": "approvisionnement",
+                "quantite": nouveau_outil["quantite_stock"],
+                "stock_avant": 0,
+                "stock_apres": nouveau_outil["quantite_stock"],
+                "motif": "Stock initial",
+                "date_mouvement": datetime.now(),
+                "fait_par": current_user["email"]
+            }
+            await db.mouvements_outils.insert_one(mouvement)
+        
+        nouveau_outil["id"] = str(nouveau_outil["_id"]) if "_id" in nouveau_outil else nouveau_outil.get("id")
+        if "_id" in nouveau_outil:
+            del nouveau_outil["_id"]
+        return Outil(**nouveau_outil)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création de l'outil: {str(e)}")
+
+@app.get("/api/outils/{outil_id}", response_model=Outil)
+async def get_outil(outil_id: str, current_user: dict = Depends(technicien_manager_admin())):
+    """Récupérer un outil spécifique"""
+    try:
+        outil = await db.outils.find_one({"$or": [{"id": outil_id}, {"_id": outil_id}]})
+        if not outil:
+            try:
+                outil = await db.outils.find_one({"_id": ObjectId(outil_id)})
+            except:
+                pass
+                
+        if not outil:
+            raise HTTPException(status_code=404, detail="Outil non trouvé")
+        
+        outil["id"] = str(outil["_id"]) if "_id" in outil else outil.get("id")
+        if "_id" in outil:
+            del outil["_id"]
+        return Outil(**outil)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération de l'outil: {str(e)}")
+
+@app.put("/api/outils/{outil_id}", response_model=Outil)
+async def update_outil(outil_id: str, outil_data: OutilCreate, current_user: dict = Depends(manager_admin())):
+    """Mettre à jour un outil - Manager et Admin uniquement"""
+    try:
+        outil_update = outil_data.dict()
+        outil_update["date_modification"] = datetime.now()
+        
+        # Vérifier que l'outil existe
+        outil_existant = await db.outils.find_one({"$or": [{"id": outil_id}, {"_id": outil_id}]})
+        if not outil_existant:
+            try:
+                outil_existant = await db.outils.find_one({"_id": ObjectId(outil_id)})
+            except:
+                pass
+                
+        if not outil_existant:
+            raise HTTPException(status_code=404, detail="Outil non trouvé")
+        
+        # Mettre à jour la quantité disponible si le stock total change
+        if outil_update["quantite_stock"] != outil_existant.get("quantite_stock", 0):
+            difference = outil_update["quantite_stock"] - outil_existant.get("quantite_stock", 0)
+            nouvelle_dispo = outil_existant.get("quantite_disponible", 0) + difference
+            outil_update["quantite_disponible"] = max(0, nouvelle_dispo)
+        
+        result = await db.outils.update_one(
+            {"$or": [{"id": outil_id}, {"_id": outil_id}]},
+            {"$set": outil_update}
+        )
+        
+        if result.matched_count == 0:
+            try:
+                await db.outils.update_one(
+                    {"_id": ObjectId(outil_id)},
+                    {"$set": outil_update}
+                )
+            except:
+                pass
+        
+        # Récupérer l'outil mis à jour
+        outil_maj = await db.outils.find_one({"$or": [{"id": outil_id}, {"_id": outil_id}]})
+        if not outil_maj:
+            try:
+                outil_maj = await db.outils.find_one({"_id": ObjectId(outil_id)})
+            except:
+                pass
+        
+        outil_maj["id"] = str(outil_maj["_id"]) if "_id" in outil_maj else outil_maj.get("id")
+        if "_id" in outil_maj:
+            del outil_maj["_id"]
+        return Outil(**outil_maj)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour de l'outil: {str(e)}")
+
+@app.delete("/api/outils/{outil_id}")
+async def delete_outil(outil_id: str, current_user: dict = Depends(manager_admin())):
+    """Supprimer un outil - Manager et Admin uniquement"""
+    try:
+        # Vérifier s'il y a des affectations actives
+        affectations_actives = await db.affectations_outils.count_documents({
+            "outil_id": outil_id,
+            "statut": "affecte"
+        })
+        
+        if affectations_actives > 0:
+            raise HTTPException(
+                status_code=400, 
+                detail="Impossible de supprimer l'outil : des affectations sont encore actives"
+            )
+        
+        result = await db.outils.delete_one({"$or": [{"id": outil_id}, {"_id": outil_id}]})
+        
+        if result.deleted_count == 0:
+            try:
+                result = await db.outils.delete_one({"_id": ObjectId(outil_id)})
+            except:
+                pass
+                
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Outil non trouvé")
+        
+        return {"message": "Outil supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression de l'outil: {str(e)}")
+
+@app.post("/api/outils/{outil_id}/approvisionner")
+async def approvisionner_outil(outil_id: str, approvisionnement: ApprovisionnementOutil, current_user: dict = Depends(manager_admin())):
+    """Approvisionner un outil - Manager et Admin uniquement"""
+    try:
+        # Récupérer l'outil
+        outil = await db.outils.find_one({"$or": [{"id": outil_id}, {"_id": outil_id}]})
+        if not outil:
+            try:
+                outil = await db.outils.find_one({"_id": ObjectId(outil_id)})
+            except:
+                pass
+                
+        if not outil:
+            raise HTTPException(status_code=404, detail="Outil non trouvé")
+        
+        # Mettre à jour les quantités
+        ancien_stock = outil.get("quantite_stock", 0)
+        ancienne_dispo = outil.get("quantite_disponible", 0)
+        
+        nouveau_stock = ancien_stock + approvisionnement.quantite_ajoutee
+        nouvelle_dispo = ancienne_dispo + approvisionnement.quantite_ajoutee
+        
+        # Mettre à jour l'outil
+        update_data = {
+            "quantite_stock": nouveau_stock,
+            "quantite_disponible": nouvelle_dispo,
+            "date_modification": datetime.now()
+        }
+        
+        if approvisionnement.prix_unitaire_usd:
+            update_data["prix_unitaire_usd"] = approvisionnement.prix_unitaire_usd
+        if approvisionnement.fournisseur:
+            update_data["fournisseur"] = approvisionnement.fournisseur
+        if approvisionnement.date_achat:
+            update_data["date_achat"] = approvisionnement.date_achat
+        
+        await db.outils.update_one(
+            {"$or": [{"id": outil_id}, {"_id": outil_id}]},
+            {"$set": update_data}
+        )
+        
+        # Enregistrer le mouvement
+        mouvement = {
+            "id": str(uuid.uuid4()),
+            "outil_id": outil_id,
+            "type_mouvement": "approvisionnement",
+            "quantite": approvisionnement.quantite_ajoutee,
+            "stock_avant": ancien_stock,
+            "stock_apres": nouveau_stock,
+            "motif": approvisionnement.notes or "Approvisionnement",
+            "date_mouvement": datetime.now(),
+            "fait_par": current_user["email"]
+        }
+        await db.mouvements_outils.insert_one(mouvement)
+        
+        return {
+            "message": "Outil approvisionné avec succès",
+            "quantite_ajoutee": approvisionnement.quantite_ajoutee,
+            "nouveau_stock": nouveau_stock,
+            "nouvelle_disponibilite": nouvelle_dispo
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'approvisionnement: {str(e)}")
+
+# Routes Affectations d'outils
+@app.get("/api/affectations", response_model=List[AffectationOutil])
+async def get_affectations(current_user: dict = Depends(technicien_manager_admin())):
+    """Récupérer les affectations d'outils"""
+    try:
+        # Si c'est un technicien, ne montrer que ses propres affectations
+        if current_user.get("role") == "technicien":
+            filter_query = {"technicien_id": current_user["id"]}
+        else:
+            filter_query = {}
+        
+        affectations = []
+        cursor = db.affectations_outils.find(filter_query).sort("date_affectation", -1)
+        async for affectation in cursor:
+            affectation["id"] = str(affectation["_id"]) if "_id" in affectation else affectation.get("id")
+            if "_id" in affectation:
+                del affectation["_id"]
+            affectations.append(AffectationOutil(**affectation))
+        return affectations
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des affectations: {str(e)}")
+
+@app.post("/api/outils/{outil_id}/affecter", response_model=AffectationOutil)
+async def affecter_outil(outil_id: str, affectation: AffectationOutilCreate, current_user: dict = Depends(manager_admin())):
+    """Affecter un outil à un technicien - Manager et Admin uniquement"""
+    try:
+        # Vérifier que l'outil existe
+        outil = await db.outils.find_one({"$or": [{"id": outil_id}, {"_id": outil_id}]})
+        if not outil:
+            try:
+                outil = await db.outils.find_one({"_id": ObjectId(outil_id)})
+            except:
+                pass
+                
+        if not outil:
+            raise HTTPException(status_code=404, detail="Outil non trouvé")
+        
+        # Vérifier la disponibilité
+        if outil.get("quantite_disponible", 0) < affectation.quantite_affectee:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Quantité non disponible. Disponible: {outil.get('quantite_disponible', 0)}"
+            )
+        
+        # Vérifier que le technicien existe
+        technicien = await db.users.find_one({
+            "$or": [{"id": affectation.technicien_id}, {"_id": affectation.technicien_id}],
+            "role": "technicien"
+        })
+        if not technicien:
+            try:
+                technicien = await db.users.find_one({
+                    "_id": ObjectId(affectation.technicien_id),
+                    "role": "technicien"
+                })
+            except:
+                pass
+                
+        if not technicien:
+            raise HTTPException(status_code=404, detail="Technicien non trouvé")
+        
+        # Créer l'affectation
+        nouvelle_affectation = {
+            "id": str(uuid.uuid4()),
+            "outil_id": outil_id,
+            "outil_nom": outil["nom"],
+            "technicien_id": affectation.technicien_id,
+            "technicien_nom": f"{technicien['prenom']} {technicien['nom']}",
+            "quantite_affectee": affectation.quantite_affectee,
+            "date_affectation": datetime.now(),
+            "date_retour_prevue": affectation.date_retour_prevue,
+            "statut": "affecte",
+            "notes_affectation": affectation.notes_affectation,
+            "affecte_par": current_user["email"]
+        }
+        
+        await db.affectations_outils.insert_one(nouvelle_affectation)
+        
+        # Mettre à jour la disponibilité de l'outil
+        nouvelle_dispo = outil.get("quantite_disponible", 0) - affectation.quantite_affectee
+        await db.outils.update_one(
+            {"$or": [{"id": outil_id}, {"_id": outil_id}]},
+            {"$set": {"quantite_disponible": nouvelle_dispo}}
+        )
+        
+        # Enregistrer le mouvement
+        mouvement = {
+            "id": str(uuid.uuid4()),
+            "outil_id": outil_id,
+            "type_mouvement": "affectation",
+            "quantite": affectation.quantite_affectee,
+            "stock_avant": outil.get("quantite_disponible", 0),
+            "stock_apres": nouvelle_dispo,
+            "motif": f"Affectation à {technicien['prenom']} {technicien['nom']}",
+            "date_mouvement": datetime.now(),
+            "fait_par": current_user["email"]
+        }
+        await db.mouvements_outils.insert_one(mouvement)
+        
+        nouvelle_affectation["id"] = str(nouvelle_affectation["_id"]) if "_id" in nouvelle_affectation else nouvelle_affectation.get("id")
+        if "_id" in nouvelle_affectation:
+            del nouvelle_affectation["_id"]
+        return AffectationOutil(**nouvelle_affectation)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'affectation: {str(e)}")
+
+@app.put("/api/affectations/{affectation_id}/retourner")
+async def retourner_outil(affectation_id: str, retour: RetourOutil, current_user: dict = Depends(technicien_manager_admin())):
+    """Retourner un outil - Technicien, Manager et Admin"""
+    try:
+        # Récupérer l'affectation
+        affectation = await db.affectations_outils.find_one({
+            "$or": [{"id": affectation_id}, {"_id": affectation_id}],
+            "statut": "affecte"
+        })
+        if not affectation:
+            try:
+                affectation = await db.affectations_outils.find_one({
+                    "_id": ObjectId(affectation_id),
+                    "statut": "affecte"
+                })
+            except:
+                pass
+                
+        if not affectation:
+            raise HTTPException(status_code=404, detail="Affectation non trouvée ou déjà retournée")
+        
+        # Vérifier que c'est le technicien concerné ou un manager/admin
+        if (current_user.get("role") == "technicien" and 
+            current_user["id"] != affectation["technicien_id"]):
+            raise HTTPException(status_code=403, detail="Vous ne pouvez retourner que vos propres outils")
+        
+        # Vérifier la quantité
+        if retour.quantite_retournee > affectation["quantite_affectee"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Quantité retournée supérieure à la quantité affectée"
+            )
+        
+        # Mettre à jour l'affectation
+        nouveau_statut = "retourne" if retour.etat_retour == "bon" else retour.etat_retour
+        
+        await db.affectations_outils.update_one(
+            {"$or": [{"id": affectation_id}, {"_id": affectation_id}]},
+            {"$set": {
+                "statut": nouveau_statut,
+                "date_retour_effective": datetime.now(),
+                "notes_retour": retour.notes_retour
+            }}
+        )
+        
+        # Mettre à jour la disponibilité de l'outil seulement si en bon état
+        if retour.etat_retour == "bon":
+            outil = await db.outils.find_one({"$or": [{"id": affectation["outil_id"]}, {"_id": affectation["outil_id"]}]})
+            if outil:
+                nouvelle_dispo = outil.get("quantite_disponible", 0) + retour.quantite_retournee
+                await db.outils.update_one(
+                    {"$or": [{"id": affectation["outil_id"]}, {"_id": affectation["outil_id"]}]},
+                    {"$set": {"quantite_disponible": nouvelle_dispo}}
+                )
+        
+        # Enregistrer le mouvement
+        mouvement = {
+            "id": str(uuid.uuid4()),
+            "outil_id": affectation["outil_id"],
+            "type_mouvement": "retour",
+            "quantite": retour.quantite_retournee,
+            "stock_avant": "N/A",
+            "stock_apres": "N/A",
+            "motif": f"Retour {retour.etat_retour} - {retour.notes_retour or 'Aucune note'}",
+            "date_mouvement": datetime.now(),
+            "fait_par": current_user["email"]
+        }
+        await db.mouvements_outils.insert_one(mouvement)
+        
+        return {
+            "message": "Outil retourné avec succès",
+            "quantite_retournee": retour.quantite_retournee,
+            "etat": retour.etat_retour
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du retour: {str(e)}")
+
+@app.get("/api/outils/{outil_id}/mouvements")
+async def get_mouvements_outil(outil_id: str, current_user: dict = Depends(technicien_manager_admin())):
+    """Récupérer l'historique des mouvements d'un outil"""
+    try:
+        mouvements = []
+        cursor = db.mouvements_outils.find({"outil_id": outil_id}).sort("date_mouvement", -1)
+        async for mouvement in cursor:
+            mouvement["id"] = str(mouvement["_id"]) if "_id" in mouvement else mouvement.get("id")
+            if "_id" in mouvement:
+                del mouvement["_id"]
+            mouvements.append(mouvement)
+        
+        return {"mouvements": mouvements}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des mouvements: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
