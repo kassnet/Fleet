@@ -329,6 +329,26 @@ class ActiviteCommerciale(BaseModel):
     prochaine_action: Optional[str] = None
     date_prochaine_action: Optional[datetime] = None
 
+# Models Entrepôts
+class Entrepot(BaseModel):
+    id: Optional[str] = None
+    nom: str
+    description: Optional[str] = None
+    adresse: Optional[str] = None
+    responsable: Optional[str] = None
+    capacite_max: Optional[int] = None
+    statut: str = "actif"  # actif, inactif, maintenance
+    date_creation: Optional[datetime] = None
+    date_modification: Optional[datetime] = None
+
+class EntrepotCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    adresse: Optional[str] = None
+    responsable: Optional[str] = None
+    capacite_max: Optional[int] = None
+    statut: str = "actif"
+
 # Models Gestion d'Outils
 class Outil(BaseModel):
     id: Optional[str] = None
