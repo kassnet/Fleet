@@ -3344,6 +3344,315 @@ async def get_mouvements_outil(outil_id: str, current_user: dict = Depends(techn
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des mouvements: {str(e)}")
 
+# ===== ROUTES GESTION D'ENTREPÔTS =====
+
+@app.get("/api/entrepots", response_model=List[Entrepot])
+async def get_entrepots(current_user: dict = Depends(technicien_manager_admin())):
+    """Récupérer tous les entrepôts - Technicien, Manager et Admin"""
+    try:
+        entrepots = []
+        cursor = db.entrepots.find({})
+        async for entrepot in cursor:
+            entrepot["id"] = str(entrepot["_id"]) if "_id" in entrepot else entrepot.get("id")
+            if "_id" in entrepot:
+                del entrepot["_id"]
+            entrepots.append(Entrepot(**entrepot))
+        return entrepots
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des entrepôts: {str(e)}")
+
+@app.post("/api/entrepots", response_model=Entrepot)
+async def create_entrepot(entrepot: EntrepotCreate, current_user: dict = Depends(manager_admin())):
+    """Créer un nouvel entrepôt - Manager et Admin uniquement"""
+    try:
+        nouvel_entrepot = entrepot.dict()
+        nouvel_entrepot.update({
+            "id": str(uuid.uuid4()),
+            "date_creation": datetime.now(),
+            "date_modification": datetime.now()
+        })
+        
+        await db.entrepots.insert_one(nouvel_entrepot)
+        
+        nouvel_entrepot["id"] = str(nouvel_entrepot["_id"]) if "_id" in nouvel_entrepot else nouvel_entrepot.get("id")
+        if "_id" in nouvel_entrepot:
+            del nouvel_entrepot["_id"]
+        return Entrepot(**nouvel_entrepot)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création de l'entrepôt: {str(e)}")
+
+@app.get("/api/entrepots/{entrepot_id}", response_model=Entrepot)
+async def get_entrepot(entrepot_id: str, current_user: dict = Depends(technicien_manager_admin())):
+    """Récupérer un entrepôt spécifique"""
+    try:
+        entrepot = await db.entrepots.find_one({"$or": [{"id": entrepot_id}, {"_id": entrepot_id}]})
+        if not entrepot:
+            try:
+                entrepot = await db.entrepots.find_one({"_id": ObjectId(entrepot_id)})
+            except:
+                pass
+                
+        if not entrepot:
+            raise HTTPException(status_code=404, detail="Entrepôt non trouvé")
+        
+        entrepot["id"] = str(entrepot["_id"]) if "_id" in entrepot else entrepot.get("id")
+        if "_id" in entrepot:
+            del entrepot["_id"]
+        return Entrepot(**entrepot)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération de l'entrepôt: {str(e)}")
+
+@app.put("/api/entrepots/{entrepot_id}", response_model=Entrepot)
+async def update_entrepot(entrepot_id: str, entrepot_data: EntrepotCreate, current_user: dict = Depends(manager_admin())):
+    """Mettre à jour un entrepôt - Manager et Admin uniquement"""
+    try:
+        entrepot_update = entrepot_data.dict()
+        entrepot_update["date_modification"] = datetime.now()
+        
+        result = await db.entrepots.update_one(
+            {"$or": [{"id": entrepot_id}, {"_id": entrepot_id}]},
+            {"$set": entrepot_update}
+        )
+        
+        if result.matched_count == 0:
+            try:
+                result = await db.entrepots.update_one(
+                    {"_id": ObjectId(entrepot_id)},
+                    {"$set": entrepot_update}
+                )
+            except:
+                pass
+                
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Entrepôt non trouvé")
+        
+        # Récupérer l'entrepôt mis à jour
+        entrepot_maj = await db.entrepots.find_one({"$or": [{"id": entrepot_id}, {"_id": entrepot_id}]})
+        if not entrepot_maj:
+            try:
+                entrepot_maj = await db.entrepots.find_one({"_id": ObjectId(entrepot_id)})
+            except:
+                pass
+        
+        entrepot_maj["id"] = str(entrepot_maj["_id"]) if "_id" in entrepot_maj else entrepot_maj.get("id")
+        if "_id" in entrepot_maj:
+            del entrepot_maj["_id"]
+        return Entrepot(**entrepot_maj)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour de l'entrepôt: {str(e)}")
+
+@app.delete("/api/entrepots/{entrepot_id}")
+async def delete_entrepot(entrepot_id: str, current_user: dict = Depends(manager_admin())):
+    """Supprimer un entrepôt - Manager et Admin uniquement"""
+    try:
+        # Vérifier s'il y a des outils dans cet entrepôt
+        outils_count = await db.outils.count_documents({"entrepot_id": entrepot_id})
+        
+        if outils_count > 0:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Impossible de supprimer l'entrepôt : {outils_count} outil(s) sont encore stocké(s) dans cet entrepôt"
+            )
+        
+        result = await db.entrepots.delete_one({"$or": [{"id": entrepot_id}, {"_id": entrepot_id}]})
+        
+        if result.deleted_count == 0:
+            try:
+                result = await db.entrepots.delete_one({"_id": ObjectId(entrepot_id)})
+            except:
+                pass
+                
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Entrepôt non trouvé")
+        
+        return {"message": "Entrepôt supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression de l'entrepôt: {str(e)}")
+
+# ===== ROUTES RAPPORTS OUTILS =====
+
+@app.get("/api/outils/rapports/mouvements")
+async def get_rapport_mouvements_outils(
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+    entrepot_id: Optional[str] = None,
+    type_mouvement: Optional[str] = None,
+    current_user: dict = Depends(technicien_manager_admin())
+):
+    """Rapport complet des mouvements d'outils avec filtres"""
+    try:
+        # Construire les filtres
+        filters = {}
+        
+        # Filtre par dates
+        if date_debut and date_fin:
+            try:
+                debut = datetime.strptime(date_debut, "%Y-%m-%d")
+                fin = datetime.strptime(date_fin, "%Y-%m-%d")
+                filters["date_mouvement"] = {
+                    "$gte": debut,
+                    "$lte": fin.replace(hour=23, minute=59, second=59)
+                }
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Format de date invalide. Utilisez YYYY-MM-DD")
+        
+        # Filtre par entrepôt (via jointure avec les outils)
+        entrepot_filter = {}
+        if entrepot_id:
+            entrepot_filter = {"entrepot_id": entrepot_id}
+        
+        # Filtre par type de mouvement
+        if type_mouvement:
+            filters["type_mouvement"] = type_mouvement
+        
+        # Pipeline d'agrégation pour joindre avec les outils et entrepôts
+        pipeline = [
+            {"$match": filters},
+            {
+                "$lookup": {
+                    "from": "outils",
+                    "localField": "outil_id",
+                    "foreignField": "id",
+                    "as": "outil_info"
+                }
+            },
+            {"$unwind": {"path": "$outil_info", "preserveNullAndEmptyArrays": True}},
+            {
+                "$lookup": {
+                    "from": "entrepots", 
+                    "localField": "outil_info.entrepot_id",
+                    "foreignField": "id",
+                    "as": "entrepot_info"
+                }
+            },
+            {"$unwind": {"path": "$entrepot_info", "preserveNullAndEmptyArrays": True}},
+            {"$sort": {"date_mouvement": -1}}
+        ]
+        
+        # Appliquer le filtre d'entrepôt si spécifié
+        if entrepot_id:
+            pipeline.insert(2, {"$match": {"outil_info.entrepot_id": entrepot_id}})
+        
+        mouvements = []
+        cursor = db.mouvements_outils.aggregate(pipeline)
+        
+        async for mouvement in cursor:
+            mouvement_data = {
+                "id": str(mouvement["_id"]) if "_id" in mouvement else mouvement.get("id"),
+                "outil_id": mouvement.get("outil_id"),
+                "outil_nom": mouvement.get("outil_info", {}).get("nom", "N/A"),
+                "outil_reference": mouvement.get("outil_info", {}).get("reference", "N/A"),
+                "entrepot_nom": mouvement.get("entrepot_info", {}).get("nom", "N/A"),
+                "type_mouvement": mouvement.get("type_mouvement"),
+                "quantite": mouvement.get("quantite"),
+                "stock_avant": mouvement.get("stock_avant"),
+                "stock_apres": mouvement.get("stock_apres"),
+                "motif": mouvement.get("motif"),
+                "date_mouvement": mouvement.get("date_mouvement"),
+                "fait_par": mouvement.get("fait_par")
+            }
+            mouvements.append(mouvement_data)
+        
+        # Statistiques du rapport
+        stats = {
+            "total_mouvements": len(mouvements),
+            "approvisionnements": len([m for m in mouvements if m["type_mouvement"] == "approvisionnement"]),
+            "affectations": len([m for m in mouvements if m["type_mouvement"] == "affectation"]),
+            "retours": len([m for m in mouvements if m["type_mouvement"] == "retour"]),
+            "periode": {
+                "debut": date_debut or "Début",
+                "fin": date_fin or "Aujourd'hui"
+            }
+        }
+        
+        return {
+            "mouvements": mouvements,
+            "statistiques": stats
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération du rapport: {str(e)}")
+
+@app.get("/api/outils/rapports/stock-par-entrepot")
+async def get_rapport_stock_entrepots(current_user: dict = Depends(technicien_manager_admin())):
+    """Rapport des stocks par entrepôt"""
+    try:
+        # Pipeline d'agrégation pour grouper les outils par entrepôt
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$entrepot_id",
+                    "total_outils": {"$sum": 1},
+                    "stock_total": {"$sum": "$quantite_stock"},
+                    "stock_disponible": {"$sum": "$quantite_disponible"},
+                    "valeur_totale_usd": {"$sum": {"$multiply": ["$quantite_stock", "$prix_unitaire_usd"]}},
+                    "outils": {
+                        "$push": {
+                            "nom": "$nom",
+                            "reference": "$reference", 
+                            "quantite_stock": "$quantite_stock",
+                            "quantite_disponible": "$quantite_disponible",
+                            "prix_unitaire_usd": "$prix_unitaire_usd"
+                        }
+                    }
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "entrepots",
+                    "localField": "_id", 
+                    "foreignField": "id",
+                    "as": "entrepot_info"
+                }
+            },
+            {"$unwind": {"path": "$entrepot_info", "preserveNullAndEmptyArrays": True}}
+        ]
+        
+        stocks_par_entrepot = []
+        cursor = db.outils.aggregate(pipeline)
+        
+        async for stock in cursor:
+            stock_data = {
+                "entrepot_id": stock.get("_id"),
+                "entrepot_nom": stock.get("entrepot_info", {}).get("nom", "Sans entrepôt"),
+                "entrepot_adresse": stock.get("entrepot_info", {}).get("adresse", "N/A"),
+                "total_outils": stock.get("total_outils", 0),
+                "stock_total": stock.get("stock_total", 0),
+                "stock_disponible": stock.get("stock_disponible", 0),
+                "stock_affecte": stock.get("stock_total", 0) - stock.get("stock_disponible", 0),
+                "valeur_totale_usd": round(stock.get("valeur_totale_usd", 0), 2),
+                "outils": stock.get("outils", [])
+            }
+            stocks_par_entrepot.append(stock_data)
+        
+        # Statistiques globales
+        stats = {
+            "nombre_entrepots": len(stocks_par_entrepot),
+            "stock_total_global": sum([s["stock_total"] for s in stocks_par_entrepot]),
+            "stock_disponible_global": sum([s["stock_disponible"] for s in stocks_par_entrepot]),
+            "valeur_totale_globale_usd": round(sum([s["valeur_totale_usd"] for s in stocks_par_entrepot]), 2)
+        }
+        
+        return {
+            "stocks_par_entrepot": stocks_par_entrepot,
+            "statistiques_globales": stats
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération du rapport de stock: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
