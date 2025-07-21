@@ -102,7 +102,68 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "✅ RÉSOLU - L'utilisateur indiquait qu'il y avait beaucoup d'erreurs dans l'application FacturApp malgré les corrections précédentes. Tous les problèmes ont été identifiés et corrigés avec succès. L'application est maintenant 100% fonctionnelle. PHASE 5 : Gestion des opportunités - Implémentation liaison multiple opportunités à clients et filtres de recherche TERMINÉE avec succès. NOUVELLE FONCTIONNALITÉ : Gestion complète d'outils d'installation ajoutée avec nouveau rôle 'technicien', modèles backend (Outil, AffectationOutil, ApprovisionnementOutil, RetourOutil), endpoints complets et fonctions d'autorisation."
+user_problem_statement: "Continue avec les tests backend pour les nouvelles fonctionnalités d'entrepôts et rapports que j'ai ajoutées à FacturApp."
+
+backend:
+  - task: "ENTREPÔTS - CRUD COMPLET"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ ENTREPÔTS CRUD COMPLET - ALL TESTS PASSED: POST /api/entrepots (Create 'Entrepôt Principal' with address '123 rue Test', responsible 'Jean Dupont') ✅ WORKING, GET /api/entrepots (List all warehouses) ✅ WORKING, PUT /api/entrepots/{id} (Update address to '456 avenue Nouvelle') ✅ WORKING, DELETE validation with existing tools (correctly prevented deletion) ✅ WORKING. All warehouse CRUD operations are functioning perfectly with proper validation."
+
+  - task: "INTÉGRATION OUTILS-ENTREPÔTS"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ INTÉGRATION OUTILS-ENTREPÔTS - ALL TESTS PASSED: Create tool with entrepot_id specified ✅ WORKING, entrepot_nom automatically filled correctly ✅ WORKING, GET /api/outils displays warehouse information correctly ✅ WORKING. The integration between tools and warehouses is working perfectly - when creating a tool with an entrepot_id, the entrepot_nom is automatically populated and displayed correctly in tool listings. Fixed MongoDB query issue to handle both UUID and ObjectId lookups."
+
+  - task: "RAPPORTS COMPLETS"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ RAPPORTS COMPLETS - ALL TESTS PASSED: GET /api/outils/rapports/mouvements (general report without filters) ✅ WORKING, GET /api/outils/rapports/mouvements with date filters (date_debut=2025-01-01&date_fin=2025-01-31) ✅ WORKING, GET /api/outils/rapports/mouvements with type filter (type_mouvement=approvisionnement) ✅ WORKING, GET /api/outils/rapports/stock-par-entrepot (stock report by warehouse) ✅ WORKING. All reporting endpoints are functioning correctly and returning proper data structures."
+
+  - task: "PERMISSIONS ET VALIDATION"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PERMISSIONS ET VALIDATION - ALL TESTS PASSED: Admin/Manager have full access to all entrepôts and reports endpoints ✅ WORKING, Technicien has read-only access to entrepôts and reports (correctly blocked from creating entrepôts) ✅ WORKING, Validation prevents deletion of entrepôts with existing tools ✅ WORKING. All permission controls are working correctly with proper role-based access control."
+
+  - task: "DONNÉES COMPLEXES"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ DONNÉES COMPLEXES - ALL TESTS PASSED: Created multiple warehouses (Entrepôt Nord, Sud, Central) ✅ WORKING, Created multiple tools in different warehouses with proper entrepot_nom assignment ✅ WORKING, Created tool movements (approvisionnements) ✅ WORKING, Reports with multiple data working correctly ✅ WORKING, Calculated statistics and filtering working ✅ WORKING. Complex data scenarios are handled correctly with proper aggregation and reporting."
 
 backend:
   - task: "Nouveau rôle technicien"
