@@ -2676,33 +2676,6 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                   </div>
                 </div>
 
-                {/* Statistiques */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('config.stats')}</h3>
-                    <span className="text-2xl">📊</span>
-                  </div>
-                  
-                  <div className="space-y-2 text-center">
-                    <div>
-                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{stats.total_users || 0}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">👥 {t('config.stats.users')}</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-green-600 dark:text-green-400">{stats.total_clients || 0}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">🏢 {t('config.stats.clients')}</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{stats.total_produits || 0}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">📦 {t('config.stats.products')}</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{stats.total_factures || 0}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">🧾 {t('config.stats.invoices')}</p>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Taux de change */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                   <div className="flex items-center justify-between mb-4">
