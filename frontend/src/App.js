@@ -380,7 +380,7 @@ const AppContent = () => {
 
       // Données d'outils pour Technicien, Manager et Admin
       if (user.role === 'technicien' || user.role === 'manager' || user.role === 'admin') {
-        console.log('🔧 Chargement des données d'outils pour rôle:', user.role);
+        console.log('🔧 Chargement des données d\'outils pour rôle:', user.role);
         try {
           const [outilsRes, affectationsRes] = await Promise.all([
             apiCall('GET', '/api/outils'),
