@@ -135,6 +135,7 @@ export const AuthProvider = ({ children }) => {
         isManager: () => user?.role === 'manager',
         isComptable: () => user?.role === 'comptable',
         isUtilisateur: () => user?.role === 'utilisateur',
+        isTechnicien: () => user?.role === 'technicien',
         canManageClients: () => checkPermission(['admin', 'manager']),
         canManageProducts: () => checkPermission(['admin', 'manager']),
         canManageInvoices: () => checkPermission(['admin', 'manager', 'comptable']),
