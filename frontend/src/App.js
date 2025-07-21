@@ -2630,6 +2630,300 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           </ProtectedRoute>
         )}
 
+        {/* Section Gestion des Outils */}
+        {activeTab === 'outils' && (
+          <ProtectedRoute requiredRoles={['technicien', 'manager', 'admin']}>
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">🔧 Gestion des Outils</h2>
+                {canManageTools() && (
+                  <button
+                    onClick={() => setShowOutilModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                  >
+                    <span>➕</span> Nouvel Outil
+                  </button>
+                )}
+              </div>
+
+              {/* Statistiques des outils */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Total Outils</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{outils.length}</p>
+                    </div>
+                    <span className="text-3xl">🔧</span>
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Disponibles</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        {outils.reduce((sum, outil) => sum + (outil.quantite_disponible || 0), 0)}
+                      </p>
+                    </div>
+                    <span className="text-3xl">✅</span>
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Affectés</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {affectations.filter(a => a.statut === 'affecte').length}
+                      </p>
+                    </div>
+                    <span className="text-3xl">👨‍🔧</span>
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Stock Total</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {outils.reduce((sum, outil) => sum + (outil.quantite_stock || 0), 0)}
+                      </p>
+                    </div>
+                    <span className="text-3xl">📦</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tableau des outils */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Liste des Outils</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Outil
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Référence
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Stock / Dispo
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Prix USD
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Localisation
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {outils.map((outil) => (
+                        <tr key={outil.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                {outil.nom}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                {outil.description}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {outil.reference || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="text-gray-900 dark:text-white">
+                              <span className="font-medium">{outil.quantite_stock || 0}</span> / 
+                              <span className="text-green-600 dark:text-green-400 ml-1">
+                                {outil.quantite_disponible || 0}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {outil.prix_unitaire_usd ? `$${outil.prix_unitaire_usd}` : 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {outil.localisation || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedOutil(outil);
+                                setShowMouvementsOutilModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              📈 Historique
+                            </button>
+                            {canManageTools() && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setSelectedOutil(outil);
+                                    setApprovisionnementForm({ ...approvisionnementForm, quantite_ajoutee: 1 });
+                                    setShowApprovisionnementModal(true);
+                                  }}
+                                  className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                >
+                                  📦 Approvisionner
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedOutil(outil);
+                                    setAffectationForm({ 
+                                      ...affectationForm, 
+                                      quantite_affectee: Math.min(1, outil.quantite_disponible || 0) 
+                                    });
+                                    setShowAffectationModal(true);
+                                  }}
+                                  className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                                  disabled={!outil.quantite_disponible}
+                                >
+                                  👨‍🔧 Affecter
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingOutil(outil);
+                                    setOutilForm({
+                                      nom: outil.nom,
+                                      description: outil.description || '',
+                                      reference: outil.reference || '',
+                                      quantite_stock: outil.quantite_stock,
+                                      prix_unitaire_usd: outil.prix_unitaire_usd || '',
+                                      fournisseur: outil.fournisseur || '',
+                                      date_achat: outil.date_achat ? new Date(outil.date_achat).toISOString().split('T')[0] : '',
+                                      etat: outil.etat || 'neuf',
+                                      localisation: outil.localisation || '',
+                                      numero_serie: outil.numero_serie || ''
+                                    });
+                                    setShowOutilModal(true);
+                                  }}
+                                  className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
+                                >
+                                  ✏️ Modifier
+                                </button>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {outils.length === 0 && (
+                        <tr>
+                          <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            Aucun outil enregistré
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Tableau des affectations */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    {user.role === 'technicien' ? 'Mes Affectations' : 'Affectations d\'Outils'}
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Outil
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Technicien
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Quantité
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Date Affectation
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Statut
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {affectations.map((affectation) => (
+                        <tr key={affectation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {affectation.outil_nom}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {affectation.technicien_nom}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {affectation.quantite_affectee}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {new Date(affectation.date_affectation).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              affectation.statut === 'affecte' 
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                : affectation.statut === 'retourne'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            }`}>
+                              {affectation.statut === 'affecte' ? 'Affecté' : 
+                               affectation.statut === 'retourne' ? 'Retourné' : 
+                               affectation.statut}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            {affectation.statut === 'affecte' && 
+                             (user.role !== 'technicien' || affectation.technicien_id === user.id) && (
+                              <button
+                                onClick={() => {
+                                  setSelectedAffectation(affectation);
+                                  setRetourForm({
+                                    quantite_retournee: affectation.quantite_affectee,
+                                    etat_retour: 'bon',
+                                    notes_retour: ''
+                                  });
+                                  setShowRetourModal(true);
+                                }}
+                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                              >
+                                ↩️ Retourner
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {affectations.length === 0 && (
+                        <tr>
+                          <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            Aucune affectation
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </ProtectedRoute>
+        )}
+
         {/* Section Gestion des utilisateurs */}
         {activeTab === 'users' && (
           <ProtectedRoute requiredRoles={['admin', 'support']}>
