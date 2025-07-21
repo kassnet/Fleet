@@ -581,6 +581,18 @@ test_plan:
         agent: "testing"
         comment: "🎉 TESTS COMPLETS INTÉGRATION RÔLE TECHNICIEN - 100% FONCTIONNELLE! RÉSULTATS DÉTAILLÉS: ✅ 1. LOGIN ET NAVIGATION: Connexion admin@facturapp.rdc réussie, navigation vers section '👤 Users' fonctionnelle. ✅ 2. LISTE DÉROULANTE RÔLES: Rôle 'technicien' présent avec icône 🔧, ordre correct (Utilisateur, Comptable, Manager, Technicien, Admin), toutes les options correctement configurées. ✅ 3. CRÉATION UTILISATEUR: Modal 'Nouvel utilisateur' fonctionnel, sélection rôle technicien possible, processus de création testé avec succès. ✅ 4. AFFICHAGE TABLEAU: 2 utilisateurs techniciens trouvés avec badges '🔧 Technicien', 4 avatars avec couleurs orange/jaune détectés, statut 'Actif' correctement affiché. ✅ 5. INTERFACE UTILISATEUR: Badges avec couleurs orange/jaune (bg-gradient-to-r from-orange-500 to-yellow-500), icône 🔧 correctement affichée, design cohérent avec le reste de l'interface. ✅ 6. PERMISSIONS: Accès approprié selon le rôle, interface de création accessible aux admin/support, affichage correct des utilisateurs existants. 🎯 CONCLUSION: L'intégration du rôle 'technicien' dans l'interface de gestion d'utilisateurs est parfaitement implémentée avec icône, couleurs, ordre et fonctionnalités comme demandé dans les spécifications!"
 
+  - task: "Diagnostic erreur 422 affectation outils"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ DIAGNOSTIC COMPLET TERMINÉ - Erreur 422 identifiée et expliquée! CAUSE RACINE: L'erreur 422 (Unprocessable Entity) sur POST /api/outils/{id}/affecter se produit uniquement quand le champ 'outil_id' est manquant dans le payload JSON. TESTS RÉALISÉS: (1) ✅ Affectation TAT100 à Israël Kanda avec quantité 5 réussie avec payload complet {outil_id, technicien_id, quantite_affectee, notes_affectation}, (2) ❌ Échec avec payload minimal sans outil_id (erreur 422 'Field required'), (3) ✅ Validation des champs obligatoires confirmée selon modèle Pydantic AffectationOutilCreate. SOLUTION: Le frontend doit toujours inclure 'outil_id' dans le payload même si l'ID est dans l'URL. PROBLÈMES MINEURS: Validation insuffisante pour quantités négatives/zéro (acceptées mais ne devraient pas). CONCLUSION: Backend fonctionne correctement, problème côté frontend avec payload incomplet."
+
 agent_communication:
   - agent: "main"
     message: "✅ PHASE 5 TERMINÉE AVEC SUCCÈS - Toutes les 5 phases terminées ! Gestion des opportunités améliorée avec liaison multiple clients et filtres de recherche. Backend: Endpoints POST /api/outils/{id}/affecter et GET /api/opportunites/{id}/liees pour liaison, GET /api/opportunites avec filtres (client_id, etape, priorite, search) et GET /api/opportunites/filtres pour options. Frontend: Interface filtres complète (5 champs + boutons), modal liaison client, intégration avec loadData(). Système complet de gestion d'opportunités avec filtrage et liaison. TOUTES LES PHASES DÉVELOPPÉES AVEC SUCCÈS!"
