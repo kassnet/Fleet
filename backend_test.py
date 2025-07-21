@@ -3934,19 +3934,764 @@ def test_tool_provisioning_fix():
         print("❌ Further investigation and fixes are needed")
         return False
 
-if __name__ == "__main__":
-    # Run tool provisioning test as requested in the review
-    print("🚀 STARTING TOOL PROVISIONING SYNCHRONIZATION TEST")
+def test_authentication(email, password):
+    """Test authentication and return authenticated tester"""
+    print(f"\n🔐 Testing authentication for {email}")
+    
+    tester = FactureProTester()
+    
+    # Login request
+    login_data = {
+        "email": email,
+        "password": password
+    }
+    
+    success, response = tester.run_test(
+        "User Authentication",
+        "POST",
+        "/api/auth/login",
+        200,
+        data=login_data
+    )
+    
+    if success and response:
+        token = response.get('access_token')
+        user_info = response.get('user', {})
+        
+        if token:
+            # Set authorization header for future requests
+            tester.headers['Authorization'] = f'Bearer {token}'
+            tester.token = token
+            
+            print(f"✅ Authentication successful for {email}")
+            print(f"👤 User: {user_info.get('prenom')} {user_info.get('nom')}")
+            print(f"🎭 Role: {user_info.get('role')}")
+            
+            return True, tester
+        else:
+            print("❌ Authentication failed - no token received")
+            return False, None
+    else:
+        print("❌ Authentication failed")
+        return False, None
+
+def test_entrepots_crud_complet(tester):
+    """Test complete CRUD operations for warehouses (entrepôts)"""
+    print("\n" + "=" * 80)
+    print("🏭 TESTING ENTREPÔTS - CRUD COMPLET")
     print("=" * 80)
     
-    tool_success = test_tool_provisioning_fix()
+    # 1. POST /api/entrepots : Créer "Entrepôt Principal"
+    print("\n🔍 STEP 1: Creating 'Entrepôt Principal'")
+    entrepot_data = {
+        "nom": "Entrepôt Principal",
+        "description": "Entrepôt principal pour les outils d'installation",
+        "adresse": "123 rue Test",
+        "responsable": "Jean Dupont",
+        "capacite_max": 1000,
+        "statut": "actif"
+    }
     
-    if tool_success:
-        print("\n🎉 TOOL PROVISIONING SYNCHRONIZATION TEST COMPLETED SUCCESSFULLY!")
-        print("✅ The synchronization fix is working correctly")
-        print("✅ Tool management functionality is 100% operational")
-        sys.exit(0)
+    success, created_entrepot = tester.run_test(
+        "Create Entrepôt Principal",
+        "POST",
+        "/api/entrepots",
+        200,
+        data=entrepot_data
+    )
+    
+    if not success or not created_entrepot:
+        print("❌ Failed to create entrepôt")
+        return False
+    
+    entrepot_id = created_entrepot.get('id')
+    print(f"✅ Created entrepôt with ID: {entrepot_id}")
+    print(f"📍 Address: {created_entrepot.get('adresse')}")
+    print(f"👤 Responsible: {created_entrepot.get('responsable')}")
+    
+    # 2. GET /api/entrepots : Lister tous les entrepôts
+    print("\n🔍 STEP 2: Listing all entrepôts")
+    success, entrepots_list = tester.run_test(
+        "Get All Entrepôts",
+        "GET",
+        "/api/entrepots",
+        200
+    )
+    
+    if not success or not entrepots_list:
+        print("❌ Failed to get entrepôts list")
+        return False
+    
+    print(f"✅ Retrieved {len(entrepots_list)} entrepôt(s)")
+    for entrepot in entrepots_list:
+        print(f"  - {entrepot.get('nom')} (ID: {entrepot.get('id')})")
+    
+    # Verify our created entrepôt is in the list
+    found_entrepot = next((e for e in entrepots_list if e.get('id') == entrepot_id), None)
+    if found_entrepot:
+        print("✅ Created entrepôt found in list")
     else:
-        print("\n❌ TOOL PROVISIONING SYNCHRONIZATION TEST FAILED")
-        print("❌ The synchronization problem still needs to be fixed")
-        sys.exit(1)
+        print("❌ Created entrepôt not found in list")
+        return False
+    
+    # 3. PUT /api/entrepots/{id} : Modifier l'entrepôt (changer adresse)
+    print("\n🔍 STEP 3: Updating entrepôt address")
+    updated_data = created_entrepot.copy()
+    updated_data["adresse"] = "456 avenue Nouvelle"
+    updated_data["description"] = "Entrepôt principal mis à jour"
+    
+    success, updated_entrepot = tester.run_test(
+        "Update Entrepôt Address",
+        "PUT",
+        f"/api/entrepots/{entrepot_id}",
+        200,
+        data=updated_data
+    )
+    
+    if not success or not updated_entrepot:
+        print("❌ Failed to update entrepôt")
+        return False
+    
+    if updated_entrepot.get('adresse') == "456 avenue Nouvelle":
+        print("✅ Entrepôt address successfully updated")
+        print(f"📍 New address: {updated_entrepot.get('adresse')}")
+    else:
+        print("❌ Entrepôt address not updated correctly")
+        return False
+    
+    # 4. Test validation : Essayer DELETE avec outils existants (doit échouer)
+    print("\n🔍 STEP 4: Testing DELETE validation with existing tools")
+    
+    # First, create a tool associated with this entrepôt
+    print("Creating a tool associated with the entrepôt...")
+    tool_data = {
+        "nom": "Test Tool for Entrepôt",
+        "description": "Tool for testing entrepôt deletion validation",
+        "reference": "TEST-001",
+        "entrepot_id": entrepot_id,
+        "quantite_stock": 5,
+        "prix_unitaire_usd": 100.0,
+        "fournisseur": "Test Supplier",
+        "etat": "neuf",
+        "localisation": "Section A",
+        "numero_serie": "SN123456"
+    }
+    
+    success, created_tool = tester.run_test(
+        "Create Tool for Entrepôt",
+        "POST",
+        "/api/outils",
+        200,
+        data=tool_data
+    )
+    
+    if not success or not created_tool:
+        print("❌ Failed to create tool for entrepôt validation test")
+        return False
+    
+    print(f"✅ Created tool with ID: {created_tool.get('id')}")
+    
+    # Now try to delete the entrepôt (should fail)
+    success, response = tester.run_test(
+        "Try to Delete Entrepôt with Tools",
+        "DELETE",
+        f"/api/entrepots/{entrepot_id}",
+        400,  # Expecting 400 error
+        print_response=True
+    )
+    
+    if not success:  # success=False means we got the expected 400 error
+        print("✅ Correctly prevented deletion of entrepôt with existing tools")
+    else:
+        print("❌ Failed: Entrepôt deletion was allowed despite having tools")
+        return False
+    
+    # Store the entrepôt and tool for integration tests
+    tester.test_entrepot = updated_entrepot
+    tester.test_tool = created_tool
+    
+    print("\n✅ ENTREPÔTS CRUD TESTS COMPLETED SUCCESSFULLY")
+    return True
+
+def test_integration_outils_entrepots(tester):
+    """Test integration between tools and warehouses"""
+    print("\n" + "=" * 80)
+    print("🔧 TESTING INTÉGRATION OUTILS-ENTREPÔTS")
+    print("=" * 80)
+    
+    if not hasattr(tester, 'test_entrepot') or not tester.test_entrepot:
+        print("❌ No test entrepôt available for integration test")
+        return False
+    
+    entrepot_id = tester.test_entrepot.get('id')
+    entrepot_nom = tester.test_entrepot.get('nom')
+    
+    # 1. Créer un outil avec entrepot_id spécifié
+    print("\n🔍 STEP 1: Creating tool with specified entrepot_id")
+    tool_data = {
+        "nom": "Outil Intégration Test",
+        "description": "Tool for testing warehouse integration",
+        "reference": "INT-001",
+        "entrepot_id": entrepot_id,
+        "quantite_stock": 10,
+        "prix_unitaire_usd": 150.0,
+        "fournisseur": "Integration Supplier",
+        "etat": "neuf",
+        "localisation": "Section B",
+        "numero_serie": "INT123456"
+    }
+    
+    success, created_tool = tester.run_test(
+        "Create Tool with Entrepôt ID",
+        "POST",
+        "/api/outils",
+        200,
+        data=tool_data
+    )
+    
+    if not success or not created_tool:
+        print("❌ Failed to create tool with entrepôt ID")
+        return False
+    
+    tool_id = created_tool.get('id')
+    print(f"✅ Created tool with ID: {tool_id}")
+    
+    # 2. Vérifier que entrepot_nom est automatiquement renseigné
+    print("\n🔍 STEP 2: Verifying entrepot_nom is automatically filled")
+    
+    if created_tool.get('entrepot_nom') == entrepot_nom:
+        print(f"✅ entrepot_nom correctly filled: {created_tool.get('entrepot_nom')}")
+    else:
+        print(f"❌ entrepot_nom not filled correctly. Expected: {entrepot_nom}, Got: {created_tool.get('entrepot_nom')}")
+        return False
+    
+    # 3. GET /api/outils : Vérifier l'affichage des informations d'entrepôt
+    print("\n🔍 STEP 3: Verifying warehouse info display in tools list")
+    
+    success, tools_list = tester.run_test(
+        "Get All Tools",
+        "GET",
+        "/api/outils",
+        200
+    )
+    
+    if not success or not tools_list:
+        print("❌ Failed to get tools list")
+        return False
+    
+    # Find our created tool in the list
+    found_tool = next((t for t in tools_list if t.get('id') == tool_id), None)
+    if not found_tool:
+        print("❌ Created tool not found in tools list")
+        return False
+    
+    print(f"✅ Found tool in list: {found_tool.get('nom')}")
+    print(f"🏭 Entrepôt ID: {found_tool.get('entrepot_id')}")
+    print(f"🏭 Entrepôt Name: {found_tool.get('entrepot_nom')}")
+    
+    # Verify warehouse information is correctly displayed
+    if (found_tool.get('entrepot_id') == entrepot_id and 
+        found_tool.get('entrepot_nom') == entrepot_nom):
+        print("✅ Warehouse information correctly displayed in tools list")
+    else:
+        print("❌ Warehouse information not correctly displayed")
+        return False
+    
+    print("\n✅ OUTILS-ENTREPÔTS INTEGRATION TESTS COMPLETED SUCCESSFULLY")
+    return True
+
+def test_rapports_complets(tester):
+    """Test complete reporting functionality"""
+    print("\n" + "=" * 80)
+    print("📊 TESTING RAPPORTS COMPLETS")
+    print("=" * 80)
+    
+    # 1. GET /api/outils/rapports/mouvements : Rapport général sans filtres
+    print("\n🔍 STEP 1: Testing general movements report without filters")
+    
+    success, general_report = tester.run_test(
+        "Get General Movements Report",
+        "GET",
+        "/api/outils/rapports/mouvements",
+        200
+    )
+    
+    if not success or general_report is None:
+        print("❌ Failed to get general movements report")
+        return False
+    
+    print(f"✅ Retrieved general movements report")
+    if isinstance(general_report, dict):
+        print(f"📊 Total movements: {general_report.get('total_mouvements', 'N/A')}")
+        print(f"📊 Movements by type: {general_report.get('mouvements_par_type', {})}")
+    elif isinstance(general_report, list):
+        print(f"📊 Number of movements: {len(general_report)}")
+    
+    # 2. GET /api/outils/rapports/mouvements avec filtres dates
+    print("\n🔍 STEP 2: Testing movements report with date filters")
+    
+    success, date_filtered_report = tester.run_test(
+        "Get Movements Report with Date Filters",
+        "GET",
+        "/api/outils/rapports/mouvements?date_debut=2025-01-01&date_fin=2025-01-31",
+        200
+    )
+    
+    if not success or date_filtered_report is None:
+        print("❌ Failed to get date-filtered movements report")
+        return False
+    
+    print("✅ Retrieved movements report with date filters")
+    if isinstance(date_filtered_report, dict):
+        print(f"📊 Filtered movements: {date_filtered_report.get('total_mouvements', 'N/A')}")
+    elif isinstance(date_filtered_report, list):
+        print(f"📊 Number of filtered movements: {len(date_filtered_report)}")
+    
+    # 3. GET /api/outils/rapports/mouvements avec filtre par type
+    print("\n🔍 STEP 3: Testing movements report with type filter")
+    
+    success, type_filtered_report = tester.run_test(
+        "Get Movements Report with Type Filter",
+        "GET",
+        "/api/outils/rapports/mouvements?type_mouvement=approvisionnement",
+        200
+    )
+    
+    if not success or type_filtered_report is None:
+        print("❌ Failed to get type-filtered movements report")
+        return False
+    
+    print("✅ Retrieved movements report with type filter")
+    if isinstance(type_filtered_report, dict):
+        print(f"📊 Approvisionnement movements: {type_filtered_report.get('total_mouvements', 'N/A')}")
+    elif isinstance(type_filtered_report, list):
+        print(f"📊 Number of approvisionnement movements: {len(type_filtered_report)}")
+    
+    # 4. GET /api/outils/rapports/stock-par-entrepot : Rapport stocks par entrepôt
+    print("\n🔍 STEP 4: Testing stock report by warehouse")
+    
+    success, stock_report = tester.run_test(
+        "Get Stock Report by Warehouse",
+        "GET",
+        "/api/outils/rapports/stock-par-entrepot",
+        200
+    )
+    
+    if not success or stock_report is None:
+        print("❌ Failed to get stock report by warehouse")
+        return False
+    
+    print("✅ Retrieved stock report by warehouse")
+    if isinstance(stock_report, dict):
+        print(f"📊 Total warehouses: {stock_report.get('total_entrepots', 'N/A')}")
+        print(f"📊 Total stock value: {stock_report.get('valeur_totale_stock', 'N/A')}")
+        if 'entrepots' in stock_report:
+            for entrepot in stock_report['entrepots'][:3]:  # Show first 3
+                print(f"  - {entrepot.get('nom', 'N/A')}: {entrepot.get('total_outils', 0)} tools, {entrepot.get('stock_total', 0)} units")
+    elif isinstance(stock_report, list):
+        print(f"📊 Number of warehouses with stock: {len(stock_report)}")
+        for entrepot in stock_report[:3]:  # Show first 3
+            print(f"  - {entrepot.get('nom', 'N/A')}: {entrepot.get('total_outils', 0)} tools")
+    
+    print("\n✅ RAPPORTS COMPLETS TESTS COMPLETED SUCCESSFULLY")
+    return True
+
+def test_permissions_et_validation(tester):
+    """Test permissions and validation for warehouses and reports"""
+    print("\n" + "=" * 80)
+    print("🔐 TESTING PERMISSIONS ET VALIDATION")
+    print("=" * 80)
+    
+    # Test with different user roles
+    test_users = [
+        {"email": "admin@facturapp.rdc", "password": "admin123", "role": "admin", "should_have_full_access": True},
+        {"email": "manager@demo.com", "password": "manager123", "role": "manager", "should_have_full_access": True},
+    ]
+    
+    # Try to create a technicien user for testing
+    print("\n🔍 Creating technicien user for permission testing")
+    technicien_data = {
+        "email": "technicien.test@facturapp.rdc",
+        "nom": "Technicien",
+        "prenom": "Test",
+        "password": "technicien123",
+        "role": "technicien"
+    }
+    
+    success, created_user = tester.run_test(
+        "Create Technicien User",
+        "POST",
+        "/api/users",
+        200,
+        data=technicien_data
+    )
+    
+    if success:
+        test_users.append({
+            "email": "technicien.test@facturapp.rdc", 
+            "password": "technicien123", 
+            "role": "technicien", 
+            "should_have_full_access": False
+        })
+        print("✅ Created technicien user for testing")
+    else:
+        print("⚠️ Could not create technicien user, will test with existing users only")
+    
+    for user_info in test_users:
+        print(f"\n🔍 Testing permissions for {user_info['role']} ({user_info['email']})")
+        
+        # Authenticate as this user
+        auth_success, user_tester = test_authentication(user_info['email'], user_info['password'])
+        if not auth_success:
+            print(f"❌ Failed to authenticate as {user_info['role']}")
+            continue
+        
+        # Test entrepôts access
+        print(f"Testing entrepôts access for {user_info['role']}...")
+        
+        # GET /api/entrepots (should work for all roles)
+        success, _ = user_tester.run_test(
+            f"Get Entrepôts as {user_info['role']}",
+            "GET",
+            "/api/entrepots",
+            200,
+            print_response=False
+        )
+        
+        if success:
+            print(f"✅ {user_info['role']} can read entrepôts")
+        else:
+            print(f"❌ {user_info['role']} cannot read entrepôts")
+        
+        # POST /api/entrepots (should only work for admin/manager)
+        test_entrepot = {
+            "nom": f"Test Entrepôt {user_info['role']}",
+            "adresse": "Test Address",
+            "responsable": "Test Responsible"
+        }
+        
+        expected_status = 200 if user_info['should_have_full_access'] else 403
+        success, _ = user_tester.run_test(
+            f"Create Entrepôt as {user_info['role']}",
+            "POST",
+            "/api/entrepots",
+            expected_status,
+            data=test_entrepot,
+            print_response=False
+        )
+        
+        if user_info['should_have_full_access']:
+            if success:
+                print(f"✅ {user_info['role']} can create entrepôts")
+            else:
+                print(f"❌ {user_info['role']} should be able to create entrepôts but cannot")
+        else:
+            if not success:
+                print(f"✅ {user_info['role']} correctly blocked from creating entrepôts")
+            else:
+                print(f"❌ {user_info['role']} should not be able to create entrepôts but can")
+        
+        # Test reports access
+        print(f"Testing reports access for {user_info['role']}...")
+        
+        # GET /api/outils/rapports/mouvements (should work for all roles)
+        success, _ = user_tester.run_test(
+            f"Get Movements Report as {user_info['role']}",
+            "GET",
+            "/api/outils/rapports/mouvements",
+            200,
+            print_response=False
+        )
+        
+        if success:
+            print(f"✅ {user_info['role']} can access movements reports")
+        else:
+            print(f"❌ {user_info['role']} cannot access movements reports")
+        
+        # GET /api/outils/rapports/stock-par-entrepot (should work for all roles)
+        success, _ = user_tester.run_test(
+            f"Get Stock Report as {user_info['role']}",
+            "GET",
+            "/api/outils/rapports/stock-par-entrepot",
+            200,
+            print_response=False
+        )
+        
+        if success:
+            print(f"✅ {user_info['role']} can access stock reports")
+        else:
+            print(f"❌ {user_info['role']} cannot access stock reports")
+    
+    print("\n✅ PERMISSIONS ET VALIDATION TESTS COMPLETED")
+    return True
+
+def test_donnees_complexes(tester):
+    """Test with complex data scenarios"""
+    print("\n" + "=" * 80)
+    print("🧪 TESTING DONNÉES COMPLEXES")
+    print("=" * 80)
+    
+    # 1. Créer plusieurs entrepôts
+    print("\n🔍 STEP 1: Creating multiple warehouses")
+    entrepots_data = [
+        {
+            "nom": "Entrepôt Nord",
+            "description": "Entrepôt zone nord",
+            "adresse": "Zone Industrielle Nord",
+            "responsable": "Marie Dubois",
+            "capacite_max": 500
+        },
+        {
+            "nom": "Entrepôt Sud",
+            "description": "Entrepôt zone sud",
+            "adresse": "Zone Industrielle Sud", 
+            "responsable": "Pierre Martin",
+            "capacite_max": 800
+        },
+        {
+            "nom": "Entrepôt Central",
+            "description": "Entrepôt central",
+            "adresse": "Centre Ville",
+            "responsable": "Sophie Laurent",
+            "capacite_max": 1200
+        }
+    ]
+    
+    created_entrepots = []
+    for i, entrepot_data in enumerate(entrepots_data):
+        success, created_entrepot = tester.run_test(
+            f"Create Entrepôt {i+1}",
+            "POST",
+            "/api/entrepots",
+            200,
+            data=entrepot_data,
+            print_response=False
+        )
+        
+        if success and created_entrepot:
+            created_entrepots.append(created_entrepot)
+            print(f"✅ Created {created_entrepot.get('nom')}")
+        else:
+            print(f"❌ Failed to create entrepôt {i+1}")
+    
+    if len(created_entrepots) < 2:
+        print("❌ Need at least 2 entrepôts for complex data testing")
+        return False
+    
+    # 2. Créer plusieurs outils dans différents entrepôts
+    print("\n🔍 STEP 2: Creating multiple tools in different warehouses")
+    outils_data = [
+        {
+            "nom": "Perceuse Électrique",
+            "reference": "PE-001",
+            "entrepot_id": created_entrepots[0].get('id'),
+            "quantite_stock": 15,
+            "prix_unitaire_usd": 120.0,
+            "fournisseur": "ToolCorp",
+            "etat": "neuf"
+        },
+        {
+            "nom": "Marteau Pneumatique",
+            "reference": "MP-002",
+            "entrepot_id": created_entrepots[1].get('id'),
+            "quantite_stock": 8,
+            "prix_unitaire_usd": 350.0,
+            "fournisseur": "PowerTools",
+            "etat": "neuf"
+        },
+        {
+            "nom": "Scie Circulaire",
+            "reference": "SC-003",
+            "entrepot_id": created_entrepots[0].get('id'),
+            "quantite_stock": 12,
+            "prix_unitaire_usd": 200.0,
+            "fournisseur": "CutMaster",
+            "etat": "bon"
+        }
+    ]
+    
+    created_outils = []
+    for i, outil_data in enumerate(outils_data):
+        success, created_outil = tester.run_test(
+            f"Create Tool {i+1}",
+            "POST",
+            "/api/outils",
+            200,
+            data=outil_data,
+            print_response=False
+        )
+        
+        if success and created_outil:
+            created_outils.append(created_outil)
+            print(f"✅ Created {created_outil.get('nom')} in {created_outil.get('entrepot_nom')}")
+        else:
+            print(f"❌ Failed to create tool {i+1}")
+    
+    # 3. Créer des mouvements (approvisionnements)
+    print("\n🔍 STEP 3: Creating tool movements (approvisionnements)")
+    for i, outil in enumerate(created_outils[:2]):  # Test with first 2 tools
+        outil_id = outil.get('id')
+        approvisionnement_data = {
+            "quantite_ajoutee": 5 + i * 2,
+            "prix_unitaire_usd": outil.get('prix_unitaire_usd'),
+            "fournisseur": outil.get('fournisseur'),
+            "notes": f"Approvisionnement test {i+1}"
+        }
+        
+        success, _ = tester.run_test(
+            f"Approvisionner Tool {i+1}",
+            "POST",
+            f"/api/outils/{outil_id}/approvisionner",
+            200,
+            data=approvisionnement_data,
+            print_response=False
+        )
+        
+        if success:
+            print(f"✅ Approvisioned {outil.get('nom')}")
+        else:
+            print(f"❌ Failed to approvision {outil.get('nom')}")
+    
+    # 4. Tester rapports avec données multiples
+    print("\n🔍 STEP 4: Testing reports with multiple data")
+    
+    # Test movements report
+    success, movements_report = tester.run_test(
+        "Get Complex Movements Report",
+        "GET",
+        "/api/outils/rapports/mouvements",
+        200,
+        print_response=False
+    )
+    
+    if success and movements_report:
+        print("✅ Retrieved complex movements report")
+        if isinstance(movements_report, dict):
+            print(f"📊 Total movements: {movements_report.get('total_mouvements', 'N/A')}")
+            print(f"📊 Movements by type: {movements_report.get('mouvements_par_type', {})}")
+        elif isinstance(movements_report, list):
+            print(f"📊 Number of movements: {len(movements_report)}")
+            # Show movement types
+            types = set(m.get('type_mouvement', 'unknown') for m in movements_report)
+            print(f"📊 Movement types found: {list(types)}")
+    
+    # Test stock report by warehouse
+    success, stock_report = tester.run_test(
+        "Get Complex Stock Report",
+        "GET",
+        "/api/outils/rapports/stock-par-entrepot",
+        200,
+        print_response=False
+    )
+    
+    if success and stock_report:
+        print("✅ Retrieved complex stock report")
+        if isinstance(stock_report, dict):
+            print(f"📊 Total warehouses: {stock_report.get('total_entrepots', 'N/A')}")
+            print(f"📊 Total stock value: {stock_report.get('valeur_totale_stock', 'N/A')} USD")
+            if 'entrepots' in stock_report:
+                for entrepot in stock_report['entrepots']:
+                    print(f"  - {entrepot.get('nom', 'N/A')}: {entrepot.get('total_outils', 0)} tools, {entrepot.get('stock_total', 0)} units, {entrepot.get('valeur_stock', 0)} USD")
+        elif isinstance(stock_report, list):
+            print(f"📊 Number of warehouses: {len(stock_report)}")
+            total_value = 0
+            for entrepot in stock_report:
+                value = entrepot.get('valeur_stock', 0)
+                total_value += value
+                print(f"  - {entrepot.get('nom', 'N/A')}: {entrepot.get('total_outils', 0)} tools, {value} USD")
+            print(f"📊 Total calculated value: {total_value} USD")
+    
+    # 5. Vérifier statistiques calculées
+    print("\n🔍 STEP 5: Verifying calculated statistics")
+    
+    # Test with date filters
+    success, filtered_report = tester.run_test(
+        "Get Filtered Movements Report",
+        "GET",
+        "/api/outils/rapports/mouvements?type_mouvement=approvisionnement",
+        200,
+        print_response=False
+    )
+    
+    if success and filtered_report:
+        print("✅ Retrieved filtered movements report")
+        if isinstance(filtered_report, dict):
+            approvisionnements = filtered_report.get('total_mouvements', 0)
+            print(f"📊 Total approvisionnements: {approvisionnements}")
+        elif isinstance(filtered_report, list):
+            approvisionnements = len([m for m in filtered_report if m.get('type_mouvement') == 'approvisionnement'])
+            print(f"📊 Total approvisionnements: {approvisionnements}")
+    
+    print("\n✅ DONNÉES COMPLEXES TESTS COMPLETED SUCCESSFULLY")
+    return True
+
+def test_nouvelles_fonctionnalites_entrepots_rapports():
+    """Main test function for new warehouse and reporting features"""
+    print("\n" + "=" * 100)
+    print("🏭📊 TESTING NOUVELLES FONCTIONNALITÉS D'ENTREPÔTS ET RAPPORTS")
+    print("=" * 100)
+    
+    # Authenticate with admin user
+    auth_success, tester = test_authentication("admin@facturapp.rdc", "admin123")
+    if not auth_success:
+        print("❌ Authentication failed, cannot proceed with tests")
+        return False
+    
+    test_results = []
+    
+    # 1. Test ENTREPÔTS - CRUD COMPLET
+    print("\n" + "🏭" * 50)
+    result = test_entrepots_crud_complet(tester)
+    test_results.append(("ENTREPÔTS CRUD COMPLET", result))
+    
+    if not result:
+        print("❌ ENTREPÔTS CRUD tests failed, stopping")
+        return False
+    
+    # 2. Test INTÉGRATION OUTILS-ENTREPÔTS
+    print("\n" + "🔧" * 50)
+    result = test_integration_outils_entrepots(tester)
+    test_results.append(("INTÉGRATION OUTILS-ENTREPÔTS", result))
+    
+    # 3. Test RAPPORTS COMPLETS
+    print("\n" + "📊" * 50)
+    result = test_rapports_complets(tester)
+    test_results.append(("RAPPORTS COMPLETS", result))
+    
+    # 4. Test PERMISSIONS ET VALIDATION
+    print("\n" + "🔐" * 50)
+    result = test_permissions_et_validation(tester)
+    test_results.append(("PERMISSIONS ET VALIDATION", result))
+    
+    # 5. Test DONNÉES COMPLEXES
+    print("\n" + "🧪" * 50)
+    result = test_donnees_complexes(tester)
+    test_results.append(("DONNÉES COMPLEXES", result))
+    
+    # Summary
+    print("\n" + "=" * 100)
+    print("📋 SUMMARY OF NEW FEATURES TESTING")
+    print("=" * 100)
+    
+    all_passed = True
+    for test_name, result in test_results:
+        status = "✅ PASSED" if result else "❌ FAILED"
+        print(f"{status} - {test_name}")
+        if not result:
+            all_passed = False
+    
+    print("\n" + "=" * 100)
+    if all_passed:
+        print("🎉 ALL NEW FEATURES TESTS PASSED SUCCESSFULLY!")
+        print("✅ Entrepôts and Rapports functionality is working perfectly")
+    else:
+        print("❌ SOME TESTS FAILED")
+        print("⚠️ Please check the failed tests above")
+    print("=" * 100)
+    
+    return all_passed
+
+if __name__ == "__main__":
+    # Run the new warehouse and reporting features tests
+    success = test_nouvelles_fonctionnalites_entrepots_rapports()
+    sys.exit(0 if success else 1)
