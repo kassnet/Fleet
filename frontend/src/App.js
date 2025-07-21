@@ -378,6 +378,29 @@ const AppContent = () => {
         }
       }
 
+      // Données d'outils pour Technicien, Manager et Admin
+      if (user.role === 'technicien' || user.role === 'manager' || user.role === 'admin') {
+        console.log('🔧 Chargement des données d'outils pour rôle:', user.role);
+        try {
+          const [outilsRes, affectationsRes] = await Promise.all([
+            apiCall('GET', '/api/outils'),
+            apiCall('GET', '/api/affectations')
+          ]);
+          
+          setOutils(outilsRes.data || []);
+          setAffectations(affectationsRes.data || []);
+          console.log('🔧 Données d\'outils chargées - Outils:', outilsRes.data?.length || 0, 'Affectations:', affectationsRes.data?.length || 0);
+        } catch (toolsError) {
+          console.warn('⚠️ Erreur chargement données d\'outils:', toolsError.response?.status);
+          setOutils([]);
+          setAffectations([]);
+        }
+      } else {
+        // Pas d'accès aux outils
+        setOutils([]);
+        setAffectations([]);
+      }
+
       // Données de configuration pour Support uniquement
       if (user.role === 'support') {
         console.log('⚙️ Chargement des paramètres système pour Support');
