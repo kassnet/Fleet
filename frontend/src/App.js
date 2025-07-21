@@ -1438,6 +1438,10 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
       tabs.push({ id: 'ventes', label: t('nav.sales'), icon: '💼', roles: ['admin', 'manager'] });
     }
 
+    if (canAccessTools()) {
+      tabs.push({ id: 'outils', label: 'Outils', icon: '🔧', roles: ['technicien', 'manager', 'admin'] });
+    }
+
     if (canManageUsersExtended()) {
       tabs.push({ id: 'users', label: t('nav.users'), icon: '👤', roles: ['admin', 'support'] });
     }
