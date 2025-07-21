@@ -131,15 +131,18 @@ backend:
 
   - task: "Approvisionnement d'outils"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
         comment: "❌ PROBLÈME IDENTIFIÉ - Endpoint POST /api/outils/{id}/approvisionner fonctionne et retourne succès avec nouveau stock (10→15), mais GET /api/outils/{id} ne reflète pas la mise à jour (reste à 10). Problème de synchronisation entre l'approvisionnement et la récupération des données. Mouvements de stock enregistrés correctement."
+      - working: true
+        agent: "testing"
+        comment: "✅ PROBLÈME RÉSOLU - Test complet de synchronisation d'approvisionnement réussi! RÉSULTATS DÉTAILLÉS: ✅ Création d'outil test avec stock initial 10 unités, ✅ Approvisionnement +5 unités via POST /api/outils/{id}/approvisionner (retourne nouveau_stock: 15, nouvelle_disponibilite: 15), ✅ SYNCHRONISATION IMMÉDIATE: GET /api/outils/{id} reflète correctement le stock mis à jour (quantite_stock: 15, quantite_disponible: 15), ✅ Cohérence des données: Stock total = quantite_stock (15), Disponibilité = quantite_disponible (15), ✅ Mouvement d'approvisionnement enregistré dans l'historique avec tous les détails (type_mouvement: approvisionnement, quantite: 5, stock_avant: 10, stock_apres: 15, motif, date, utilisateur). La synchronisation fonctionne parfaitement maintenant - le problème a été complètement résolu!"
 
   - task: "Affectation d'outils aux techniciens"
     implemented: true
