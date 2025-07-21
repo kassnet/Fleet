@@ -122,8 +122,14 @@ const AppContent = () => {
 
   // Tool forms
   const [outilForm, setOutilForm] = useState({
-    nom: '', description: '', reference: '', quantite_stock: 0, prix_unitaire_usd: '',
+    nom: '', description: '', reference: '', entrepot_id: '', quantite_stock: 0, prix_unitaire_usd: '',
     fournisseur: '', date_achat: '', etat: 'neuf', localisation: '', numero_serie: ''
+  });
+  const [entrepotForm, setEntrepotForm] = useState({
+    nom: '', description: '', adresse: '', responsable: '', capacite_max: '', statut: 'actif'
+  });
+  const [rapportForm, setRapportForm] = useState({
+    date_debut: '', date_fin: '', entrepot_id: '', type_mouvement: ''
   });
   const [approvisionnementForm, setApprovisionnementForm] = useState({
     quantite_ajoutee: 0, prix_unitaire_usd: '', fournisseur: '', date_achat: '', notes: ''
