@@ -4376,6 +4376,556 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         </div>
       )}
 
+      {/* ==== MODALS GESTION D'OUTILS ==== */}
+
+      {/* Modal Outil (Création/Modification) */}
+      {showOutilModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              {editingOutil ? '✏️ Modifier l\'Outil' : '➕ Nouvel Outil'}
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nom de l'outil *
+                </label>
+                <input
+                  type="text"
+                  value={outilForm.nom}
+                  onChange={(e) => setOutilForm({...outilForm, nom: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Référence
+                </label>
+                <input
+                  type="text"
+                  value={outilForm.reference}
+                  onChange={(e) => setOutilForm({...outilForm, reference: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Quantité en stock
+                </label>
+                <input
+                  type="number"
+                  value={outilForm.quantite_stock}
+                  onChange={(e) => setOutilForm({...outilForm, quantite_stock: parseInt(e.target.value) || 0})}
+                  min="0"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Prix unitaire (USD)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={outilForm.prix_unitaire_usd}
+                  onChange={(e) => setOutilForm({...outilForm, prix_unitaire_usd: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Fournisseur
+                </label>
+                <input
+                  type="text"
+                  value={outilForm.fournisseur}
+                  onChange={(e) => setOutilForm({...outilForm, fournisseur: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date d'achat
+                </label>
+                <input
+                  type="date"
+                  value={outilForm.date_achat}
+                  onChange={(e) => setOutilForm({...outilForm, date_achat: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  État
+                </label>
+                <select
+                  value={outilForm.etat}
+                  onChange={(e) => setOutilForm({...outilForm, etat: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="neuf">Neuf</option>
+                  <option value="bon">Bon état</option>
+                  <option value="use">Usé</option>
+                  <option value="defaillant">Défaillant</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Localisation
+                </label>
+                <input
+                  type="text"
+                  value={outilForm.localisation}
+                  onChange={(e) => setOutilForm({...outilForm, localisation: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Ex: Entrepôt A, Bureau technique..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Numéro de série
+                </label>
+                <input
+                  type="text"
+                  value={outilForm.numero_serie}
+                  onChange={(e) => setOutilForm({...outilForm, numero_serie: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description
+              </label>
+              <textarea
+                value={outilForm.description}
+                onChange={(e) => setOutilForm({...outilForm, description: e.target.value})}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowOutilModal(false);
+                  setEditingOutil(null);
+                  setOutilForm({
+                    nom: '', description: '', reference: '', quantite_stock: 0, prix_unitaire_usd: '',
+                    fournisseur: '', date_achat: '', etat: 'neuf', localisation: '', numero_serie: ''
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+                disabled={loading}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveOutil}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                disabled={loading || !outilForm.nom}
+              >
+                {loading ? 'Sauvegarde...' : (editingOutil ? '✏️ Modifier' : '➕ Créer')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Approvisionnement */}
+      {showApprovisionnementModal && selectedOutil && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              📦 Approvisionner: {selectedOutil.nom}
+            </h3>
+
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Stock actuel: <strong>{selectedOutil.quantite_stock}</strong></p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Disponible: <strong>{selectedOutil.quantite_disponible}</strong></p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Quantité à ajouter *
+                </label>
+                <input
+                  type="number"
+                  value={approvisionnementForm.quantite_ajoutee}
+                  onChange={(e) => setApprovisionnementForm({...approvisionnementForm, quantite_ajoutee: parseInt(e.target.value) || 0})}
+                  min="1"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Prix unitaire (USD)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={approvisionnementForm.prix_unitaire_usd}
+                  onChange={(e) => setApprovisionnementForm({...approvisionnementForm, prix_unitaire_usd: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Fournisseur
+                </label>
+                <input
+                  type="text"
+                  value={approvisionnementForm.fournisseur}
+                  onChange={(e) => setApprovisionnementForm({...approvisionnementForm, fournisseur: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date d'achat
+                </label>
+                <input
+                  type="date"
+                  value={approvisionnementForm.date_achat}
+                  onChange={(e) => setApprovisionnementForm({...approvisionnementForm, date_achat: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Notes
+                </label>
+                <textarea
+                  value={approvisionnementForm.notes}
+                  onChange={(e) => setApprovisionnementForm({...approvisionnementForm, notes: e.target.value})}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Commentaires sur l'approvisionnement..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowApprovisionnementModal(false);
+                  setSelectedOutil(null);
+                  setApprovisionnementForm({
+                    quantite_ajoutee: 0, prix_unitaire_usd: '', fournisseur: '', date_achat: '', notes: ''
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+                disabled={loading}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={approvisionnerOutil}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                disabled={loading || !approvisionnementForm.quantite_ajoutee}
+              >
+                {loading ? 'Approvisionnement...' : '📦 Approvisionner'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Affectation */}
+      {showAffectationModal && selectedOutil && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              👨‍🔧 Affecter: {selectedOutil.nom}
+            </h3>
+
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Disponible: <strong>{selectedOutil.quantite_disponible}</strong></p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Technicien *
+                </label>
+                <select
+                  value={affectationForm.technicien_id}
+                  onChange={(e) => setAffectationForm({...affectationForm, technicien_id: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  required
+                >
+                  <option value="">Sélectionner un technicien</option>
+                  {getTechniciens().map((technicien) => (
+                    <option key={technicien.id} value={technicien.id}>
+                      {technicien.prenom} {technicien.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Quantité à affecter *
+                </label>
+                <input
+                  type="number"
+                  value={affectationForm.quantite_affectee}
+                  onChange={(e) => setAffectationForm({...affectationForm, quantite_affectee: parseInt(e.target.value) || 1})}
+                  min="1"
+                  max={selectedOutil.quantite_disponible}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date de retour prévue
+                </label>
+                <input
+                  type="date"
+                  value={affectationForm.date_retour_prevue}
+                  onChange={(e) => setAffectationForm({...affectationForm, date_retour_prevue: e.target.value})}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Notes d'affectation
+                </label>
+                <textarea
+                  value={affectationForm.notes_affectation}
+                  onChange={(e) => setAffectationForm({...affectationForm, notes_affectation: e.target.value})}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Commentaires sur l'affectation..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowAffectationModal(false);
+                  setSelectedOutil(null);
+                  setAffectationForm({
+                    technicien_id: '', quantite_affectee: 1, date_retour_prevue: '', notes_affectation: ''
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+                disabled={loading}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={affecterOutil}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                disabled={loading || !affectationForm.technicien_id || !affectationForm.quantite_affectee}
+              >
+                {loading ? 'Affectation...' : '👨‍🔧 Affecter'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Retour */}
+      {showRetourModal && selectedAffectation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              ↩️ Retourner: {selectedAffectation.outil_nom}
+            </h3>
+
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Affecté à: <strong>{selectedAffectation.technicien_nom}</strong></p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Quantité affectée: <strong>{selectedAffectation.quantite_affectee}</strong></p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Quantité à retourner *
+                </label>
+                <input
+                  type="number"
+                  value={retourForm.quantite_retournee}
+                  onChange={(e) => setRetourForm({...retourForm, quantite_retournee: parseInt(e.target.value) || 1})}
+                  min="1"
+                  max={selectedAffectation.quantite_affectee}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  État de retour *
+                </label>
+                <select
+                  value={retourForm.etat_retour}
+                  onChange={(e) => setRetourForm({...retourForm, etat_retour: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                  required
+                >
+                  <option value="bon">Bon état</option>
+                  <option value="endommage">Endommagé</option>
+                  <option value="perdu">Perdu</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Notes de retour
+                </label>
+                <textarea
+                  value={retourForm.notes_retour}
+                  onChange={(e) => setRetourForm({...retourForm, notes_retour: e.target.value})}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Commentaires sur l'état de l'outil retourné..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowRetourModal(false);
+                  setSelectedAffectation(null);
+                  setRetourForm({
+                    quantite_retournee: 1, etat_retour: 'bon', notes_retour: ''
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+                disabled={loading}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={retournerOutil}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                disabled={loading || !retourForm.quantite_retournee}
+              >
+                {loading ? 'Retour...' : '↩️ Confirmer le retour'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Mouvements Outil */}
+      {showMouvementsOutilModal && selectedOutil && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-screen overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              📈 Historique des mouvements: {selectedOutil.nom}
+            </h3>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Quantité
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Stock Avant/Après
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Motif
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Utilisateur
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {mouvementsOutil.map((mouvement, index) => (
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {new Date(mouvement.date_mouvement).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          mouvement.type_mouvement === 'approvisionnement' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : mouvement.type_mouvement === 'affectation'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            : mouvement.type_mouvement === 'retour'
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                        }`}>
+                          {mouvement.type_mouvement}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {mouvement.type_mouvement === 'affectation' ? '-' : '+'}
+                        {mouvement.quantite}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {mouvement.stock_avant} → {mouvement.stock_apres}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {mouvement.motif}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {mouvement.fait_par}
+                      </td>
+                    </tr>
+                  ))}
+                  {mouvementsOutil.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Aucun mouvement enregistré
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => {
+                  setShowMouvementsOutilModal(false);
+                  setSelectedOutil(null);
+                  setMouvementsOutil([]);
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de confirmation */}
       {confirmDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
