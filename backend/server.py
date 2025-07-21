@@ -3071,10 +3071,22 @@ async def approvisionner_outil(outil_id: str, approvisionnement: Approvisionneme
         if approvisionnement.date_achat:
             update_data["date_achat"] = approvisionnement.date_achat
         
-        await db.outils.update_one(
+        result = await db.outils.update_one(
             {"$or": [{"id": outil_id}, {"_id": outil_id}]},
             {"$set": update_data}
         )
+        
+        if result.matched_count == 0:
+            try:
+                result = await db.outils.update_one(
+                    {"_id": ObjectId(outil_id)},
+                    {"$set": update_data}
+                )
+            except:
+                pass
+                
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Outil non trouvé pour mise à jour")
         
         # Enregistrer le mouvement
         mouvement = {
