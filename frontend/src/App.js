@@ -1564,6 +1564,102 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     return users.filter(user => user.role === 'technicien');
   };
 
+  // ==== FONCTIONS ENTREPÔTS ====
+
+  const saveEntrepot = async () => {
+    try {
+      setLoading(true);
+      const data = {
+        ...entrepotForm,
+        capacite_max: entrepotForm.capacite_max ? parseInt(entrepotForm.capacite_max) : null
+      };
+
+      if (editingEntrepot) {
+        await apiCall('PUT', `/api/entrepots/${editingEntrepot.id}`, data);
+        showNotification('Entrepôt modifié avec succès', 'success');
+      } else {
+        await apiCall('POST', '/api/entrepots', data);
+        showNotification('Entrepôt créé avec succès', 'success');
+      }
+
+      setShowEntrepotModal(false);
+      setEditingEntrepot(null);
+      setEntrepotForm({
+        nom: '', description: '', adresse: '', responsable: '', capacite_max: '', statut: 'actif'
+      });
+      loadData();
+    } catch (error) {
+      console.error('Erreur sauvegarde entrepôt:', error);
+      showNotification(`Erreur lors de la ${editingEntrepot ? 'modification' : 'création'} de l'entrepôt`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteEntrepot = async (entrepot) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'entrepôt "${entrepot.nom}" ?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await apiCall('DELETE', `/api/entrepots/${entrepot.id}`);
+      showNotification('Entrepôt supprimé avec succès', 'success');
+      loadData();
+    } catch (error) {
+      console.error('Erreur suppression entrepôt:', error);
+      if (error.response?.status === 400) {
+        showNotification(error.response.data?.detail || 'Impossible de supprimer cet entrepôt', 'error');
+      } else {
+        showNotification('Erreur lors de la suppression de l\'entrepôt', 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==== FONCTIONS RAPPORTS ====
+
+  const genererRapportMouvements = async () => {
+    try {
+      setLoading(true);
+      let url = '/api/outils/rapports/mouvements';
+      const params = [];
+
+      if (rapportForm.date_debut) params.push(`date_debut=${rapportForm.date_debut}`);
+      if (rapportForm.date_fin) params.push(`date_fin=${rapportForm.date_fin}`);
+      if (rapportForm.entrepot_id) params.push(`entrepot_id=${rapportForm.entrepot_id}`);
+      if (rapportForm.type_mouvement) params.push(`type_mouvement=${rapportForm.type_mouvement}`);
+
+      if (params.length > 0) {
+        url += `?${params.join('&')}`;
+      }
+
+      const response = await apiCall('GET', url);
+      setRapportMouvements(response.data);
+      showNotification('Rapport généré avec succès', 'success');
+    } catch (error) {
+      console.error('Erreur génération rapport:', error);
+      showNotification('Erreur lors de la génération du rapport', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const genererRapportStocks = async () => {
+    try {
+      setLoading(true);
+      const response = await apiCall('GET', '/api/outils/rapports/stock-par-entrepot');
+      setRapportStocks(response.data);
+      showNotification('Rapport de stock généré avec succès', 'success');
+    } catch (error) {
+      console.error('Erreur génération rapport stock:', error);
+      showNotification('Erreur lors de la génération du rapport de stock', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fonction pour déterminer quels onglets afficher selon le rôle
   const getAvailableTabs = () => {
     const tabs = [
