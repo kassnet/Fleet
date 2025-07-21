@@ -172,6 +172,16 @@ const AppContent = () => {
     return user && ['admin', 'support'].includes(user.role);
   };
 
+  // Permission pour accéder aux outils (Technicien, Manager et Admin)
+  const canAccessTools = () => {
+    return user && ['technicien', 'manager', 'admin'].includes(user.role);
+  };
+
+  // Permission pour gérer les outils - création, modification, suppression (Manager et Admin)
+  const canManageTools = () => {
+    return user && ['manager', 'admin'].includes(user.role);
+  };
+
   // Helper pour les requêtes authentifiées
   const apiCall = (method, url, data = null) => {
     // Bloquer l'accès aux données restreintes pour les utilisateurs "utilisateur"
