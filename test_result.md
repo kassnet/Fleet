@@ -592,6 +592,9 @@ test_plan:
       - working: true
         agent: "testing"
         comment: "✅ DIAGNOSTIC COMPLET TERMINÉ - Erreur 422 identifiée et expliquée! CAUSE RACINE: L'erreur 422 (Unprocessable Entity) sur POST /api/outils/{id}/affecter se produit uniquement quand le champ 'outil_id' est manquant dans le payload JSON. TESTS RÉALISÉS: (1) ✅ Affectation TAT100 à Israël Kanda avec quantité 5 réussie avec payload complet {outil_id, technicien_id, quantite_affectee, notes_affectation}, (2) ❌ Échec avec payload minimal sans outil_id (erreur 422 'Field required'), (3) ✅ Validation des champs obligatoires confirmée selon modèle Pydantic AffectationOutilCreate. SOLUTION: Le frontend doit toujours inclure 'outil_id' dans le payload même si l'ID est dans l'URL. PROBLÈMES MINEURS: Validation insuffisante pour quantités négatives/zéro (acceptées mais ne devraient pas). CONCLUSION: Backend fonctionne correctement, problème côté frontend avec payload incomplet."
+      - working: true
+        agent: "testing"
+        comment: "✅ CORRECTION VALIDÉE (21/01/2025) - Tests finaux confirment que l'ajout du champ 'outil_id' dans le payload (ligne 1488 App.js) a résolu l'erreur 422. RÉSULTATS: ✅ Connexion admin@facturapp.rdc réussie, ✅ Navigation section Outils fonctionnelle, ✅ Modal d'affectation opérationnel avec sélection technicien 'Israël Kanda', ✅ Formulaire complet (quantité 2-3, notes 'Test affectation corrigée'), ✅ Soumission réussie avec fermeture automatique du modal (indicateur de succès), ✅ 18 lignes d'affectations détectées dans la section. PROBLÈME 422 COMPLÈTEMENT RÉSOLU!"
 
 agent_communication:
   - agent: "main"
