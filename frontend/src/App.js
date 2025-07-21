@@ -37,15 +37,22 @@ const AppContent = () => {
   // Tool management states
   const [outils, setOutils] = useState([]);
   const [affectations, setAffectations] = useState([]);
+  const [entrepots, setEntrepots] = useState([]);
   const [showOutilModal, setShowOutilModal] = useState(false);
   const [showApprovisionnementModal, setShowApprovisionnementModal] = useState(false);
   const [showAffectationModal, setShowAffectationModal] = useState(false);
   const [showRetourModal, setShowRetourModal] = useState(false);
   const [showMouvementsOutilModal, setShowMouvementsOutilModal] = useState(false);
+  const [showEntrepotModal, setShowEntrepotModal] = useState(false);
+  const [showRapportModal, setShowRapportModal] = useState(false);
   const [selectedOutil, setSelectedOutil] = useState(null);
   const [selectedAffectation, setSelectedAffectation] = useState(null);
+  const [selectedEntrepot, setSelectedEntrepot] = useState(null);
   const [mouvementsOutil, setMouvementsOutil] = useState([]);
+  const [rapportMouvements, setRapportMouvements] = useState(null);
+  const [rapportStocks, setRapportStocks] = useState(null);
   const [editingOutil, setEditingOutil] = useState(null);
+  const [editingEntrepot, setEditingEntrepot] = useState(null);
 
   // Modal states
   const [showClientModal, setShowClientModal] = useState(false);
