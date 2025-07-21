@@ -2916,9 +2916,25 @@ async def create_outil(outil: OutilCreate, current_user: dict = Depends(manager_
         # Récupérer le nom de l'entrepôt si un entrepôt est spécifié
         entrepot_nom = None
         if nouveau_outil.get("entrepot_id"):
-            entrepot = await db.entrepots.find_one({"$or": [{"id": nouveau_outil["entrepot_id"]}, {"_id": nouveau_outil["entrepot_id"]}]})
+            print(f"DEBUG: Looking for entrepot with ID: {nouveau_outil['entrepot_id']}")
+            entrepot = await db.entrepots.find_one({"id": nouveau_outil["entrepot_id"]})
+            print(f"DEBUG: Found entrepot: {entrepot}")
             if entrepot:
                 entrepot_nom = entrepot["nom"]
+                print(f"DEBUG: Set entrepot_nom to: {entrepot_nom}")
+            else:
+                print(f"DEBUG: No entrepot found with ID: {nouveau_outil['entrepot_id']}")
+                # Try with ObjectId as fallback
+                try:
+                    from bson import ObjectId
+                    entrepot = await db.entrepots.find_one({"_id": ObjectId(nouveau_outil["entrepot_id"])})
+                    if entrepot:
+                        entrepot_nom = entrepot["nom"]
+                        print(f"DEBUG: Found entrepot by ObjectId, set entrepot_nom to: {entrepot_nom}")
+                except:
+                    print(f"DEBUG: Could not convert to ObjectId: {nouveau_outil['entrepot_id']}")
+        else:
+            print("DEBUG: No entrepot_id provided")
         
         nouveau_outil.update({
             "id": str(uuid.uuid4()),
