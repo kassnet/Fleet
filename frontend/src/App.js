@@ -405,23 +405,27 @@ const AppContent = () => {
       if (user.role === 'technicien' || user.role === 'manager' || user.role === 'admin') {
         console.log('🔧 Chargement des données d\'outils pour rôle:', user.role);
         try {
-          const [outilsRes, affectationsRes] = await Promise.all([
+          const [outilsRes, affectationsRes, entrepotsRes] = await Promise.all([
             apiCall('GET', '/api/outils'),
-            apiCall('GET', '/api/affectations')
+            apiCall('GET', '/api/affectations'),
+            apiCall('GET', '/api/entrepots')
           ]);
           
           setOutils(outilsRes.data || []);
           setAffectations(affectationsRes.data || []);
-          console.log('🔧 Données d\'outils chargées - Outils:', outilsRes.data?.length || 0, 'Affectations:', affectationsRes.data?.length || 0);
+          setEntrepots(entrepotsRes.data || []);
+          console.log('🔧 Données d\'outils chargées - Outils:', outilsRes.data?.length || 0, 'Affectations:', affectationsRes.data?.length || 0, 'Entrepôts:', entrepotsRes.data?.length || 0);
         } catch (toolsError) {
           console.warn('⚠️ Erreur chargement données d\'outils:', toolsError.response?.status);
           setOutils([]);
           setAffectations([]);
+          setEntrepots([]);
         }
       } else {
         // Pas d'accès aux outils
         setOutils([]);
         setAffectations([]);
+        setEntrepots([]);
       }
 
       // Données de configuration pour Support uniquement
