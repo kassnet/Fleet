@@ -1412,6 +1412,133 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     }
   };
 
+  // ==== FONCTIONS GESTION D'OUTILS ====
+
+  const saveOutil = async () => {
+    try {
+      setLoading(true);
+      const data = {
+        ...outilForm,
+        quantite_stock: parseInt(outilForm.quantite_stock) || 0,
+        prix_unitaire_usd: outilForm.prix_unitaire_usd ? parseFloat(outilForm.prix_unitaire_usd) : null,
+        date_achat: outilForm.date_achat || null
+      };
+
+      if (editingOutil) {
+        await apiCall('PUT', `/api/outils/${editingOutil.id}`, data);
+        showNotification('Outil modifié avec succès', 'success');
+      } else {
+        await apiCall('POST', '/api/outils', data);
+        showNotification('Outil créé avec succès', 'success');
+      }
+
+      setShowOutilModal(false);
+      setEditingOutil(null);
+      setOutilForm({
+        nom: '', description: '', reference: '', quantite_stock: 0, prix_unitaire_usd: '',
+        fournisseur: '', date_achat: '', etat: 'neuf', localisation: '', numero_serie: ''
+      });
+      loadData();
+    } catch (error) {
+      console.error('Erreur sauvegarde outil:', error);
+      showNotification(`Erreur lors de la ${editingOutil ? 'modification' : 'création'} de l'outil`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const approvisionnerOutil = async () => {
+    try {
+      setLoading(true);
+      const data = {
+        ...approvisionnementForm,
+        quantite_ajoutee: parseInt(approvisionnementForm.quantite_ajoutee) || 0,
+        prix_unitaire_usd: approvisionnementForm.prix_unitaire_usd ? parseFloat(approvisionnementForm.prix_unitaire_usd) : null,
+        date_achat: approvisionnementForm.date_achat || null
+      };
+
+      await apiCall('POST', `/api/outils/${selectedOutil.id}/approvisionner`, data);
+      showNotification(`Outil approvisionné avec succès (+${data.quantite_ajoutee} unités)`, 'success');
+
+      setShowApprovisionnementModal(false);
+      setApprovisionnementForm({
+        quantite_ajoutee: 0, prix_unitaire_usd: '', fournisseur: '', date_achat: '', notes: ''
+      });
+      setSelectedOutil(null);
+      loadData();
+    } catch (error) {
+      console.error('Erreur approvisionnement:', error);
+      showNotification('Erreur lors de l\'approvisionnement', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const affecterOutil = async () => {
+    try {
+      setLoading(true);
+      const data = {
+        ...affectationForm,
+        quantite_affectee: parseInt(affectationForm.quantite_affectee) || 1,
+        date_retour_prevue: affectationForm.date_retour_prevue || null
+      };
+
+      await apiCall('POST', `/api/outils/${selectedOutil.id}/affecter`, data);
+      showNotification('Outil affecté avec succès', 'success');
+
+      setShowAffectationModal(false);
+      setAffectationForm({
+        technicien_id: '', quantite_affectee: 1, date_retour_prevue: '', notes_affectation: ''
+      });
+      setSelectedOutil(null);
+      loadData();
+    } catch (error) {
+      console.error('Erreur affectation:', error);
+      showNotification('Erreur lors de l\'affectation', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const retournerOutil = async () => {
+    try {
+      setLoading(true);
+      const data = {
+        ...retourForm,
+        quantite_retournee: parseInt(retourForm.quantite_retournee) || 1
+      };
+
+      await apiCall('PUT', `/api/affectations/${selectedAffectation.id}/retourner`, data);
+      showNotification('Outil retourné avec succès', 'success');
+
+      setShowRetourModal(false);
+      setRetourForm({
+        quantite_retournee: 1, etat_retour: 'bon', notes_retour: ''
+      });
+      setSelectedAffectation(null);
+      loadData();
+    } catch (error) {
+      console.error('Erreur retour:', error);
+      showNotification('Erreur lors du retour', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMouvementsOutil = async (outilId) => {
+    try {
+      const response = await apiCall('GET', `/api/outils/${outilId}/mouvements`);
+      setMouvementsOutil(response.data?.mouvements || []);
+    } catch (error) {
+      console.error('Erreur chargement mouvements:', error);
+      setMouvementsOutil([]);
+    }
+  };
+
+  const getTechniciens = () => {
+    return users.filter(user => user.role === 'technicien');
+  };
+
   // Fonction pour déterminer quels onglets afficher selon le rôle
   const getAvailableTabs = () => {
     const tabs = [
