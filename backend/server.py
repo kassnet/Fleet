@@ -329,6 +329,69 @@ class ActiviteCommerciale(BaseModel):
     prochaine_action: Optional[str] = None
     date_prochaine_action: Optional[datetime] = None
 
+# Models Gestion d'Outils
+class Outil(BaseModel):
+    id: Optional[str] = None
+    nom: str
+    description: Optional[str] = None
+    reference: Optional[str] = None
+    quantite_stock: int = 0
+    quantite_disponible: int = 0
+    prix_unitaire_usd: Optional[float] = None
+    fournisseur: Optional[str] = None
+    date_achat: Optional[datetime] = None
+    etat: str = "neuf"  # neuf, bon, use, defaillant
+    localisation: Optional[str] = None
+    numero_serie: Optional[str] = None
+    date_creation: Optional[datetime] = None
+    date_modification: Optional[datetime] = None
+
+class OutilCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    reference: Optional[str] = None
+    quantite_stock: int = 0
+    prix_unitaire_usd: Optional[float] = None
+    fournisseur: Optional[str] = None
+    date_achat: Optional[datetime] = None
+    etat: str = "neuf"
+    localisation: Optional[str] = None
+    numero_serie: Optional[str] = None
+
+class AffectationOutil(BaseModel):
+    id: Optional[str] = None
+    outil_id: str
+    outil_nom: str
+    technicien_id: str
+    technicien_nom: str
+    quantite_affectee: int
+    date_affectation: datetime
+    date_retour_prevue: Optional[datetime] = None
+    date_retour_effective: Optional[datetime] = None
+    statut: str = "affecte"  # affecte, retourne, perdu, endommage
+    notes_affectation: Optional[str] = None
+    notes_retour: Optional[str] = None
+    affecte_par: str  # ID de la personne qui a fait l'affectation
+
+class AffectationOutilCreate(BaseModel):
+    outil_id: str
+    technicien_id: str
+    quantite_affectee: int
+    date_retour_prevue: Optional[datetime] = None
+    notes_affectation: Optional[str] = None
+
+class ApprovisionnementOutil(BaseModel):
+    quantite_ajoutee: int
+    prix_unitaire_usd: Optional[float] = None
+    fournisseur: Optional[str] = None
+    date_achat: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class RetourOutil(BaseModel):
+    quantite_retournee: int
+    etat_retour: str = "bon"  # bon, endommage, perdu
+    notes_retour: Optional[str] = None
+
 # Helper functions
 def generate_invoice_number():
     return f"FACT-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
