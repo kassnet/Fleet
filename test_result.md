@@ -598,15 +598,18 @@ test_plan:
 
   - task: "Gestion d'erreur email améliorée"
     implemented: true
-    working: "NA"
-    file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    working: false
+    file: "/app/frontend/src/components/UserManagement.js"
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "⚠️ TESTS GESTION ERREUR EMAIL (21/01/2025) - RÉSULTATS PARTIELS: ✅ Interface utilisateur accessible: Navigation vers section '👤 Users' fonctionnelle, modal 'Nouvel utilisateur' opérationnel, formulaire complet avec champs email/prénom/nom/mot de passe. ✅ Tests effectués: Saisie email existant 'admin@facturapp.rdc', remplissage formulaire complet, soumission réussie. ❌ PROBLÈME: Messages d'erreur spécifiques non détectés visuellement par les sélecteurs automatisés (.notification, .alert, .toast, .error, [role='alert'], .text-red-500, .text-red-600). ⚠️ CONCLUSION: La fonctionnalité peut être implémentée mais nécessite vérification manuelle ou ajustement des sélecteurs de notification pour confirmer l'affichage des messages d'erreur spécifiques comme 'Un utilisateur avec cet email existe déjà'."
+      - working: false
+        agent: "testing"
+        comment: "❌ PROBLÈME IDENTIFIÉ (21/01/2025) - TESTS COMPLETS EFFECTUÉS: ✅ FONCTIONNALITÉ PARTIELLEMENT IMPLÉMENTÉE: Le popup d'erreur professionnel existe dans UserManagement.js (lignes 450-491) avec design orange/jaune pour les warnings et bouton '✓ Compris'. ✅ TESTS RÉUSSIS: Connexion admin@facturapp.rdc, navigation Users, ouverture modal, remplissage formulaire avec email existant, soumission, popup d'erreur affiché et fermable. ❌ PROBLÈME CRITIQUE: Le popup affiche un message générique 'Erreur de sauvegarde - HTTP error! status: 400' au lieu du message spécifique '📧 Email déjà utilisé'. ❌ CAUSE RACINE: La logique de détection d'erreur email (lignes 105-108) ne se déclenche pas car UserManagement.js utilise fetch() au lieu d'axios, donc error.response n'existe pas. Le backend retourne status 400 mais la structure d'erreur est différente avec fetch(). ❌ IMPACT: L'utilisateur voit un message technique au lieu du message professionnel attendu. 🔧 SOLUTION REQUISE: Corriger la logique de détection d'erreur pour fetch() ou utiliser apiCall() comme dans App.js."
 
   - task: "Suppression configurations indésirables section Paramètres"
     implemented: true
