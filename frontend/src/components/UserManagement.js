@@ -59,7 +59,7 @@ const UserManagement = () => {
         setLoading(true);
         try {
             const response = await apiCall('GET', '/api/users');
-            setUsers(response || []);
+            setUsers(response.data || []);
         } catch (error) {
             console.error('Erreur chargement utilisateurs:', error);
             showNotification('Erreur lors du chargement des utilisateurs', 'error');
