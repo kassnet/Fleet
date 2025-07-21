@@ -3084,6 +3084,14 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {outil.reference || 'N/A'}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <div>
+                              <div className="font-medium">{outil.entrepot_nom || 'Aucun'}</div>
+                              {outil.localisation && (
+                                <div className="text-xs text-gray-500 dark:text-gray-400">{outil.localisation}</div>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <div className="text-gray-900 dark:text-white">
                               <span className="font-medium">{outil.quantite_stock || 0}</span> / 
@@ -3094,9 +3102,6 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {outil.prix_unitaire_usd ? `$${outil.prix_unitaire_usd}` : 'N/A'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {outil.localisation || 'N/A'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             <button
