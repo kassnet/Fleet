@@ -49,6 +49,14 @@ const UserManagement = () => {
         setTimeout(() => setNotification(null), 3000);
     };
 
+    const showErrorModal = (title, message, type = 'error') => {
+        setErrorModal({ show: true, title, message, type });
+    };
+
+    const closeErrorModal = () => {
+        setErrorModal({ show: false, title: '', message: '', type: 'error' });
+    };
+
     const loadUsers = async () => {
         setLoading(true);
         try {
