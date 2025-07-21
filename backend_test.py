@@ -3834,36 +3834,47 @@ def test_tool_provisioning_fix():
     # Step 5: Verify movement history
     print(f"\n🔍 STEP 5: Verifying provisioning movement in history")
     
-    success, movements = tester.run_test(
+    success, movements_response = tester.run_test(
         "Get Tool Movements",
         "GET",
         f"/api/outils/{tool_id}/mouvements",
         200
     )
     
-    if success and movements:
-        print(f"✅ Retrieved {len(movements)} movement(s)")
+    if success and movements_response:
+        print(f"✅ Retrieved movement response")
+        
+        # Handle different response structures
+        movements = None
+        if isinstance(movements_response, dict) and 'mouvements' in movements_response:
+            movements = movements_response['mouvements']
+        elif isinstance(movements_response, list):
+            movements = movements_response
+        else:
+            print(f"⚠️ Unexpected movements response structure: {type(movements_response)}")
+            movements = []
+        
+        print(f"📝 Found {len(movements)} movement(s)")
         
         # Look for the provisioning movement
         provision_movement = None
-        for movement in movements:
-            # Handle both dict and string responses
-            if isinstance(movement, dict):
-                if movement.get('type') == 'approvisionnement' and movement.get('quantite') == 5:
-                    provision_movement = movement
-                    break
-            else:
-                print(f"⚠️ Movement data is not a dict: {type(movement)} - {movement}")
-                # Try to find any movement with quantity 5
-                if '5' in str(movement) and 'approvisionnement' in str(movement):
-                    provision_movement = movement
-                    break
+        if movements:
+            for movement in movements:
+                if isinstance(movement, dict):
+                    if (movement.get('type_mouvement') == 'approvisionnement' or 
+                        movement.get('type') == 'approvisionnement') and movement.get('quantite') == 5:
+                        provision_movement = movement
+                        break
         
         if provision_movement:
             print("✅ Provisioning movement found in history")
             print(f"📝 Movement details: {provision_movement}")
         else:
             print("❌ Provisioning movement not found in history")
+            if movements:
+                print("📝 Available movements:")
+                for i, movement in enumerate(movements):
+                    print(f"  {i+1}. {movement}")
             sync_success = False
     else:
         print("❌ Failed to retrieve tool movements")
