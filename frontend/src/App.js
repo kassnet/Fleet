@@ -2916,6 +2916,129 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                 </div>
               </div>
 
+              {/* Section Entrepôts */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">🏭 Entrepôts</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Nom
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Adresse
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Responsable
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Capacité
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Statut
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Outils
+                        </th>
+                        {canManageTools() && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {entrepots.map((entrepot) => {
+                        const outilsEntrepot = outils.filter(o => o.entrepot_id === entrepot.id);
+                        return (
+                          <tr key={entrepot.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {entrepot.nom}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {entrepot.description}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {entrepot.adresse || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {entrepot.responsable || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {entrepot.capacite_max || 'Illimitée'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                entrepot.statut === 'actif' 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : entrepot.statut === 'maintenance'
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              }`}>
+                                {entrepot.statut}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              <div className="text-center">
+                                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {outilsEntrepot.length}
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                  outils
+                                </div>
+                              </div>
+                            </td>
+                            {canManageTools() && (
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingEntrepot(entrepot);
+                                    setEntrepotForm({
+                                      nom: entrepot.nom,
+                                      description: entrepot.description || '',
+                                      adresse: entrepot.adresse || '',
+                                      responsable: entrepot.responsable || '',
+                                      capacite_max: entrepot.capacite_max || '',
+                                      statut: entrepot.statut
+                                    });
+                                    setShowEntrepotModal(true);
+                                  }}
+                                  className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
+                                >
+                                  ✏️ Modifier
+                                </button>
+                                <button
+                                  onClick={() => deleteEntrepot(entrepot)}
+                                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                  disabled={outilsEntrepot.length > 0}
+                                  title={outilsEntrepot.length > 0 ? 'Impossible de supprimer: contient des outils' : 'Supprimer l\'entrepôt'}
+                                >
+                                  🗑️ Supprimer
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                      {entrepots.length === 0 && (
+                        <tr>
+                          <td colSpan={canManageTools() ? "7" : "6"} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            Aucun entrepôt enregistré
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               {/* Tableau des outils */}
               <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
