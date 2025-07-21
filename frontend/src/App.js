@@ -2832,16 +2832,39 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
           <ProtectedRoute requiredRoles={['technicien', 'manager', 'admin']}>
             <div className="space-y-6">
               {/* Header */}
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center flex-wrap gap-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">🔧 Gestion des Outils</h2>
-                {canManageTools() && (
+                <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setShowOutilModal(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                    onClick={() => {
+                      setRapportForm({
+                        date_debut: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0],
+                        date_fin: new Date().toISOString().split('T')[0],
+                        entrepot_id: '', type_mouvement: ''
+                      });
+                      setShowRapportModal(true);
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
                   >
-                    <span>➕</span> Nouvel Outil
+                    <span>📊</span> Rapports
                   </button>
-                )}
+                  {canManageTools() && (
+                    <>
+                      <button
+                        onClick={() => setShowEntrepotModal(true)}
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                      >
+                        <span>🏭</span> Nouvel Entrepôt
+                      </button>
+                      <button
+                        onClick={() => setShowOutilModal(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                      >
+                        <span>➕</span> Nouvel Outil
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Statistiques des outils */}
