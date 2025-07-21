@@ -21,46 +21,25 @@ const UserManagement = () => {
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-    // Helper pour les requêtes authentifiées (amélioré pour la gestion d'erreur)
-    const apiCall = async (method, endpoint, data = null) => {
-        const url = `${API_URL}${endpoint}`;
-        const options = {
+    // Helper pour les requêtes authentifiées (compatible axios comme App.js)
+    const apiCall = (method, url, data = null) => {
+        const config = {
             method,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }),
-            },
+            url: `${API_URL}${url}`,
+            headers: {}
         };
 
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+
         if (data && (method === 'POST' || method === 'PUT')) {
-            options.body = JSON.stringify(data);
+            config.data = data;
+            config.headers['Content-Type'] = 'application/json';
         }
 
-        const response = await fetch(url, options);
-        
-        if (!response.ok) {
-            // Essayer d'extraire le message d'erreur du backend
-            let errorDetail = null;
-            try {
-                const errorBody = await response.json();
-                errorDetail = errorBody.detail || errorBody.message || null;
-            } catch (e) {
-                // Ignorer si on ne peut pas parser la réponse JSON
-            }
-            
-            // Créer une erreur qui imite la structure d'axios pour compatibilité
-            const error = new Error(`HTTP error! status: ${response.status}`);
-            error.response = {
-                status: response.status,
-                data: {
-                    detail: errorDetail,
-                    message: errorDetail
-                }
-            };
-            throw error;
-        }
-
-        return await response.json();
+        console.log('👤 User API Call:', method, url, 'Token présent:', !!accessToken);
+        return axios(config);
     };
 
     const showNotification = (message, type = 'success') => {
