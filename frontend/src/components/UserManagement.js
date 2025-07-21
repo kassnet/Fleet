@@ -377,6 +377,7 @@ const UserManagement = () => {
                                     <option value="utilisateur">👤 Utilisateur</option>
                                     <option value="comptable">💰 Comptable</option>
                                     <option value="manager">👔 Manager</option>
+                                    <option value="technicien">🔧 Technicien</option>
                                     <option value="admin">👑 Admin</option>
                                 </select>
                             </div>
