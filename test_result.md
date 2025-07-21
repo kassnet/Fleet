@@ -102,9 +102,92 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "✅ RÉSOLU - L'utilisateur indiquait qu'il y avait beaucoup d'erreurs dans l'application FacturApp malgré les corrections précédentes. Tous les problèmes ont été identifiés et corrigés avec succès. L'application est maintenant 100% fonctionnelle. PHASE 5 : Gestion des opportunités - Implémentation liaison multiple opportunités à clients et filtres de recherche TERMINÉE avec succès."
+user_problem_statement: "✅ RÉSOLU - L'utilisateur indiquait qu'il y avait beaucoup d'erreurs dans l'application FacturApp malgré les corrections précédentes. Tous les problèmes ont été identifiés et corrigés avec succès. L'application est maintenant 100% fonctionnelle. PHASE 5 : Gestion des opportunités - Implémentation liaison multiple opportunités à clients et filtres de recherche TERMINÉE avec succès. NOUVELLE FONCTIONNALITÉ : Gestion complète d'outils d'installation ajoutée avec nouveau rôle 'technicien', modèles backend (Outil, AffectationOutil, ApprovisionnementOutil, RetourOutil), endpoints complets et fonctions d'autorisation."
 
 backend:
+  - task: "Nouveau rôle technicien"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Nouveau rôle 'technicien' créé avec succès. Utilisateur technicien peut être créé via POST /api/users avec role='technicien'. Authentification fonctionnelle. Permissions correctement appliquées : peut voir outils mais ne peut pas les créer/modifier (403 pour POST /api/outils)."
+
+  - task: "Gestion complète des outils (CRUD)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Tous les endpoints CRUD d'outils fonctionnent parfaitement : GET /api/outils (liste), POST /api/outils (création), GET /api/outils/{id} (récupération), PUT /api/outils/{id} (mise à jour), DELETE /api/outils/{id} (suppression). Modèle Outil complet avec gestion stock/disponibilité, prix, fournisseur, localisation, etc. Permissions manager_admin() appliquées correctement."
+
+  - task: "Approvisionnement d'outils"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ PROBLÈME IDENTIFIÉ - Endpoint POST /api/outils/{id}/approvisionner fonctionne et retourne succès avec nouveau stock (10→15), mais GET /api/outils/{id} ne reflète pas la mise à jour (reste à 10). Problème de synchronisation entre l'approvisionnement et la récupération des données. Mouvements de stock enregistrés correctement."
+
+  - task: "Affectation d'outils aux techniciens"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Affectation d'outils fonctionnelle. POST /api/outils/{id}/affecter crée correctement une affectation avec validation technicien existant, quantité disponible, etc. GET /api/affectations liste les affectations (filtrées par technicien si role=technicien). Modèle AffectationOutil complet avec dates, statuts, notes. Permissions manager_admin() pour création."
+
+  - task: "Retour d'outils par techniciens"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Retour d'outils fonctionnel. PUT /api/affectations/{id}/retourner permet aux techniciens de retourner leurs outils avec validation quantité, état (bon/endommagé/perdu), notes. Permissions technicien_manager_admin() appliquées. Restauration disponibilité si état=bon. Mouvements enregistrés."
+
+  - task: "Historique des mouvements d'outils"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Historique des mouvements parfaitement fonctionnel. GET /api/outils/{id}/mouvements retourne tous les mouvements (approvisionnement, affectation, retour) avec détails complets : type, quantité, stock avant/après, motif, date, utilisateur. Structure de données cohérente et complète."
+
+  - task: "Fonctions d'autorisation technicien_manager_admin et manager_admin"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTÉ ET CONFIRMÉ - Nouvelles fonctions d'autorisation implémentées et fonctionnelles : technicien_manager_admin() pour consultation outils/affectations, manager_admin() pour gestion complète. Permissions testées pour tous les rôles : technicien (lecture seule), manager/admin (accès complet), comptable (accès refusé 403). Sécurité correctement appliquée."
   - task: "Création et gestion des factures"
     implemented: true
     working: true
