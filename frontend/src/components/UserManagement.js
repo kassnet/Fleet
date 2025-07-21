@@ -20,7 +20,7 @@ const UserManagement = () => {
 
     const API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-    // Helper pour les requêtes authentifiées (même que dans App.js)
+    // Helper pour les requêtes authentifiées (amélioré pour la gestion d'erreur)
     const apiCall = async (method, endpoint, data = null) => {
         const url = `${API_URL}${endpoint}`;
         const options = {
@@ -38,7 +38,25 @@ const UserManagement = () => {
         const response = await fetch(url, options);
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // Essayer d'extraire le message d'erreur du backend
+            let errorDetail = null;
+            try {
+                const errorBody = await response.json();
+                errorDetail = errorBody.detail || errorBody.message || null;
+            } catch (e) {
+                // Ignorer si on ne peut pas parser la réponse JSON
+            }
+            
+            // Créer une erreur qui imite la structure d'axios pour compatibilité
+            const error = new Error(`HTTP error! status: ${response.status}`);
+            error.response = {
+                status: response.status,
+                data: {
+                    detail: errorDetail,
+                    message: errorDetail
+                }
+            };
+            throw error;
         }
 
         return await response.json();
