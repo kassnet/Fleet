@@ -101,19 +101,40 @@ const UserManagement = () => {
         } catch (error) {
             console.error('Erreur sauvegarde utilisateur:', error);
             
-            // Gestion d'erreur améliorée pour afficher le message spécifique du backend
-            let errorMessage = 'Erreur lors de la sauvegarde';
+            // Gestion spécifique pour les erreurs d'email existant
+            if (error.response?.status === 400 && 
+                error.response?.data?.detail && 
+                error.response.data.detail.toLowerCase().includes('email')) {
+                
+                // Afficher un popup professionnel pour l'erreur d'email existant
+                showErrorModal(
+                    '📧 Email déjà utilisé',
+                    `L'adresse email "${userForm.email}" est déjà associée à un compte existant. Veuillez utiliser une adresse email différente.`,
+                    'warning'
+                );
+                return;
+            }
+            
+            // Autres erreurs - gestion générale améliorée
+            let errorTitle = 'Erreur de sauvegarde';
+            let errorMessage = 'Une erreur inattendue s\'est produite lors de la sauvegarde de l\'utilisateur.';
             
             if (error.response?.status === 400 && error.response?.data?.detail) {
-                // Erreur 400 avec un message spécifique (comme email déjà existant)
+                errorTitle = 'Erreur de validation';
                 errorMessage = error.response.data.detail;
+            } else if (error.response?.status === 403) {
+                errorTitle = 'Accès refusé';
+                errorMessage = 'Vous n\'avez pas les permissions nécessaires pour effectuer cette action.';
+            } else if (error.response?.status === 500) {
+                errorTitle = 'Erreur serveur';
+                errorMessage = 'Le serveur a rencontré une erreur. Veuillez réessayer plus tard.';
             } else if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
             } else if (error.message) {
                 errorMessage = error.message;
             }
             
-            showNotification(errorMessage, 'error');
+            showErrorModal(errorTitle, errorMessage, 'error');
         }
     };
 
