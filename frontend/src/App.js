@@ -468,6 +468,13 @@ const AppContent = () => {
     }
   }, [filtresOpportunites, user?.id, accessToken, activeTab, activeSalesTab]);
 
+  // Charger les mouvements d'outils quand le modal s'ouvre
+  useEffect(() => {
+    if (showMouvementsOutilModal && selectedOutil) {
+      loadMouvementsOutil(selectedOutil.id);
+    }
+  }, [showMouvementsOutilModal, selectedOutil]);
+
   // Fonctions CRUD Clients
   const saveClient = async () => {
     try {
