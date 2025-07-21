@@ -1485,6 +1485,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
     try {
       setLoading(true);
       const data = {
+        outil_id: selectedOutil.id,  // ✅ AJOUT DU CHAMP MANQUANT
         ...affectationForm,
         quantite_affectee: parseInt(affectationForm.quantite_affectee) || 1,
         date_retour_prevue: affectationForm.date_retour_prevue || null
