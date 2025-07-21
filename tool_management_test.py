@@ -485,7 +485,7 @@ class ToolManagementTester:
             print(f"📊 Number of movements: {len(movements)}")
             print("📋 Recent movements:")
             
-            for i, movement in enumerate(movements[:5]):  # Show first 5 movements
+            for i, movement in enumerate(movements.get("mouvements", [])[:5]):  # Show first 5 movements
                 movement_type = movement.get('type_mouvement', 'unknown')
                 quantity = movement.get('quantite', 0)
                 date = movement.get('date_mouvement', 'unknown')
