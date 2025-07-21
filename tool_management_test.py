@@ -481,8 +481,8 @@ class ToolManagementTester:
             print("❌ Failed to get tool movements history")
             return False
         
-        if movements:
-            print(f"📊 Number of movements: {len(movements)}")
+        if movements and movements.get("mouvements"):
+            print(f"📊 Number of movements: {len(movements.get('mouvements', []))}")
             print("📋 Recent movements:")
             
             for i, movement in enumerate(movements.get("mouvements", [])[:5]):  # Show first 5 movements
