@@ -3588,6 +3588,381 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         </div>
       )}
 
+      {/* Modal Rapport */}
+      {showRapportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-6xl max-h-screen overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                📊 Rapports de Mouvements d'Outils
+              </h3>
+              <button
+                onClick={() => {
+                  setShowRapportModal(false);
+                  setRapportMouvements(null);
+                  setRapportStocks(null);
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Onglets de rapport */}
+            <div className="flex mb-6 border-b border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => {
+                  setRapportMouvements(null);
+                  setRapportStocks(null);
+                }}
+                className={`px-4 py-2 mr-4 font-medium border-b-2 transition-colors ${
+                  !rapportMouvements && !rapportStocks
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                📋 Filtres
+              </button>
+              {rapportMouvements && (
+                <button
+                  className="px-4 py-2 mr-4 font-medium border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+                >
+                  📊 Mouvements
+                </button>
+              )}
+              {rapportStocks && (
+                <button
+                  className="px-4 py-2 mr-4 font-medium border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+                >
+                  📦 Stock par Entrepôt
+                </button>
+              )}
+            </div>
+
+            {/* Formulaire de filtres */}
+            {!rapportMouvements && !rapportStocks && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Date de début
+                    </label>
+                    <input
+                      type="date"
+                      value={rapportForm.date_debut}
+                      onChange={(e) => setRapportForm({...rapportForm, date_debut: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Date de fin
+                    </label>
+                    <input
+                      type="date"
+                      value={rapportForm.date_fin}
+                      onChange={(e) => setRapportForm({...rapportForm, date_fin: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Entrepôt
+                    </label>
+                    <select
+                      value={rapportForm.entrepot_id}
+                      onChange={(e) => setRapportForm({...rapportForm, entrepot_id: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="">Tous les entrepôts</option>
+                      {entrepots.map((entrepot) => (
+                        <option key={entrepot.id} value={entrepot.id}>
+                          {entrepot.nom}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Type de mouvement
+                    </label>
+                    <select
+                      value={rapportForm.type_mouvement}
+                      onChange={(e) => setRapportForm({...rapportForm, type_mouvement: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="">Tous les mouvements</option>
+                      <option value="approvisionnement">Approvisionnement</option>
+                      <option value="affectation">Affectation</option>
+                      <option value="retour">Retour</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={genererRapportMouvements}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    <span>📊</span> {loading ? 'Génération...' : 'Générer Rapport Mouvements'}
+                  </button>
+                  <button
+                    onClick={genererRapportStocks}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    <span>📦</span> {loading ? 'Génération...' : 'Rapport Stock par Entrepôt'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Affichage du rapport de mouvements */}
+            {rapportMouvements && (
+              <div className="space-y-6">
+                {/* Statistiques du rapport */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {rapportMouvements.statistiques?.total_mouvements || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Mouvements</div>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {rapportMouvements.statistiques?.approvisionnements || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Approvisionnements</div>
+                  </div>
+                  <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {rapportMouvements.statistiques?.affectations || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Affectations</div>
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {rapportMouvements.statistiques?.retours || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Retours</div>
+                  </div>
+                </div>
+
+                {/* Tableau des mouvements */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                      Détail des Mouvements ({rapportMouvements.statistiques?.periode?.debut} - {rapportMouvements.statistiques?.periode?.fin})
+                    </h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Outil
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Entrepôt
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Quantité
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Motif
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Utilisateur
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {(rapportMouvements.mouvements || []).map((mouvement, index) => (
+                          <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {new Date(mouvement.date_mouvement).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                mouvement.type_mouvement === 'approvisionnement' 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : mouvement.type_mouvement === 'affectation'
+                                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                  : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                              }`}>
+                                {mouvement.type_mouvement}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {mouvement.outil_nom}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {mouvement.outil_reference}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {mouvement.entrepot_nom}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                              {mouvement.type_mouvement === 'affectation' ? '-' : '+'}
+                              {mouvement.quantite}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {mouvement.motif}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {mouvement.fait_par}
+                            </td>
+                          </tr>
+                        ))}
+                        {(rapportMouvements.mouvements || []).length === 0 && (
+                          <tr>
+                            <td colSpan="7" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                              Aucun mouvement trouvé pour cette période
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Affichage du rapport de stocks */}
+            {rapportStocks && (
+              <div className="space-y-6">
+                {/* Statistiques globales */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {rapportStocks.statistiques_globales?.nombre_entrepots || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Entrepôts</div>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {rapportStocks.statistiques_globales?.stock_total_global || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Stock Total</div>
+                  </div>
+                  <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {rapportStocks.statistiques_globales?.stock_disponible_global || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Disponible</div>
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      ${rapportStocks.statistiques_globales?.valeur_totale_globale_usd || 0}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Valeur USD</div>
+                  </div>
+                </div>
+
+                {/* Tableau des stocks par entrepôt */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">Stock par Entrepôt</h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Entrepôt
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Total Outils
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Stock Total
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Disponible
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Affecté
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Valeur USD
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {(rapportStocks.stocks_par_entrepot || []).map((stock, index) => (
+                          <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {stock.entrepot_nom}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {stock.entrepot_adresse}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {stock.total_outils}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                              {stock.stock_total}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400 font-medium">
+                              {stock.stock_disponible}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 dark:text-blue-400 font-medium">
+                              {stock.stock_affecte}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-600 dark:text-purple-400">
+                              ${stock.valeur_totale_usd}
+                            </td>
+                          </tr>
+                        ))}
+                        {(rapportStocks.stocks_par_entrepot || []).length === 0 && (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                              Aucun stock trouvé
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Boutons de fermeture */}
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => {
+                  setShowRapportModal(false);
+                  setRapportMouvements(null);
+                  setRapportStocks(null);
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de confirmation */}
       {confirmDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
