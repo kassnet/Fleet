@@ -4723,6 +4723,24 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Entrepôt
+                </label>
+                <select
+                  value={outilForm.entrepot_id}
+                  onChange={(e) => setOutilForm({...outilForm, entrepot_id: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Sélectionner un entrepôt</option>
+                  {entrepots.filter(e => e.statut === 'actif').map((entrepot) => (
+                    <option key={entrepot.id} value={entrepot.id}>
+                      {entrepot.nom} ({entrepot.adresse || 'Adresse non spécifiée'})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="mb-4">
