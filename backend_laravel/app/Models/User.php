@@ -132,4 +132,41 @@ class User extends Authenticatable implements JWTSubject
     {
         return in_array($this->role, ['admin', 'manager']);
     }
+
+    // Nouvelles méthodes pour la gestion d'outils
+    public function isTechnicien()
+    {
+        return $this->role === 'technicien';
+    }
+
+    public function canManageTools()
+    {
+        return in_array($this->role, ['admin', 'manager']);
+    }
+
+    public function canViewTools()
+    {
+        return in_array($this->role, ['admin', 'manager', 'technicien']);
+    }
+
+    public function canManageWarehouses()
+    {
+        return in_array($this->role, ['admin', 'manager']);
+    }
+
+    public function canViewReports()
+    {
+        return in_array($this->role, ['admin', 'manager', 'technicien']);
+    }
+
+    // Relations pour les outils
+    public function affectationsOutils()
+    {
+        return $this->hasMany(AffectationOutil::class, 'technicien_id');
+    }
+
+    public function mouvementsOutils()
+    {
+        return $this->hasMany(MouvementOutil::class);
+    }
 }
