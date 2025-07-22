@@ -57,6 +57,12 @@ class Client(BaseModel):
     code_postal: Optional[str] = None
     pays: str = "RDC"
     devise_preferee: str = "USD"  # USD ou FC
+    # Champs automobiles
+    marques: Optional[List[str]] = []
+    modeles: Optional[List[str]] = []
+    numero_chassis: Optional[str] = None
+    plaque_immatriculation: Optional[str] = None
+    formule: str = "Basic"  # Basic, Standard, Premium
     date_creation: Optional[datetime] = None
 
 class Produit(BaseModel):
