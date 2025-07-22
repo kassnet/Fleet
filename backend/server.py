@@ -13,6 +13,27 @@ from passlib.context import CryptContext
 from jose import jwt, JWTError
 import secrets
 
+# Constantes pour l'application automobile
+MARQUES_AUTOMOBILES = [
+    "Acura", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Bugatti", "Buick", 
+    "Cadillac", "Chevrolet", "Chrysler", "Citroën", "Dacia", "Daewoo", "Daihatsu", 
+    "Dodge", "Ferrari", "Fiat", "Ford", "Genesis", "GMC", "Honda", "Hyundai", "Infiniti",
+    "Isuzu", "Jaguar", "Jeep", "Kia", "Lamborghini", "Land Rover", "Lexus", "Lincoln",
+    "Lotus", "Maserati", "Mazda", "McLaren", "Mercedes-Benz", "Mini", "Mitsubishi", 
+    "Nissan", "Opel", "Peugeot", "Porsche", "Ram", "Renault", "Rolls-Royce", "Saab",
+    "Seat", "Skoda", "Subaru", "Suzuki", "Tesla", "Toyota", "Volkswagen", "Volvo"
+]
+
+MODELES_POPULAIRES = [
+    "Accord", "Altima", "Camry", "Civic", "Corolla", "Cruze", "Elantra", "Equinox", 
+    "Escape", "Explorer", "F-150", "Fusion", "Impreza", "Malibu", "Maxima", "Optima",
+    "Outback", "Passat", "Pilot", "Prius", "Rav4", "Sentra", "Silverado", "Sonata",
+    "Tucson", "Accord", "CX-5", "CR-V", "Highlander", "Jetta", "Legacy", "Murano",
+    "Pathfinder", "Rogue", "Santa Fe", "Sienna", "Tacoma", "Tundra", "Versa", "X-Trail"
+]
+
+FORMULES_SERVICE = ["Basic", "Standard", "Premium"]
+
 # Environment variables
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_urlsafe(32))
