@@ -67,6 +67,35 @@ Route::middleware('auth:api')->group(function () {
     Route::post('parametres/backup', [ParametreController::class, 'backupDatabase']);
     Route::get('parametres/health', [ParametreController::class, 'healthCheck']);
     
+    // Routes Entrepôts (Manager/Admin)
+    Route::apiResource('entrepots', EntrepotController::class);
+    Route::get('entrepots/{entrepot}/validation', [EntrepotController::class, 'validation']);
+    
+    // Routes Outils (Technicien/Manager/Admin)
+    Route::apiResource('outils', OutilController::class);
+    Route::post('outils/{outil}/approvisionner', [OutilController::class, 'approvisionner']);
+    Route::get('outils/{outil}/mouvements', [OutilController::class, 'mouvements']);
+    Route::get('outils/stats', [OutilController::class, 'stats']);
+    
+    // Routes Affectations d'outils (Manager/Admin)
+    Route::apiResource('affectations', AffectationOutilController::class)->except(['update']);
+    Route::post('affectations/{affectation}/retourner', [AffectationOutilController::class, 'retourner']);
+    Route::get('affectations/stats', [AffectationOutilController::class, 'stats']);
+    Route::get('affectations/techniciens', [AffectationOutilController::class, 'techniciens']);
+    
+    // Routes Rapports (Technicien/Manager/Admin)
+    Route::prefix('rapports')->group(function () {
+        Route::get('mouvements', [RapportController::class, 'mouvements']);
+        Route::get('stock-par-entrepot', [RapportController::class, 'stockParEntrepot']);
+        Route::get('entrepot/{entrepot}/detail', [RapportController::class, 'detailEntrepot']);
+        Route::get('dashboard', [RapportController::class, 'dashboard']);
+        Route::post('export', [RapportController::class, 'export']);
+    });
+    
+    // Alias pour compatibilité avec l'ancien système
+    Route::get('outils/rapports/mouvements', [RapportController::class, 'mouvements']);
+    Route::get('outils/rapports/stock-par-entrepot', [RapportController::class, 'stockParEntrepot']);
+    
 });
 
 // Webhook Stripe (non protégé)
