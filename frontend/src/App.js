@@ -3146,6 +3146,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                                       nom: outil.nom,
                                       description: outil.description || '',
                                       reference: outil.reference || '',
+                                      entrepot_id: outil.entrepot_id || '',
                                       quantite_stock: outil.quantite_stock,
                                       prix_unitaire_usd: outil.prix_unitaire_usd || '',
                                       fournisseur: outil.fournisseur || '',
