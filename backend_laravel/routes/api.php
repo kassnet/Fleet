@@ -116,7 +116,11 @@ Route::get('test', function () {
             'factures' => '/api/factures',
             'devis' => '/api/devis',
             'paiements' => '/api/paiements',
-            'stripe' => '/api/payments/checkout/*'
+            'stripe' => '/api/payments/checkout/*',
+            'entrepots' => '/api/entrepots',
+            'outils' => '/api/outils',
+            'affectations' => '/api/affectations',
+            'rapports' => '/api/rapports/*'
         ]
     ]);
 });
