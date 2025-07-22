@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('entrepots', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('nom');
+            $table->text('description')->nullable();
+            $table->string('adresse')->nullable();
+            $table->string('responsable')->nullable();
+            $table->integer('capacite_max')->nullable();
+            $table->enum('statut', ['actif', 'inactif', 'maintenance'])->default('actif');
             $table->timestamps();
+            
+            $table->index('nom');
+            $table->index('statut');
         });
     }
 
