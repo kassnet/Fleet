@@ -96,8 +96,8 @@ class Produit(BaseModel):
 
 
 class LigneFacture(BaseModel):
-    produit_id: str
-    nom_produit: str
+    service_id: str
+    nom_service: str
     quantite: float
     prix_unitaire_usd: float
     prix_unitaire_fc: float
