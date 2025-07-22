@@ -65,6 +65,19 @@ class Client(BaseModel):
     formule: str = "Basic"  # Basic, Standard, Premium
     date_creation: Optional[datetime] = None
 
+class Service(BaseModel):
+    id: Optional[str] = None
+    nom: str
+    description: Optional[str] = None
+    prix_usd: float
+    prix_fc: Optional[float] = None
+    unite: str = "service"
+    tva: float = 20.0
+    actif: bool = True
+    duree_estimee: Optional[str] = None  # Ex: "2 heures", "1 jour"
+    categorie: Optional[str] = None  # Ex: "Maintenance", "Réparation", "Diagnostic"
+    date_creation: Optional[datetime] = None
+
 class Produit(BaseModel):
     id: Optional[str] = None
     nom: str
