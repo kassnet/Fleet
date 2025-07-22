@@ -4761,7 +4761,7 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
                   setShowOutilModal(false);
                   setEditingOutil(null);
                   setOutilForm({
-                    nom: '', description: '', reference: '', quantite_stock: 0, prix_unitaire_usd: '',
+                    nom: '', description: '', reference: '', entrepot_id: '', quantite_stock: 0, prix_unitaire_usd: '',
                     fournisseur: '', date_achat: '', etat: 'neuf', localisation: '', numero_serie: ''
                   });
                 }}
