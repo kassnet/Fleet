@@ -625,7 +625,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus: 
+    - "Système d'entrepôts complet"
+    - "Système de rapports avancés"
+    - "Intégration outil-entrepôt"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
