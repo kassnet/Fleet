@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('outil_id')->constrained('outils')->onDelete('cascade');
-            $table->foreignId('technicien_id')->constrained('users')->onDelete('cascade');
+            $table->char('technicien_id', 36); // UUID au lieu de foreignId
             $table->integer('quantite_affectee');
             $table->text('notes_affectation')->nullable();
             $table->enum('statut', ['en_cours', 'terminee', 'annulee'])->default('en_cours');
@@ -27,6 +27,7 @@ return new class extends Migration
             $table->text('notes_retour')->nullable();
             $table->timestamps();
             
+            $table->foreign('technicien_id')->references('id')->on('users')->onDelete('cascade');
             $table->index('outil_id');
             $table->index('technicien_id');
             $table->index('statut');
