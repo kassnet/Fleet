@@ -3471,6 +3471,123 @@ Montant: ${formatMontant(facture.total_ttc_usd, 'USD')} / ${formatMontant(factur
         </div>
       )}
 
+      {/* Modal Entrepôt (Création/Modification) */}
+      {showEntrepotModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              {editingEntrepot ? '🏭 Modifier l\'Entrepôt' : '🏭 Nouvel Entrepôt'}
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nom de l'entrepôt *
+                </label>
+                <input
+                  type="text"
+                  value={entrepotForm.nom}
+                  onChange={(e) => setEntrepotForm({...entrepotForm, nom: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Responsable
+                </label>
+                <input
+                  type="text"
+                  value={entrepotForm.responsable}
+                  onChange={(e) => setEntrepotForm({...entrepotForm, responsable: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Nom du responsable"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Adresse
+                </label>
+                <input
+                  type="text"
+                  value={entrepotForm.adresse}
+                  onChange={(e) => setEntrepotForm({...entrepotForm, adresse: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Adresse complète de l'entrepôt"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Capacité maximale
+                </label>
+                <input
+                  type="number"
+                  value={entrepotForm.capacite_max}
+                  onChange={(e) => setEntrepotForm({...entrepotForm, capacite_max: e.target.value})}
+                  min="0"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Capacité max (optionnel)"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Statut
+                </label>
+                <select
+                  value={entrepotForm.statut}
+                  onChange={(e) => setEntrepotForm({...entrepotForm, statut: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="actif">Actif</option>
+                  <option value="inactif">Inactif</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description
+              </label>
+              <textarea
+                value={entrepotForm.description}
+                onChange={(e) => setEntrepotForm({...entrepotForm, description: e.target.value})}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Description de l'entrepôt..."
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowEntrepotModal(false);
+                  setEditingEntrepot(null);
+                  setEntrepotForm({
+                    nom: '', description: '', adresse: '', responsable: '', capacite_max: '', statut: 'actif'
+                  });
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
+                disabled={loading}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveEntrepot}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                disabled={loading || !entrepotForm.nom}
+              >
+                {loading ? 'Sauvegarde...' : (editingEntrepot ? '🏭 Modifier' : '🏭 Créer')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de confirmation */}
       {confirmDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
