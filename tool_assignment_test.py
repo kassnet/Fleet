@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 
 class ToolAssignmentTester:
-    def __init__(self, base_url="https://d49f146a-1c74-4ae7-997f-d63e95bc382e.preview.emergentagent.com"):
+    def __init__(self, base_url="https://8e37cb3e-3e18-40ed-83ff-145bb27f2c21.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.headers = {'Content-Type': 'application/json'}

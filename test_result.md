@@ -431,7 +431,7 @@ frontend:
     status_history:
       - working: true
         agent: "testing"
-        comment: "✅ TESTÉ ET VALIDÉ - Authentification JWT avec Laravel 100% fonctionnelle! Login admin@facturapp.rdc/admin123 réussi, token JWT stocké correctement, session maintenue, rôles et permissions affichés (badge Admin), logout fonctionnel. API calls avec Bearer token vers https://d49f146a-1c74-4ae7-997f-d63e95bc382e.preview.emergentagent.com/api/ parfaitement intégrés."
+        comment: "✅ TESTÉ ET VALIDÉ - Authentification JWT avec Laravel 100% fonctionnelle! Login admin@facturapp.rdc/admin123 réussi, token JWT stocké correctement, session maintenue, rôles et permissions affichés (badge Admin), logout fonctionnel. API calls avec Bearer token vers https://8e37cb3e-3e18-40ed-83ff-145bb27f2c21.preview.emergentagent.com/api/ parfaitement intégrés."
 
   - task: "Navigation et chargement données Laravel"
     implemented: true

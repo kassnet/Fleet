@@ -5,7 +5,7 @@ import json
 
 class FacturAppLoginTester:
     def __init__(self, base_url=None):
-        self.base_url = base_url or os.environ.get('REACT_APP_BACKEND_URL', 'https://d49f146a-1c74-4ae7-997f-d63e95bc382e.preview.emergentagent.com')
+        self.base_url = base_url or os.environ.get('REACT_APP_BACKEND_URL', 'https://8e37cb3e-3e18-40ed-83ff-145bb27f2c21.preview.emergentagent.com')
         self.tests_run = 0
         self.tests_passed = 0
         
