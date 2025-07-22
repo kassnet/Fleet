@@ -94,15 +94,6 @@ class Produit(BaseModel):
     stock_maximum: Optional[int] = None
     date_creation: Optional[datetime] = None
 
-class MouvementStock(BaseModel):
-    id: Optional[str] = None
-    produit_id: str
-    type_mouvement: str  # "entree", "sortie", "correction"
-    quantite: int
-    stock_avant: int
-    stock_après: int
-    motif: Optional[str] = None
-    date_mouvement: Optional[datetime] = None
 
 class LigneFacture(BaseModel):
     produit_id: str
